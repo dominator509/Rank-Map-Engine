@@ -4,6 +4,9 @@ import { db, keywordClustersTable, keywordsTable, projectsTable, aiTasksTable } 
 import { CreateClusterBody, UpdateClusterBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 import { enqueueAiTask } from "../lib/ai.js";
+import { clusterKeywordsWithAI } from "../lib/ai-provider.js";
+import { audit } from "../lib/audit.js";
+import { emitWebhookEvent } from "../lib/webhook-emitter.js";
 
 const router = Router();
 
@@ -110,25 +113,27 @@ router.post(
         and(eq(keywordsTable.projectId, projectId), eq(keywordsTable.tenantId, tenantId)),
       );
 
-    const groups = new Map<string, typeof keywords>();
-    for (const kw of keywords) {
-      const firstWord = kw.phrase.split(" ")[0]?.toLowerCase() ?? "other";
-      if (!groups.has(firstWord)) groups.set(firstWord, []);
-      groups.get(firstWord)!.push(kw);
+    if (keywords.length === 0) {
+      res.status(400).json({ error: "No keywords to cluster" });
+      return;
     }
 
+    const aiResults = await clusterKeywordsWithAI(
+      keywords.map((k) => ({ id: k.id, phrase: k.phrase })),
+    );
+
     const clusters: Array<typeof keywordClustersTable.$inferSelect> = [];
-    for (const [label, kws] of groups.entries()) {
+    for (const group of aiResults) {
+      if (group.keywordIds.length === 0) continue;
       const [cluster] = await db
         .insert(keywordClustersTable)
-        .values({ label, projectId, tenantId, clusterType: "cluster", status: "pending" })
+        .values({ label: group.label, projectId, tenantId, clusterType: "cluster", status: "pending" })
         .returning();
 
-      const kwIds = kws.map((k) => k.id);
       await db
         .update(keywordsTable)
         .set({ clusterId: cluster.id })
-        .where(inArray(keywordsTable.id, kwIds));
+        .where(inArray(keywordsTable.id, group.keywordIds));
 
       clusters.push(cluster);
     }
@@ -138,8 +143,15 @@ router.post(
       projectId,
       taskType: "cluster",
       createdBy: userId,
-      input: { clusterIds: clusters.map((c) => c.id) },
+      input: { clusterIds: clusters.map((c) => c.id), provider: process.env.OPENAI_API_KEY ? "openai" : "mock" },
     });
+
+    await audit({
+      tenantId, userId, action: "cluster.auto_clustered", resourceType: "project", resourceId: projectId,
+      metadata: { clusterCount: clusters.length, provider: process.env.OPENAI_API_KEY ? "openai" : "mock" }, req,
+    });
+
+    await emitWebhookEvent(tenantId, "cluster.created", { projectId, clusterCount: clusters.length });
 
     res.status(201).json({ clusters, taskId });
   },

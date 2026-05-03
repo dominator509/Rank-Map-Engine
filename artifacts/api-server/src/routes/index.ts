@@ -11,6 +11,11 @@ import aiTasksRouter from "./ai-tasks.js";
 import briefsRouter from "./briefs.js";
 import reportsRouter from "./reports.js";
 import billingRouter from "./billing.js";
+import teamRouter from "./team.js";
+import auditLogRouter from "./audit-log.js";
+import apiKeysRouter from "./api-keys.js";
+import webhooksRouter from "./webhooks.js";
+import integrationsRouter from "./integrations.js";
 
 const router: IRouter = Router();
 
@@ -26,5 +31,10 @@ router.use(aiTasksRouter);
 router.use(briefsRouter);
 router.use(reportsRouter);
 router.use(billingRouter);
+router.use(teamRouter);
+router.use(auditLogRouter);
+router.use(apiKeysRouter);
+router.use(webhooksRouter);
+router.use(integrationsRouter);
 
 export default router;

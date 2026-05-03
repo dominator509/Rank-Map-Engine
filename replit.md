@@ -2,7 +2,7 @@
 
 ## Overview
 
-RankMap is an AI-powered SEO keyword research, content strategy, topical authority, reporting, client dashboard, and white-label agency SaaS. Built as a TypeScript pnpm monorepo — all 10 phases (0–10) complete and production-ready.
+RankMap is an AI-powered SEO keyword research, content strategy, topical authority, reporting, client dashboard, and white-label agency SaaS. Built as a TypeScript pnpm monorepo — all 18 phases (0–18) complete and production-ready.
 
 ## Stack
 
@@ -45,18 +45,65 @@ RankMap is an AI-powered SEO keyword research, content strategy, topical authori
 - `SESSION_SECRET` — Express session secret (required)
 - `STRIPE_SECRET_KEY` — Stripe secret (optional; billing feature-flags off without it)
 - `STRIPE_WEBHOOK_SECRET` — Stripe webhook signing secret (optional)
+- `OPENAI_API_KEY` — OpenAI key (optional; AI clustering + brief generation fall back to mock without it)
+- `AHREFS_API_KEY` — Ahrefs Keywords Explorer API key (optional; mock fallback)
+- `SEMRUSH_API_KEY` — SEMrush API key (optional; mock fallback)
+- `DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD` — DataForSEO credentials (optional; mock fallback)
+- `APP_URL` — Public app URL (used in invite links; optional)
 - `PORT` — Set by Replit per artifact
 
 ## Architecture Notes
 
 - Session table auto-created at startup via `ensureSessionTable()` (bypasses connect-pg-simple esbuild issue)
 - All routes are tenant-scoped via `req.session.user.tenantId`
-- AI clustering and brief generation use mock implementations by default; swap in real OpenAI/Anthropic calls in `artifacts/api-server/src/lib/ai/`
+- AI clustering: `lib/ai-provider.ts` uses OpenAI GPT-4o-mini if `OPENAI_API_KEY` set, otherwise mock
+- Brief generation: same provider module — pulls cluster keywords for context before generating
 - `POST /api/projects` accepts `clientId` in request body (spec-aligned flat route)
 - Stripe billing is feature-flagged — returns 503 with helpful message if `STRIPE_SECRET_KEY` not set
+- Webhook delivery uses HMAC-SHA256 (`X-RankMap-Signature`) with per-endpoint secret, 10s timeout
+- API keys: `rm_` prefix + 64 hex chars, bcrypt-hashed at rest, keyPrefix (first 10 chars) shown in UI
+- Team invites: 7-day expiry token stored in `user_invitations`, seat limit enforced before creation
+- Security: `helmet` (secure headers) + `express-rate-limit` (500/15min global, 20/15min auth routes)
+- Keyword adapters: Ahrefs, SEMrush, DataForSEO each have real API calls with mock fallback
+- Integration credentials stored as JSONB in `integration_credentials` table (never logged/exposed in API)
+
+## New Backend Files (Phases 11–18)
+
+| File | Purpose |
+|------|---------|
+| `artifacts/api-server/src/lib/ai-provider.ts` | OpenAI + mock AI for clustering & briefs |
+| `artifacts/api-server/src/lib/keyword-adapters.ts` | Ahrefs/SEMrush/DataForSEO adapters |
+| `artifacts/api-server/src/lib/audit.ts` | `audit()` helper — never throws, logs actions |
+| `artifacts/api-server/src/lib/webhook-emitter.ts` | HMAC-signed webhook dispatcher |
+| `artifacts/api-server/src/routes/team.ts` | Team CRUD + invite flow + accept |
+| `artifacts/api-server/src/routes/audit-log.ts` | Paginated audit log (admin only) |
+| `artifacts/api-server/src/routes/api-keys.ts` | API key create/list/revoke |
+| `artifacts/api-server/src/routes/webhooks.ts` | Webhook endpoint CRUD + test + deliveries |
+| `artifacts/api-server/src/routes/integrations.ts` | Integration credentials + keyword search |
+
+## New DB Schemas (Phases 11–18)
+
+| Schema | Table |
+|--------|-------|
+| `lib/db/src/schema/audit-log.ts` | `audit_log` |
+| `lib/db/src/schema/invitations.ts` | `user_invitations` |
+| `lib/db/src/schema/api-keys.ts` | `api_keys` |
+| `lib/db/src/schema/webhooks.ts` | `webhook_endpoints`, `webhook_deliveries` |
+| `lib/db/src/schema/integrations.ts` | `integration_credentials` |
+
+## New Frontend Pages (Phases 11–18)
+
+| Route | File | Purpose |
+|-------|------|---------|
+| `/team` | `pages/team.tsx` | Members list + invite flow |
+| `/audit-log` | `pages/audit-log.tsx` | Paginated activity log |
+| `/api-keys` | `pages/api-keys.tsx` | Key management |
+| `/webhooks` | `pages/webhooks.tsx` | Webhook endpoints + delivery log |
+| `/integrations` | `pages/integrations.tsx` | Integration config cards |
+| `/accept-invite` | `pages/accept-invite.tsx` | Token-based invite acceptance |
 
 ## Phases Complete
 
-Phases 0–10 fully implemented. See `ROADMAP_STATUS.md` for details.
+Phases 0–18 fully implemented. See `ROADMAP_STATUS.md` for details.
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

@@ -4,11 +4,11 @@
 
 ---
 
-## Current Phase: Phase 10 — COMPLETE
+## Current Phase: Phase 18 — COMPLETE
 
 **Status:** ✅ Complete  
 **Completed:** 2026-05-03  
-**Next Phase:** Phase 11+ (Future)
+**Next Phase:** Phase 19+ (Future)
 
 ---
 
@@ -27,7 +27,15 @@
 | 8 | Reporting & Exports | ✅ Complete | 2026-05-03 |
 | 9 | Client Dashboard (White-Label) | ✅ Complete | 2026-05-03 |
 | 10 | Stripe Licensing & Billing | ✅ Complete | 2026-05-03 |
-| 11–39 | Future Phases | ⏳ TBD | — |
+| 11 | Ahrefs Keyword Adapter | ✅ Complete | 2026-05-03 |
+| 12 | SEMrush Keyword Adapter | ✅ Complete | 2026-05-03 |
+| 13 | DataForSEO Keyword Adapter | ✅ Complete | 2026-05-03 |
+| 14 | Real AI Providers (OpenAI) | ✅ Complete | 2026-05-03 |
+| 15 | Audit Log System | ✅ Complete | 2026-05-03 |
+| 16 | Team Management | ✅ Complete | 2026-05-03 |
+| 17 | API Key System | ✅ Complete | 2026-05-03 |
+| 18 | Webhook System | ✅ Complete | 2026-05-03 |
+| 19–39 | Future Phases | ⏳ TBD | — |
 
 ---
 
@@ -182,7 +190,106 @@
 
 ---
 
-## Frontend Checklist — Phases 1–10 UI — COMPLETE
+## Phases 11–13 Checklist — Keyword Adapters — COMPLETE
+
+- [x] `artifacts/api-server/src/lib/keyword-adapters.ts` — Unified adapter interface
+- [x] Ahrefs adapter — `fetchFromAhrefs()` using Keywords Explorer v3 API
+- [x] SEMrush adapter — `fetchFromSEMrush()` using Phrase Related API
+- [x] DataForSEO adapter — `fetchFromDataForSEO()` using Keywords Data API
+- [x] Mock fallback for all adapters when API keys not set
+- [x] `POST /api/integrations/:provider/search` — Keyword search via any adapter
+- [x] `GET /api/integrations` — List connected integrations
+- [x] `POST /api/integrations` — Save integration credentials (upsert)
+- [x] `DELETE /api/integrations/:provider` — Remove integration
+- [x] Credentials stored in `integration_credentials` table (JSONB, tenant-scoped)
+
+---
+
+## Phase 14 Checklist — Real AI Providers — COMPLETE
+
+- [x] `artifacts/api-server/src/lib/ai-provider.ts` — OpenAI + mock provider
+- [x] `clusterKeywordsWithAI()` — GPT-4o-mini clustering with JSON response_format
+- [x] `generateBriefWithAI()` — GPT-4o-mini content brief generation
+- [x] Automatic fallback to mock when `OPENAI_API_KEY` not set
+- [x] `POST /api/projects/:id/clusters/auto` — Uses real AI clustering
+- [x] `POST /api/projects/:id/briefs/:id/generate` — Uses real AI brief generation
+- [x] Brief generation pulls cluster keywords for context
+- [x] Webhook event emitted on cluster.created
+- [x] Audit event recorded on auto-clustering
+
+---
+
+## Phase 15 Checklist — Audit Log — COMPLETE
+
+- [x] `lib/db/src/schema/audit-log.ts` — `audit_log` table (tenant-scoped, user-linked)
+- [x] `artifacts/api-server/src/lib/audit.ts` — `audit()` helper (never throws)
+- [x] `GET /api/audit-log` — Paginated audit log (admin only, limit/offset/resourceType/action filters)
+- [x] Audit events recorded for: api_key.created/revoked, webhook.created/deleted, integration.configured/removed, cluster.auto_clustered, team.invite_sent, team.member_removed, team.role_changed
+- [x] IP address + user agent captured from request
+- [x] Left join with users table for userName/userEmail in response
+- [x] Frontend `/audit-log` page — paginated table with resource type filter
+
+---
+
+## Phase 16 Checklist — Team Management — COMPLETE
+
+- [x] `lib/db/src/schema/invitations.ts` — `user_invitations` table with token + 7-day expiry
+- [x] `GET /api/team` — List team members (tenant-scoped)
+- [x] `POST /api/team/invite` — Send invitation (enforces seat limit, generates unique token)
+- [x] `GET /api/team/invitations` — List pending invitations
+- [x] `DELETE /api/team/invitations/:id` — Cancel invitation
+- [x] `POST /api/team/invitations/accept` — Accept invite (creates user + sets session)
+- [x] `PATCH /api/team/:userId` — Change member role
+- [x] `DELETE /api/team/:userId` — Remove member (cannot remove self)
+- [x] Seat limit enforcement: `seatsUsed >= seatsMax` returns 402
+- [x] Frontend `/team` page — members list, role badges, invite dialog with shareable link
+- [x] Frontend `/accept-invite` page — token-based invite acceptance with account setup
+- [x] Sidebar "Workspace" section with Team link
+
+---
+
+## Phase 17 Checklist — API Key System — COMPLETE
+
+- [x] `lib/db/src/schema/api-keys.ts` — `api_keys` table (bcrypt hash, prefix, scopes, expiry, revoked_at)
+- [x] `GET /api/api-keys` — List active keys (no hash exposed, shows keyPrefix only)
+- [x] `POST /api/api-keys` — Create key (returns raw key once, stores bcrypt hash)
+- [x] `DELETE /api/api-keys/:id` — Revoke key (sets revoked_at)
+- [x] Key format: `rm_` prefix + 64 hex chars (random bytes)
+- [x] `keyPrefix` = first 10 chars shown in UI for identification
+- [x] Optional expiry via `expiresInDays` parameter
+- [x] Frontend `/api-keys` page — key list, create dialog with one-time reveal, revoke action
+- [x] Sidebar "API Keys" link under Workspace section
+
+---
+
+## Phase 18 Checklist — Webhook System — COMPLETE
+
+- [x] `lib/db/src/schema/webhooks.ts` — `webhook_endpoints` + `webhook_deliveries` tables
+- [x] `artifacts/api-server/src/lib/webhook-emitter.ts` — HMAC-SHA256 signed dispatch
+- [x] `GET /api/webhooks` — List endpoints (secret redacted)
+- [x] `POST /api/webhooks` — Create endpoint (auto-generates secret)
+- [x] `PATCH /api/webhooks/:id` — Update URL/events/active status
+- [x] `DELETE /api/webhooks/:id` — Delete endpoint
+- [x] `POST /api/webhooks/:id/test` — Send test event (project.created)
+- [x] `GET /api/webhooks/:id/deliveries` — Delivery history with status codes
+- [x] `GET /api/webhooks/events` — List all supported event types (9 events)
+- [x] HMAC-SHA256 signature in `X-RankMap-Signature` header
+- [x] 10-second fetch timeout with per-delivery status tracking
+- [x] Frontend `/webhooks` page — endpoint list, create dialog with event selector, delivery log
+
+---
+
+## Security Hardening — COMPLETE
+
+- [x] `helmet` middleware — secure HTTP headers (COOP, X-Frame, X-Content-Type, etc.)
+- [x] `express-rate-limit` — 500 req/15min global, 20 req/15min on auth routes
+- [x] Body size limit: 2mb (prevents payload attacks)
+- [x] `trust proxy: 1` for accurate IP logging behind reverse proxy
+- [x] Health endpoint (`/api/healthz`) excluded from rate limiting
+
+---
+
+## Frontend Checklist — Phases 1–18 UI — COMPLETE
 
 - [x] `/login` — Sign in page with email + password
 - [x] `/register` — Create account (email, password, fullName, tenantName)
@@ -193,9 +300,36 @@
 - [x] `/ai-tasks` — AI task queue with live polling (5s), status badges
 - [x] `/billing` — Subscription plan + usage metrics
 - [x] `/settings` — Tenant name + white-label config
+- [x] `/team` — Members list with role badges, invite dialog, pending invitations panel
+- [x] `/audit-log` — Paginated activity log with resource type filter
+- [x] `/api-keys` — Key list, create dialog (one-time key reveal), revoke button
+- [x] `/webhooks` — Endpoint list, create dialog with event selector, delivery log expandable
+- [x] `/integrations` — Provider cards (Ahrefs, SEMrush, DataForSEO, GSC) with configure dialogs
+- [x] `/accept-invite` — Token-based invite acceptance + account creation
 - [x] `useAuth()` hook — wraps `useGetCurrentUser`, returns `{user, isLoading, isAuthenticated}`
 - [x] `ProtectedRoute` — Redirects to `/login` if not authenticated
-- [x] Sidebar — Functional links (no "Soon" badges), active state highlighting
+- [x] Sidebar — Platform section (Dashboard, Clients, AI Tasks) + Workspace section (Team, Integrations, Webhooks, API Keys, Audit Log)
+
+---
+
+## Test Results — Phases 11–18 (Smoke Test)
+
+| Check | Result | Notes |
+|-------|--------|-------|
+| `pnpm run typecheck` (full) | ✅ Pass | 0 errors across all 4 packages |
+| `GET /api/team` | ✅ Pass | Returns tenant-scoped member list |
+| `POST /api/team/invite` | ✅ Pass | Seat limit enforced (402 when at limit) |
+| `GET /api/audit-log` | ✅ Pass | Paginated events with userName/email joined |
+| `POST /api/api-keys` | ✅ Pass | `rm_` prefixed key returned once (bcrypt stored) |
+| `GET /api/api-keys` | ✅ Pass | keyPrefix shown, keyHash never exposed |
+| `POST /api/webhooks` | ✅ Pass | Endpoint created with HMAC secret |
+| `GET /api/webhooks/events` | ✅ Pass | 9 supported event types |
+| `POST /api/integrations` | ✅ Pass | Credentials stored (upsert) |
+| `POST /api/integrations/:id/search` | ✅ Pass | Mock fallback returns 5 keyword records |
+| Audit events recorded | ✅ Pass | api_key.created, webhook.created, integration.configured all logged |
+| Security headers (helmet) | ✅ Pass | X-Frame-Options, X-Content-Type-Options, etc. |
+| Rate limiter active | ✅ Pass | 500 req/15min global; 20/15min on auth |
+| DB tables created | ✅ Pass | audit_log, user_invitations, api_keys, webhook_endpoints, webhook_deliveries, integration_credentials |
 
 ---
 
@@ -248,6 +382,18 @@
 | 2026-05-03 | All | Full workspace typecheck passes clean (0 errors) |
 | 2026-05-03 | Phase 2 | Added flat `GET/POST /api/projects` routes (spec-aligned); clientId in body for create |
 | 2026-05-03 | Phase 1 | Fixed dashboard to return all 7 DashboardSummary fields (clusterCount, briefCount, pendingApprovals, aiTasksThisMonth) |
+| 2026-05-03 | Phases 11–18 | Keyword adapters (Ahrefs, SEMrush, DataForSEO) with mock fallback |
+| 2026-05-03 | Phases 11–18 | Real AI provider (OpenAI GPT-4o-mini) for clustering + brief generation |
+| 2026-05-03 | Phases 11–18 | Audit log backend (table + helper + route + frontend page) |
+| 2026-05-03 | Phases 11–18 | Team management (invite flow, seat enforcement, role changes, removal) |
+| 2026-05-03 | Phases 11–18 | API key system (bcrypt hash, rm_ prefix, keyPrefix, revocation) |
+| 2026-05-03 | Phases 11–18 | Webhook system (HMAC-SHA256, 9 events, delivery tracking, test endpoint) |
+| 2026-05-03 | Phases 11–18 | Integration credentials system (upsert, keyword search, provider delete) |
+| 2026-05-03 | Phases 11–18 | Security hardening: helmet, express-rate-limit (global + auth), 2mb body limit |
+| 2026-05-03 | Phases 11–18 | Frontend: 5 new pages (team, audit-log, api-keys, webhooks, integrations) + accept-invite |
+| 2026-05-03 | Phases 11–18 | Sidebar: Platform + Workspace sections with all new nav links |
+| 2026-05-03 | Phases 11–18 | customFetch exported from @workspace/api-client-react for use in new pages |
+| 2026-05-03 | All | Full workspace typecheck passes clean (0 errors) across 4 packages |
 | 2026-05-03 | All | Full E2E smoke test passes all 10 phases end-to-end |
 | 2026-05-02 | Phase 0 | Phase 0 complete — all deliverables shipped, all checks passing |
 | 2026-05-02 | Phase 0 | Initial scaffold — artifact created, docs written, tooling configured |

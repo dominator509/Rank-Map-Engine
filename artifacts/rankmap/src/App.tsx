@@ -8,6 +8,7 @@ import { MainLayout } from "@/components/layout/main-layout";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/auth/login";
 import Register from "@/pages/auth/register";
+import AcceptInvite from "@/pages/accept-invite";
 import Dashboard from "@/pages/dashboard";
 import Clients from "@/pages/clients";
 import ClientDetail from "@/pages/client-detail";
@@ -15,6 +16,11 @@ import ProjectDetail from "@/pages/project-detail";
 import AiTasks from "@/pages/ai-tasks";
 import Billing from "@/pages/billing";
 import Settings from "@/pages/settings";
+import Team from "@/pages/team";
+import AuditLog from "@/pages/audit-log";
+import ApiKeys from "@/pages/api-keys";
+import Webhooks from "@/pages/webhooks";
+import Integrations from "@/pages/integrations";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +66,48 @@ function AppRoutes() {
         <ProtectedRoute>
           <MainLayout>
             <AiTasks />
+          </MainLayout>
+        </ProtectedRoute>
+      </Route>
+
+      <Route path="/accept-invite" component={AcceptInvite} />
+
+      <Route path="/team">
+        <ProtectedRoute>
+          <MainLayout>
+            <Team />
+          </MainLayout>
+        </ProtectedRoute>
+      </Route>
+
+      <Route path="/audit-log">
+        <ProtectedRoute>
+          <MainLayout>
+            <AuditLog />
+          </MainLayout>
+        </ProtectedRoute>
+      </Route>
+
+      <Route path="/api-keys">
+        <ProtectedRoute>
+          <MainLayout>
+            <ApiKeys />
+          </MainLayout>
+        </ProtectedRoute>
+      </Route>
+
+      <Route path="/webhooks">
+        <ProtectedRoute>
+          <MainLayout>
+            <Webhooks />
+          </MainLayout>
+        </ProtectedRoute>
+      </Route>
+
+      <Route path="/integrations">
+        <ProtectedRoute>
+          <MainLayout>
+            <Integrations />
           </MainLayout>
         </ProtectedRoute>
       </Route>

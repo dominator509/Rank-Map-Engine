@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, contentBriefsTable, projectsTable, aiTasksTable } from "@workspace/db";
+import { db, contentBriefsTable, projectsTable, aiTasksTable, keywordsTable, keywordClustersTable } from "@workspace/db";
 import { CreateBriefBody, UpdateBriefBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 import { enqueueAiTask } from "../lib/ai.js";
+import { generateBriefWithAI } from "../lib/ai-provider.js";
+import { audit } from "../lib/audit.js";
+import { emitWebhookEvent } from "../lib/webhook-emitter.js";
 
 const router = Router();
 
@@ -222,17 +225,30 @@ router.post(
       return;
     }
 
-    const mockOutline = {
-      sections: [
-        { heading: "Introduction", notes: "Introduce the topic and why it matters." },
-        { heading: "Main Body", notes: "Deep-dive into subtopics." },
-        { heading: "Conclusion", notes: "Summarise and call to action." },
-      ],
-    };
+    let clusterLabel = "General";
+    let clusterKeywords: string[] = [];
+
+    if (brief.clusterId) {
+      const [cluster] = await db
+        .select({ label: keywordClustersTable.label })
+        .from(keywordClustersTable)
+        .where(eq(keywordClustersTable.id, brief.clusterId))
+        .limit(1);
+      if (cluster) clusterLabel = cluster.label;
+
+      const kws = await db
+        .select({ phrase: keywordsTable.phrase })
+        .from(keywordsTable)
+        .where(eq(keywordsTable.clusterId, brief.clusterId))
+        .limit(20);
+      clusterKeywords = kws.map((k) => k.phrase);
+    }
+
+    const generated = await generateBriefWithAI(brief.title, clusterLabel, clusterKeywords);
 
     const [updated] = await db
       .update(contentBriefsTable)
-      .set({ outline: mockOutline, status: "draft" })
+      .set({ outline: generated, targetWordCount: generated.targetWordCount, status: "draft" })
       .where(eq(contentBriefsTable.id, id))
       .returning();
 
