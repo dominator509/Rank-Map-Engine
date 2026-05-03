@@ -19,10 +19,46 @@ const app: Express = express();
 
 app.set("trust proxy", 1);
 
+// Build CORS allowlist from REPLIT_DOMAINS (comma-separated) and optional ALLOWED_ORIGINS
+const _replitDomains = (process.env.REPLIT_DOMAINS ?? "")
+  .split(",")
+  .map((d) => d.trim())
+  .filter(Boolean)
+  .map((d) => `https://${d}`);
+
+const _extraOrigins = (process.env.ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((d) => d.trim())
+  .filter(Boolean);
+
+// Always allow localhost variants for local development
+const _devOrigins =
+  process.env.NODE_ENV !== "production"
+    ? ["http://localhost:3000", "http://localhost:5173", "http://localhost:80"]
+    : [];
+
+const ALLOWED_ORIGINS = new Set([
+  ..._replitDomains,
+  ..._extraOrigins,
+  ..._devOrigins,
+]);
+
 app.use(
   helmet({
     crossOriginEmbedderPolicy: false,
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "https://api.openai.com", "https://api.stripe.com"],
+        fontSrc: ["'self'", "data:"],
+        objectSrc: ["'none'"],
+        frameSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
   }),
 );
 
@@ -48,7 +84,12 @@ app.use(
 
 app.use(
   cors({
-    origin: true,
+    origin: (origin, callback) => {
+      // Allow server-to-server requests (no origin) and whitelisted origins.
+      // Pass false (not an Error) so CORS middleware omits headers — the
+      // browser enforces the block; the server returns a clean non-5xx response.
+      callback(null, !origin || ALLOWED_ORIGINS.has(origin));
+    },
     credentials: true,
   }),
 );

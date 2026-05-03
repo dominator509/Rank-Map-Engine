@@ -37,6 +37,10 @@ function PreviewRenderer({
 
     async function loadComponent(): Promise<void> {
       const key = `./components/mockups/${componentPath}.tsx`;
+      // nosemgrep: javascript.lang.security.audit.unsafe-dynamic-method
+      // This is intentional: `modules` is a static Vite import.meta.glob map —
+      // keys are build-time file paths, not runtime user input. The sandbox
+      // only runs in the local dev environment and is never exposed to end users.
       const loader = modules[key];
       if (!loader) {
         setError(`No component found at ${componentPath}.tsx`);

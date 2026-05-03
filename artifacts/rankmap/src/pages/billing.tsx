@@ -31,13 +31,32 @@ export default function Billing() {
   const createCheckout = useCreateCheckoutSession();
   const createPortal = useCreateBillingPortal();
 
+  // Only redirect to known Stripe domains — prevents open-redirect attacks
+  const safeStripeRedirect = (url: string | undefined) => {
+    if (!url) return;
+    try {
+      const parsed = new URL(url);
+      if (
+        parsed.protocol === "https:" &&
+        (parsed.hostname === "checkout.stripe.com" ||
+          parsed.hostname === "billing.stripe.com")
+      ) {
+        // nosemgrep: javascript.browser.security.js-open-redirect-from-function
+        // URL is validated above — only checkout.stripe.com and billing.stripe.com are allowed.
+        window.location.href = url;
+      } else {
+        toast({ title: "Invalid redirect URL", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Invalid redirect URL", variant: "destructive" });
+    }
+  };
+
   const handleUpgrade = (planId: string) => {
     createCheckout.mutate(
       { data: { planId } },
       {
-        onSuccess: (res) => {
-          if (res.url) window.location.href = res.url;
-        },
+        onSuccess: (res) => safeStripeRedirect(res.url),
         onError: () =>
           toast({ title: "Stripe is not configured in this environment", variant: "destructive" }),
       },
@@ -46,9 +65,7 @@ export default function Billing() {
 
   const handleManageSubscription = () => {
     createPortal.mutate(undefined, {
-      onSuccess: (res) => {
-        if (res.url) window.location.href = res.url;
-      },
+      onSuccess: (res) => safeStripeRedirect(res.url),
       onError: () =>
         toast({ title: "Stripe is not configured in this environment", variant: "destructive" }),
     });
