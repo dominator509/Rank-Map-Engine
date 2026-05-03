@@ -2,21 +2,30 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 0.2.0
+  description: RankMap API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: auth
+  - name: clients
+  - name: projects
+  - name: keywords
+  - name: clusters
+  - name: briefs
+  - name: reports
+  - name: ai-tasks
+  - name: tenant
+  - name: billing
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +33,1144 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: registerUser
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginUser
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logoutUser
+      tags: [auth]
+      responses:
+        "204":
+          description: Logged out
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tenants/me:
+    get:
+      operationId: getMyTenant
+      tags: [tenant]
+      responses:
+        "200":
+          description: Tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateMyTenant
+      tags: [tenant]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTenantBody"
+      responses:
+        "200":
+          description: Updated tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [tenant]
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /clients:
+    get:
+      operationId: listClients
+      tags: [clients]
+      responses:
+        "200":
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [clients]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientBody"
+      responses:
+        "201":
+          description: Created client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /clients/{id}:
+    get:
+      operationId: getClient
+      tags: [clients]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateClient
+      tags: [clients]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClientBody"
+      responses:
+        "200":
+          description: Updated client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteClient
+      tags: [clients]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      parameters:
+        - name: clientId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectBody"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProjectBody"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /projects/{projectId}/keywords:
+    get:
+      operationId: listKeywords
+      tags: [keywords]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: clusterId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: intent
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: isActive
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of keywords
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Keyword"
+    post:
+      operationId: createKeyword
+      tags: [keywords]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateKeywordBody"
+      responses:
+        "201":
+          description: Created keyword
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Keyword"
+
+  /projects/{projectId}/keywords/import:
+    post:
+      operationId: importKeywords
+      tags: [keywords]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportKeywordsBody"
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportKeywordsResponse"
+
+  /projects/{projectId}/keywords/{id}:
+    get:
+      operationId: getKeyword
+      tags: [keywords]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Keyword
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Keyword"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateKeyword
+      tags: [keywords]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateKeywordBody"
+      responses:
+        "200":
+          description: Updated keyword
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Keyword"
+    delete:
+      operationId: deleteKeyword
+      tags: [keywords]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /projects/{projectId}/score-settings:
+    get:
+      operationId: getScoreSettings
+      tags: [keywords]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Score settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScoreSettings"
+    patch:
+      operationId: updateScoreSettings
+      tags: [keywords]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateScoreSettingsBody"
+      responses:
+        "200":
+          description: Updated score settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScoreSettings"
+
+  /projects/{projectId}/clusters:
+    get:
+      operationId: listClusters
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of clusters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/KeywordCluster"
+    post:
+      operationId: createCluster
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClusterBody"
+      responses:
+        "201":
+          description: Created cluster
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeywordCluster"
+
+  /projects/{projectId}/cluster-keywords:
+    post:
+      operationId: clusterKeywords
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "202":
+          description: Clustering task queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiTask"
+
+  /projects/{projectId}/clusters/{id}:
+    get:
+      operationId: getCluster
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cluster
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeywordCluster"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateCluster
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClusterBody"
+      responses:
+        "200":
+          description: Updated cluster
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeywordCluster"
+    delete:
+      operationId: deleteCluster
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /projects/{projectId}/clusters/{id}/approve:
+    post:
+      operationId: approveCluster
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Approved cluster
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeywordCluster"
+
+  /projects/{projectId}/clusters/{id}/reject:
+    post:
+      operationId: rejectCluster
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Rejected cluster
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeywordCluster"
+
+  /projects/{projectId}/topic-map:
+    get:
+      operationId: getTopicMap
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Topic map
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopicMap"
+
+  /projects/{projectId}/roadmap:
+    get:
+      operationId: getContentRoadmap
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Content roadmap items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RoadmapItem"
+
+  /ai-tasks:
+    get:
+      operationId: listAiTasks
+      tags: [ai-tasks]
+      parameters:
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of AI tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiTask"
+
+  /ai-tasks/{id}:
+    get:
+      operationId: getAiTask
+      tags: [ai-tasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: AI task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiTask"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /projects/{projectId}/briefs:
+    get:
+      operationId: listBriefs
+      tags: [briefs]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of briefs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentBrief"
+    post:
+      operationId: createBrief
+      tags: [briefs]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBriefBody"
+      responses:
+        "201":
+          description: Created brief
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentBrief"
+
+  /projects/{projectId}/briefs/{id}:
+    get:
+      operationId: getBrief
+      tags: [briefs]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Brief
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentBrief"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateBrief
+      tags: [briefs]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBriefBody"
+      responses:
+        "200":
+          description: Updated brief
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentBrief"
+    delete:
+      operationId: deleteBrief
+      tags: [briefs]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /projects/{projectId}/briefs/{id}/generate:
+    post:
+      operationId: generateBrief
+      tags: [briefs]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "202":
+          description: Generation task queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiTask"
+
+  /projects/{projectId}/briefs/{id}/approve:
+    post:
+      operationId: approveBrief
+      tags: [briefs]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Approved brief
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentBrief"
+
+  /projects/{projectId}/reports:
+    get:
+      operationId: listReports
+      tags: [reports]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Report"
+    post:
+      operationId: generateReport
+      tags: [reports]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateReportBody"
+      responses:
+        "201":
+          description: Generated report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+
+  /projects/{projectId}/reports/{id}:
+    get:
+      operationId: getReport
+      tags: [reports]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteReport
+      tags: [reports]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /billing/plans:
+    get:
+      operationId: listPlans
+      tags: [billing]
+      responses:
+        "200":
+          description: Available plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plan"
+
+  /billing/subscription:
+    get:
+      operationId: getSubscription
+      tags: [billing]
+      responses:
+        "200":
+          description: Subscription info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+
+  /billing/checkout:
+    post:
+      operationId: createCheckoutSession
+      tags: [billing]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCheckoutBody"
+      responses:
+        "200":
+          description: Checkout URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutResponse"
+
+  /billing/portal:
+    post:
+      operationId: createBillingPortal
+      tags: [billing]
+      responses:
+        "200":
+          description: Billing portal URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutResponse"
+
+  /billing/usage:
+    get:
+      operationId: getBillingUsage
+      tags: [billing]
+      responses:
+        "200":
+          description: Usage summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -33,4 +1180,799 @@ components:
           type: string
       required:
         - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    RegisterBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        fullName:
+          type: string
+        tenantName:
+          type: string
+      required:
+        - email
+        - password
+        - fullName
+        - tenantName
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        tenant:
+          $ref: "#/components/schemas/Tenant"
+      required:
+        - user
+        - tenant
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+          enum: [super_admin, agency_admin, agency_user, client]
+        avatarUrl:
+          type: ["string", "null"]
+        lastLoginAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - email
+        - fullName
+        - role
+        - createdAt
+        - updatedAt
+
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        plan:
+          type: string
+          enum: [solo, agency, enterprise]
+        seatsUsed:
+          type: integer
+        seatsMax:
+          type: integer
+        whiteLabelConfig:
+          type: ["object", "null"]
+        stripeCustomerId:
+          type: ["string", "null"]
+        stripeSubscriptionId:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - plan
+        - seatsUsed
+        - seatsMax
+        - createdAt
+        - updatedAt
+
+    UpdateTenantBody:
+      type: object
+      properties:
+        name:
+          type: string
+        whiteLabelConfig:
+          type: object
+
+    DashboardSummary:
+      type: object
+      properties:
+        clientCount:
+          type: integer
+        projectCount:
+          type: integer
+        keywordCount:
+          type: integer
+        clusterCount:
+          type: integer
+        briefCount:
+          type: integer
+        pendingApprovals:
+          type: integer
+        aiTasksThisMonth:
+          type: integer
+      required:
+        - clientCount
+        - projectCount
+        - keywordCount
+        - clusterCount
+        - briefCount
+        - pendingApprovals
+        - aiTasksThisMonth
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        name:
+          type: string
+        domain:
+          type: ["string", "null"]
+        industry:
+          type: ["string", "null"]
+        logoUrl:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - name
+        - isActive
+        - createdAt
+        - updatedAt
+
+    CreateClientBody:
+      type: object
+      properties:
+        name:
+          type: string
+        domain:
+          type: string
+        industry:
+          type: string
+      required:
+        - name
+
+    UpdateClientBody:
+      type: object
+      properties:
+        name:
+          type: string
+        domain:
+          type: string
+        industry:
+          type: string
+        logoUrl:
+          type: string
+        isActive:
+          type: boolean
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        clientId:
+          type: integer
+        tenantId:
+          type: integer
+        name:
+          type: string
+        targetDomain:
+          type: ["string", "null"]
+        locale:
+          type: string
+        status:
+          type: string
+          enum: [active, paused, archived]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - clientId
+        - tenantId
+        - name
+        - locale
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateProjectBody:
+      type: object
+      properties:
+        clientId:
+          type: integer
+        name:
+          type: string
+        targetDomain:
+          type: string
+        locale:
+          type: string
+      required:
+        - clientId
+        - name
+
+    UpdateProjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        targetDomain:
+          type: string
+        locale:
+          type: string
+        status:
+          type: string
+          enum: [active, paused, archived]
+
+    Keyword:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        tenantId:
+          type: integer
+        phrase:
+          type: string
+        searchVolume:
+          type: ["integer", "null"]
+        cpc:
+          type: ["number", "null"]
+        kd:
+          type: ["integer", "null"]
+        intent:
+          type: ["string", "null"]
+        clusterId:
+          type: ["integer", "null"]
+        source:
+          type: string
+          enum: [manual, csv, ahrefs, semrush]
+        isActive:
+          type: boolean
+        rawScore:
+          type: ["number", "null"]
+        finalScore:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - projectId
+        - tenantId
+        - phrase
+        - source
+        - isActive
+        - createdAt
+        - updatedAt
+
+    CreateKeywordBody:
+      type: object
+      properties:
+        phrase:
+          type: string
+        searchVolume:
+          type: integer
+        cpc:
+          type: number
+        kd:
+          type: integer
+        intent:
+          type: string
+          enum: [informational, navigational, commercial, transactional]
+      required:
+        - phrase
+
+    UpdateKeywordBody:
+      type: object
+      properties:
+        phrase:
+          type: string
+        searchVolume:
+          type: integer
+        cpc:
+          type: number
+        kd:
+          type: integer
+        intent:
+          type: string
+          enum: [informational, navigational, commercial, transactional]
+        isActive:
+          type: boolean
+        clusterId:
+          type: integer
+
+    ImportKeywordsBody:
+      type: object
+      properties:
+        source:
+          type: string
+          enum: [manual, csv, ahrefs, semrush]
+        keywords:
+          type: array
+          items:
+            $ref: "#/components/schemas/RawKeywordInput"
+      required:
+        - source
+        - keywords
+
+    RawKeywordInput:
+      type: object
+      properties:
+        phrase:
+          type: string
+        searchVolume:
+          type: integer
+        cpc:
+          type: number
+        kd:
+          type: integer
+        intent:
+          type: string
+      required:
+        - phrase
+
+    ImportKeywordsResponse:
+      type: object
+      properties:
+        imported:
+          type: integer
+        duplicates:
+          type: integer
+        total:
+          type: integer
+      required:
+        - imported
+        - duplicates
+        - total
+
+    ScoreSettings:
+      type: object
+      properties:
+        projectId:
+          type: integer
+        volumeWeight:
+          type: number
+        kdWeight:
+          type: number
+        intentWeight:
+          type: number
+        cpcWeight:
+          type: number
+        freshnessWeight:
+          type: number
+      required:
+        - projectId
+        - volumeWeight
+        - kdWeight
+        - intentWeight
+        - cpcWeight
+        - freshnessWeight
+
+    UpdateScoreSettingsBody:
+      type: object
+      properties:
+        volumeWeight:
+          type: number
+        kdWeight:
+          type: number
+        intentWeight:
+          type: number
+        cpcWeight:
+          type: number
+        freshnessWeight:
+          type: number
+
+    KeywordCluster:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        tenantId:
+          type: integer
+        label:
+          type: string
+        pillarTopic:
+          type: ["string", "null"]
+        clusterType:
+          type: string
+          enum: [pillar, cluster, supporting]
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        keywordCount:
+          type: integer
+        avgScore:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - projectId
+        - tenantId
+        - label
+        - clusterType
+        - status
+        - keywordCount
+        - createdAt
+        - updatedAt
+
+    CreateClusterBody:
+      type: object
+      properties:
+        label:
+          type: string
+        pillarTopic:
+          type: string
+        clusterType:
+          type: string
+          enum: [pillar, cluster, supporting]
+      required:
+        - label
+
+    UpdateClusterBody:
+      type: object
+      properties:
+        label:
+          type: string
+        pillarTopic:
+          type: string
+        clusterType:
+          type: string
+          enum: [pillar, cluster, supporting]
+
+    AiTask:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: ["integer", "null"]
+        tenantId:
+          type: integer
+        taskType:
+          type: string
+          enum: [cluster_keywords, generate_brief]
+        provider:
+          type: string
+          enum: [mock, openai, anthropic]
+        status:
+          type: string
+          enum: [queued, running, awaiting_approval, approved, rejected, completed, failed]
+        input:
+          type: object
+        output:
+          type: ["object", "null"]
+        error:
+          type: ["string", "null"]
+        createdBy:
+          type: integer
+        approvedBy:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - taskType
+        - provider
+        - status
+        - input
+        - createdBy
+        - createdAt
+        - updatedAt
+
+    TopicMap:
+      type: object
+      properties:
+        projectId:
+          type: integer
+        authorityScore:
+          type: number
+        totalClusters:
+          type: integer
+        approvedClusters:
+          type: integer
+        pillars:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopicPillar"
+      required:
+        - projectId
+        - authorityScore
+        - totalClusters
+        - approvedClusters
+        - pillars
+
+    TopicPillar:
+      type: object
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        keywordCount:
+          type: integer
+        clusters:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeywordCluster"
+      required:
+        - id
+        - label
+        - keywordCount
+        - clusters
+
+    RoadmapItem:
+      type: object
+      properties:
+        clusterId:
+          type: integer
+        clusterLabel:
+          type: string
+        pillarTopic:
+          type: ["string", "null"]
+        keywordCount:
+          type: integer
+        avgScore:
+          type: ["number", "null"]
+        clusterStatus:
+          type: string
+        briefStatus:
+          type: ["string", "null"]
+        briefId:
+          type: ["integer", "null"]
+        priority:
+          type: integer
+      required:
+        - clusterId
+        - clusterLabel
+        - keywordCount
+        - clusterStatus
+        - priority
+
+    ContentBrief:
+      type: object
+      properties:
+        id:
+          type: integer
+        clusterId:
+          type: ["integer", "null"]
+        projectId:
+          type: integer
+        tenantId:
+          type: integer
+        title:
+          type: string
+        outline:
+          type: ["object", "null"]
+        targetWordCount:
+          type: ["integer", "null"]
+        status:
+          type: string
+          enum: [draft, approved, in_progress, published]
+        assignedTo:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - projectId
+        - tenantId
+        - title
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateBriefBody:
+      type: object
+      properties:
+        clusterId:
+          type: integer
+        title:
+          type: string
+        targetWordCount:
+          type: integer
+      required:
+        - title
+
+    UpdateBriefBody:
+      type: object
+      properties:
+        title:
+          type: string
+        outline:
+          type: object
+        targetWordCount:
+          type: integer
+        status:
+          type: string
+          enum: [draft, approved, in_progress, published]
+        assignedTo:
+          type: integer
+
+    Report:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        tenantId:
+          type: integer
+        type:
+          type: string
+          enum: [project_summary, topical_authority, content_pipeline]
+        format:
+          type: string
+          enum: [pdf, csv, json]
+        generatedAt:
+          type: ["string", "null"]
+        fileUrl:
+          type: ["string", "null"]
+        data:
+          type: ["object", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - projectId
+        - tenantId
+        - type
+        - format
+        - createdAt
+
+    GenerateReportBody:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [project_summary, topical_authority, content_pipeline]
+        format:
+          type: string
+          enum: [pdf, csv, json]
+      required:
+        - type
+        - format
+
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          enum: [solo, agency, enterprise]
+        displayName:
+          type: string
+        priceMonthly:
+          type: integer
+        seats:
+          type: integer
+        projectsMax:
+          type: integer
+        aiTasksPerMonth:
+          type: integer
+        whiteLabelEnabled:
+          type: boolean
+      required:
+        - id
+        - name
+        - displayName
+        - priceMonthly
+        - seats
+        - projectsMax
+        - aiTasksPerMonth
+        - whiteLabelEnabled
+
+    Subscription:
+      type: object
+      properties:
+        plan:
+          type: string
+          enum: [solo, agency, enterprise]
+        status:
+          type: string
+        seatsUsed:
+          type: integer
+        seatsMax:
+          type: integer
+        currentPeriodEnd:
+          type: ["string", "null"]
+        stripeSubscriptionId:
+          type: ["string", "null"]
+        cancelAtPeriodEnd:
+          type: boolean
+      required:
+        - plan
+        - status
+        - seatsUsed
+        - seatsMax
+        - cancelAtPeriodEnd
+
+    CreateCheckoutBody:
+      type: object
+      properties:
+        planId:
+          type: string
+      required:
+        - planId
+
+    CheckoutResponse:
+      type: object
+      properties:
+        url:
+          type: string
+      required:
+        - url
+
+    UsageSummary:
+      type: object
+      properties:
+        aiTasksThisMonth:
+          type: integer
+        aiTasksLimit:
+          type: integer
+        seatsUsed:
+          type: integer
+        seatsMax:
+          type: integer
+        projectsCount:
+          type: integer
+        projectsMax:
+          type: integer
+      required:
+        - aiTasksThisMonth
+        - aiTasksLimit
+        - seatsUsed
+        - seatsMax
+        - projectsCount
+        - projectsMax
 
