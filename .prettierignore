@@ -1,0 +1,7 @@
+node_modules
+dist
+build
+.replit-artifact
+**/generated/**
+pnpm-lock.yaml
+*.md

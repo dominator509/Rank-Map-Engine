@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "RankMap"
+version = "1.0.0"
+id = "artifacts/rankmap"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18575
+
+[services.development]
+run = "pnpm --filter @workspace/rankmap run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/rankmap", "run", "build" ]
+publicDir = "artifacts/rankmap/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18575"
+BASE_PATH = "/"
