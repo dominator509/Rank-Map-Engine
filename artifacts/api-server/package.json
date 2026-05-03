@@ -21,8 +21,10 @@
     "express-rate-limit": "^8.4.1",
     "express-session": "^1.19.0",
     "helmet": "^8.1.0",
+    "nodemailer": "^8.0.7",
     "pino": "^9",
-    "pino-http": "^10"
+    "pino-http": "^10",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
@@ -32,6 +34,7 @@
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.19.0",
     "@types/node": "catalog:",
+    "@types/nodemailer": "^8.0.0",
     "esbuild": "^0.27.3",
     "esbuild-plugin-pino": "^2.3.3",
     "pino-pretty": "^13",

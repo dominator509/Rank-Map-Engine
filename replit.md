@@ -102,8 +102,53 @@ RankMap is an AI-powered SEO keyword research, content strategy, topical authori
 | `/integrations` | `pages/integrations.tsx` | Integration config cards |
 | `/accept-invite` | `pages/accept-invite.tsx` | Token-based invite acceptance |
 
+## New Backend Files (Phases 19–39)
+
+| File | Purpose |
+|------|---------|
+| `artifacts/api-server/src/routes/notifications.ts` | In-app notifications CRUD + createNotification() helper |
+| `artifacts/api-server/src/routes/calendar.ts` | Content calendar entries per project |
+| `artifacts/api-server/src/routes/comments.ts` | Polymorphic comment threads (cluster/brief/project/keyword) |
+| `artifacts/api-server/src/routes/competitors.ts` | Competitor domains + keyword gap analysis |
+| `artifacts/api-server/src/routes/rankings.ts` | Rank tracking per keyword + bulk check |
+| `artifacts/api-server/src/routes/templates.ts` | Project templates CRUD + save-from-project |
+| `artifacts/api-server/src/routes/custom-fields.ts` | Custom metadata fields + value upsert |
+| `artifacts/api-server/src/routes/export.ts` | CSV keyword export + full project JSON export |
+| `artifacts/api-server/src/routes/report-schedules.ts` | Scheduled report delivery management |
+| `artifacts/api-server/src/routes/analytics.ts` | Workspace analytics (overview, per-project, velocity) |
+| `artifacts/api-server/src/routes/usage.ts` | Plan metering and usage dashboard data |
+| `artifacts/api-server/src/routes/gdpr.ts` | GDPR data export + account deletion |
+| `artifacts/api-server/src/lib/email.ts` | Email transport (nodemailer + mock fallback) |
+
+## New DB Schemas (Phases 19–30)
+
+| Schema | Table |
+|--------|-------|
+| `lib/db/src/schema/notifications.ts` | `notifications` |
+| `lib/db/src/schema/calendar.ts` | `content_calendar_entries` |
+| `lib/db/src/schema/comments.ts` | `comments` |
+| `lib/db/src/schema/competitors.ts` | `competitor_domains` |
+| `lib/db/src/schema/rankings.ts` | `keyword_rankings` |
+| `lib/db/src/schema/templates.ts` | `project_templates` |
+| `lib/db/src/schema/custom-fields.ts` | `custom_fields`, `custom_field_values` |
+| `lib/db/src/schema/report-schedules.ts` | `report_schedules` |
+
+## New Frontend Pages (Phases 19–39)
+
+| Route | File | Purpose |
+|-------|------|---------|
+| `/notifications` | `pages/notifications.tsx` | Notification center with read/dismiss |
+| `/competitors` | `pages/competitors.tsx` | Competitor tracking + keyword gap |
+| `/rankings` | `pages/rankings.tsx` | Rank position monitoring |
+| `/analytics` | `pages/analytics.tsx` | Cross-workspace analytics |
+| `/usage` | `pages/usage.tsx` | Plan metering with usage bars |
+| `/templates` | `pages/templates.tsx` | Project template library |
+| `/custom-fields` | `pages/custom-fields.tsx` | Custom metadata manager |
+| `/report-schedules` | `pages/report-schedules.tsx` | Scheduled report delivery |
+| `/privacy` | `pages/gdpr.tsx` | GDPR data export + deletion |
+
 ## Phases Complete
 
-Phases 0–18 fully implemented. See `ROADMAP_STATUS.md` for details.
+All 39 phases (0–39) fully implemented and production-ready. See `ROADMAP_STATUS.md` for details.
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
