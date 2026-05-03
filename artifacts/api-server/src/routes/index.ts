@@ -59,6 +59,15 @@ router.use(exportRouter);
 router.use(reportSchedulesRouter);
 router.use(analyticsRouter);
 router.use(usageRouter);
+router.use((req, res, next) => {
+  if (req.path === "/privacy/export") {
+    req.url = "/gdpr/export";
+  }
+  if (req.path === "/privacy/me") {
+    req.url = "/gdpr/me";
+  }
+  next();
+});
 router.use(gdprRouter);
 
 export default router;
