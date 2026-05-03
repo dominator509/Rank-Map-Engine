@@ -1,9 +1,32 @@
-import { useParams, Link, useLocation } from "wouter";
+import { useParams, Link } from "wouter";
 import { useGetProject, getGetProjectQueryKey } from "@workspace/api-client-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { KeywordsTab } from "@/components/project/keywords-tab";
+import { ClustersTab } from "@/components/project/clusters-tab";
+import { TopicMapTab } from "@/components/project/topic-map-tab";
+import { RoadmapTab } from "@/components/project/roadmap-tab";
+import { BriefsTab } from "@/components/project/briefs-tab";
+import { ReportsTab } from "@/components/project/reports-tab";
+import { useLocation } from "wouter";
+
+const STATUS_BADGE: Record<string, string> = {
+  active: "bg-green-500/10 text-green-600 border-green-200",
+  paused: "bg-amber-500/10 text-amber-600 border-amber-200",
+  archived: "bg-slate-500/10 text-slate-500 border-slate-200",
+};
+
+const TABS = [
+  { value: "keywords", label: "Keywords" },
+  { value: "clusters", label: "Clusters" },
+  { value: "topic-map", label: "Topic Map" },
+  { value: "roadmap", label: "Roadmap" },
+  { value: "briefs", label: "Briefs" },
+  { value: "reports", label: "Reports" },
+];
 
 export default function ProjectDetail() {
   const { clientId, projectId, tab = "keywords" } = useParams();
@@ -12,7 +35,7 @@ export default function ProjectDetail() {
   const [, setLocation] = useLocation();
 
   const { data: project, isLoading } = useGetProject(pId, {
-    query: { enabled: !!pId, queryKey: getGetProjectQueryKey(pId) }
+    query: { enabled: !!pId, queryKey: getGetProjectQueryKey(pId) },
   });
 
   const handleTabChange = (val: string) => {
@@ -20,63 +43,61 @@ export default function ProjectDetail() {
   };
 
   if (isLoading) {
-    return <div className="p-8"><Skeleton className="h-12 w-1/3 mb-8" /></div>;
+    return (
+      <div className="p-8 space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
   }
 
-  if (!project) return <div className="p-8 text-destructive">Project not found</div>;
+  if (!project) {
+    return (
+      <div className="p-8 text-destructive">
+        Project not found.
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
-      <div className="shrink-0 p-8 pb-0 border-b">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="shrink-0 px-8 pt-8 pb-0 border-b bg-background">
+        <div className="max-w-7xl mx-auto space-y-5">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
-              <Link href={`/clients/${cId}`}><ArrowLeft className="w-4 h-4" /></Link>
+              <Link href={`/clients/${cId}`}>
+                <ArrowLeft className="w-4 h-4" />
+              </Link>
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-              <p className="text-muted-foreground">{project.targetDomain}</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-0.5">
+                <h1 className="text-2xl font-bold tracking-tight truncate">{project.name}</h1>
+                <Badge
+                  variant="outline"
+                  className={`text-xs capitalize shrink-0 ${STATUS_BADGE[project.status] ?? ""}`}
+                >
+                  {project.status}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {project.targetDomain}
+                {project.locale && <span className="ml-2 opacity-60">{project.locale}</span>}
+              </p>
             </div>
           </div>
 
-          <Tabs value={tab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 space-x-6">
-              <TabsTrigger 
-                value="keywords" 
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 pb-2 pt-2"
-              >
-                Keywords
-              </TabsTrigger>
-              <TabsTrigger 
-                value="clusters"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 pb-2 pt-2"
-              >
-                Clusters
-              </TabsTrigger>
-              <TabsTrigger 
-                value="topic-map"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 pb-2 pt-2"
-              >
-                Topic Map
-              </TabsTrigger>
-              <TabsTrigger 
-                value="roadmap"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 pb-2 pt-2"
-              >
-                Roadmap
-              </TabsTrigger>
-              <TabsTrigger 
-                value="briefs"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 pb-2 pt-2"
-              >
-                Briefs
-              </TabsTrigger>
-              <TabsTrigger 
-                value="reports"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 pb-2 pt-2"
-              >
-                Reports
-              </TabsTrigger>
+          <Tabs value={tab} onValueChange={handleTabChange}>
+            <TabsList className="bg-transparent border-b-0 w-full justify-start rounded-none h-auto p-0 gap-1">
+              {TABS.map(t => (
+                <TabsTrigger
+                  key={t.value}
+                  value={t.value}
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground px-3 pb-3 pt-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {t.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </Tabs>
         </div>
@@ -84,12 +105,12 @@ export default function ProjectDetail() {
 
       <div className="flex-1 overflow-y-auto p-8">
         <div className="max-w-7xl mx-auto">
-          {tab === "keywords" && <div className="text-muted-foreground">Keyword management goes here</div>}
-          {tab === "clusters" && <div className="text-muted-foreground">Cluster management goes here</div>}
-          {tab === "topic-map" && <div className="text-muted-foreground">Topic map goes here</div>}
-          {tab === "roadmap" && <div className="text-muted-foreground">Roadmap goes here</div>}
-          {tab === "briefs" && <div className="text-muted-foreground">Content briefs go here</div>}
-          {tab === "reports" && <div className="text-muted-foreground">Reports go here</div>}
+          {tab === "keywords" && <KeywordsTab projectId={pId} />}
+          {tab === "clusters" && <ClustersTab projectId={pId} />}
+          {tab === "topic-map" && <TopicMapTab projectId={pId} />}
+          {tab === "roadmap" && <RoadmapTab projectId={pId} />}
+          {tab === "briefs" && <BriefsTab projectId={pId} />}
+          {tab === "reports" && <ReportsTab projectId={pId} />}
         </div>
       </div>
     </div>

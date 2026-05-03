@@ -199,21 +199,29 @@
 
 ---
 
-## Test Results — Phases 1–10
+## Test Results — Phases 1–10 (Full E2E Smoke Test)
 
 | Check | Result | Notes |
 |-------|--------|-------|
 | `pnpm run typecheck` | ✅ Pass | 0 errors across all 4 artifacts |
-| `GET /api/healthz` | ✅ Pass | Returns `{"status":"ok"}` |
-| `POST /api/auth/register` | ✅ Pass | Creates user + tenant, returns session cookie |
-| `POST /api/auth/login` | ✅ Pass | Authenticates, sets `connect.sid` cookie |
-| `GET /api/auth/me` | ✅ Pass | Returns authenticated user via session |
-| `POST /api/clients` | ✅ Pass | Creates client, tenant-scoped |
-| Session persistence | ✅ Pass | PostgreSQL session store, table auto-created |
+| `GET /api/healthz` | ✅ Pass | `{"status":"ok"}` |
+| `POST /api/auth/login` | ✅ Pass | Session cookie set |
+| `GET /api/tenant/dashboard` | ✅ Pass | All 7 DashboardSummary fields returned |
+| `GET /api/clients` | ✅ Pass | Tenant-scoped list |
+| `POST /api/projects` | ✅ Pass | clientId in body, tenant-scoped |
+| `GET /api/projects?clientId=x` | ✅ Pass | Filtered by client |
+| `POST /api/projects/:id/keywords/import` | ✅ Pass | 5 imported, 0 duplicates |
+| `POST /api/projects/:id/clusters/auto` | ✅ Pass | 5 clusters created, AI task queued |
+| `POST /api/projects/:id/clusters/:id/approve` | ✅ Pass | Status → approved |
+| `GET /api/projects/:id/topic-map` | ✅ Pass | Pillar/cluster hierarchy |
+| `GET /api/projects/:id/roadmap` | ✅ Pass | Priority-ranked clusters |
+| `POST /api/projects/:id/briefs` | ✅ Pass | Brief created |
+| `POST /api/projects/:id/briefs/:id/generate` | ✅ Pass | Mock AI outline generated |
+| `POST /api/projects/:id/reports` | ✅ Pass | Report generated with summary data |
+| `GET /api/billing/plans` | ✅ Pass | solo/agency/enterprise plans |
+| `GET /api/billing/usage` | ✅ Pass | aiTasksThisMonth, limits, projectsCount |
+| `GET /api/ai-tasks` | ✅ Pass | Task queue with status |
 | Frontend loads at `/` | ✅ Pass | Redirects to `/login` when unauthenticated |
-| Login page renders | ✅ Pass | Clean form, RankMap branding |
-| Auth redirect | ✅ Pass | `ProtectedRoute` redirects to `/login` |
-| No secrets committed | ✅ Pass | `.env.example` has fake values only |
 
 ---
 
@@ -238,6 +246,9 @@
 | 2026-05-03 | Phases 1–10 | Full frontend built (auth pages, dashboard, clients, projects, AI tasks, billing, settings) |
 | 2026-05-03 | Phase 1 | Fixed session table creation (`ensureSessionTable()` at startup) |
 | 2026-05-03 | All | Full workspace typecheck passes clean (0 errors) |
+| 2026-05-03 | Phase 2 | Added flat `GET/POST /api/projects` routes (spec-aligned); clientId in body for create |
+| 2026-05-03 | Phase 1 | Fixed dashboard to return all 7 DashboardSummary fields (clusterCount, briefCount, pendingApprovals, aiTasksThisMonth) |
+| 2026-05-03 | All | Full E2E smoke test passes all 10 phases end-to-end |
 | 2026-05-02 | Phase 0 | Phase 0 complete — all deliverables shipped, all checks passing |
 | 2026-05-02 | Phase 0 | Initial scaffold — artifact created, docs written, tooling configured |
 

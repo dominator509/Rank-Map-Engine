@@ -10,6 +10,60 @@ import { requireAuth, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
 
+router.get("/projects", requireAuth, async (req, res): Promise<void> => {
+  const { tenantId } = req.session.user!;
+  const clientIdRaw = req.query.clientId;
+  const clientId = clientIdRaw ? parseInt(clientIdRaw as string, 10) : undefined;
+
+  const conditions = [eq(projectsTable.tenantId, tenantId)];
+  if (clientId && !isNaN(clientId)) {
+    conditions.push(eq(projectsTable.clientId, clientId));
+  }
+
+  const projects = await db
+    .select()
+    .from(projectsTable)
+    .where(and(...conditions));
+
+  res.json(projects);
+});
+
+router.post(
+  "/projects",
+  requireAuth,
+  requireRole(["agency_admin", "agency_user", "super_admin"]),
+  async (req, res): Promise<void> => {
+    const parsed = CreateProjectBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid input", details: parsed.error.issues });
+      return;
+    }
+
+    const { tenantId } = req.session.user!;
+    const { clientId, ...rest } = parsed.data;
+
+    const [client] = await db
+      .select({ id: clientsTable.id })
+      .from(clientsTable)
+      .where(and(eq(clientsTable.id, clientId), eq(clientsTable.tenantId, tenantId)))
+      .limit(1);
+
+    if (!client) {
+      res.status(404).json({ error: "Client not found" });
+      return;
+    }
+
+    const [project] = await db
+      .insert(projectsTable)
+      .values({ ...rest, clientId, tenantId })
+      .returning();
+
+    await db.insert(projectScoreSettingsTable).values({ projectId: project.id });
+
+    res.status(201).json(project);
+  },
+);
+
 router.get("/clients/:clientId/projects", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
   const clientId = parseInt(req.params.clientId as string, 10);
