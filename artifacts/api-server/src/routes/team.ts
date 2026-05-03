@@ -8,6 +8,19 @@ import crypto from "node:crypto";
 
 const router = Router();
 
+function buildInviteUrl(token: string): string {
+  const baseUrl = process.env.APP_URL;
+  if (!baseUrl) {
+    return `/accept-invite?token=${token}`;
+  }
+
+  try {
+    return new URL(`/accept-invite?token=${token}`, baseUrl).toString();
+  } catch {
+    return `/accept-invite?token=${token}`;
+  }
+}
+
 router.get("/team", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
   const members = await db
@@ -132,7 +145,7 @@ router.post(
     const [existingUser] = await db
       .select({ id: usersTable.id })
       .from(usersTable)
-      .where(eq(usersTable.email, email.toLowerCase()))
+      .where(and(eq(usersTable.email, email.toLowerCase()), eq(usersTable.tenantId, tenantId)))
       .limit(1);
 
     if (existingUser) {
@@ -199,7 +212,7 @@ router.post(
       role: invitation.role,
       token: invitation.token,
       expiresAt: invitation.expiresAt,
-      inviteUrl: `${process.env.APP_URL ?? ""}/accept-invite?token=${token}`,
+      inviteUrl: buildInviteUrl(token),
     });
   },
 );

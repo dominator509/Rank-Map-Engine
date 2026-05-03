@@ -8,6 +8,18 @@ import crypto from "node:crypto";
 
 const router = Router();
 
+function isAllowedWebhookUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.protocol === "https:" &&
+      ["hooks.slack.com", "discord.com", "discordapp.com", "api.notion.com", "hook.integromat.com", "hooks.zapier.com"].includes(parsed.hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 router.get("/webhooks", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
   const endpoints = await db
@@ -29,7 +41,7 @@ router.post(
       description?: string;
     };
 
-    if (!url || !/^https?:\/\/.+/.test(url)) {
+    if (!url || !isAllowedWebhookUrl(url)) {
       res.status(400).json({ error: "Valid URL is required" });
       return;
     }
@@ -87,7 +99,13 @@ router.patch(
     }
 
     const updates: Record<string, unknown> = {};
-    if (url !== undefined) updates.url = url;
+    if (url !== undefined) {
+      if (!isAllowedWebhookUrl(url)) {
+        res.status(400).json({ error: "Valid URL is required" });
+        return;
+      }
+      updates.url = url;
+    }
     if (events !== undefined) updates.events = events;
     if (isActive !== undefined) updates.isActive = isActive;
     if (description !== undefined) updates.description = description;

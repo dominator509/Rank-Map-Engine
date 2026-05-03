@@ -24,10 +24,12 @@ router.get("/gdpr/export", requireAuth, async (req, res): Promise<void> => {
     .where(and(eq(usersTable.id, userId), eq(usersTable.tenantId, tenantId)))
     .limit(1);
 
-  const [myComments, myAuditLogs, myNotifications] = await Promise.all([
+  const [myComments, myAuditLogs, myNotifications, myKeywords, myBriefs] = await Promise.all([
     db.select().from(commentsTable).where(and(eq(commentsTable.userId, userId), eq(commentsTable.tenantId, tenantId))),
     db.select().from(auditLogTable).where(and(eq(auditLogTable.userId, userId), eq(auditLogTable.tenantId, tenantId))),
     db.select().from(notificationsTable).where(and(eq(notificationsTable.userId, userId), eq(notificationsTable.tenantId, tenantId))),
+    db.select().from(keywordsTable).where(eq(keywordsTable.tenantId, tenantId)),
+    db.select().from(contentBriefsTable).where(eq(contentBriefsTable.tenantId, tenantId)),
   ]);
 
   await audit({ tenantId, userId, action: "gdpr.export", resourceType: "user", resourceId: userId, req });
@@ -40,6 +42,8 @@ router.get("/gdpr/export", requireAuth, async (req, res): Promise<void> => {
     comments: myComments,
     auditLogs: myAuditLogs,
     notifications: myNotifications,
+    keywords: myKeywords,
+    contentBriefs: myBriefs,
   });
 });
 
@@ -51,7 +55,7 @@ router.delete("/gdpr/me", requireAuth, requireRole(["agency_admin", "agency_user
   const [user] = await db
     .select({ role: usersTable.role })
     .from(usersTable)
-    .where(eq(usersTable.id, userId))
+    .where(and(eq(usersTable.id, userId), eq(usersTable.tenantId, tenantId)))
     .limit(1);
 
   if (user?.role === "agency_admin") {
@@ -70,7 +74,7 @@ router.delete("/gdpr/me", requireAuth, requireRole(["agency_admin", "agency_user
       passwordHash: "DELETED",
       avatarUrl: null,
     })
-    .where(eq(usersTable.id, userId));
+    .where(and(eq(usersTable.id, userId), eq(usersTable.tenantId, tenantId)));
 
   req.session.destroy(() => {});
   res.json({ ok: true, message: "Your account has been scheduled for deletion." });
