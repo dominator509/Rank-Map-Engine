@@ -9,10 +9,7 @@ const router = Router();
 router.get("/clients", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
 
-  const clients = await db
-    .select()
-    .from(clientsTable)
-    .where(eq(clientsTable.tenantId, tenantId));
+  const clients = await db.select().from(clientsTable).where(eq(clientsTable.tenantId, tenantId));
 
   res.json(clients);
 });

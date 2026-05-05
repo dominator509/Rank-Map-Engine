@@ -1,6 +1,6 @@
 import { useParams, Link } from "wouter";
 import { useGetProject, getGetProjectQueryKey } from "@workspace/api-client-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,11 +53,7 @@ export default function ProjectDetail() {
   }
 
   if (!project) {
-    return (
-      <div className="p-8 text-destructive">
-        Project not found.
-      </div>
-    );
+    return <div className="p-8 text-destructive">Project not found.</div>;
   }
 
   return (
@@ -89,7 +85,7 @@ export default function ProjectDetail() {
 
           <Tabs value={tab} onValueChange={handleTabChange}>
             <TabsList className="bg-transparent border-b-0 w-full justify-start rounded-none h-auto p-0 gap-1">
-              {TABS.map(t => (
+              {TABS.map((t) => (
                 <TabsTrigger
                   key={t.value}
                   value={t.value}

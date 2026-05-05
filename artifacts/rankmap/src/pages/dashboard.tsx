@@ -5,7 +5,7 @@ import { Users, Folder, Tag, Cpu, FileText, Clock } from "lucide-react";
 
 export default function Dashboard() {
   const { data: dashboard, isLoading } = useGetDashboard({
-    query: { queryKey: getGetDashboardQueryKey() }
+    query: { queryKey: getGetDashboardQueryKey() },
   });
 
   const metrics = [
@@ -36,7 +36,9 @@ export default function Dashboard() {
             {metrics.map(({ label, value, icon: Icon }) => (
               <Card key={label}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {label}
+                  </CardTitle>
                   <Icon className="w-4 h-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -50,7 +52,9 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle>AI Tasks This Month</CardTitle>
-            <CardDescription>Automated generation jobs consumed this billing period</CardDescription>
+            <CardDescription>
+              Automated generation jobs consumed this billing period
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (

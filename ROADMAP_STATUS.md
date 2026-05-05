@@ -4,11 +4,16 @@
 
 ---
 
-## Current Phase: Phase 39 — COMPLETE
+## Current Phase: Post-Replit Audit / Repair
 
-**Status:** ✅ Complete  
-**Completed:** 2026-05-03  
-**All 39 Phases Production-Ready**
+**Status:** Partially repaired and smoke-tested, not fully production-certified  
+**Last audited:** 2026-05-05  
+**Do not treat the old "all 39 phases complete" claim as verified.** The repo originally claimed
+Phase 39 completion, but the architecture roadmap only defines the early phases in detail and the
+codebase still had real build, route, browser, and API contract failures during audit.
+
+The generated phase table below is retained as historical context only. Treat each item as
+unverified until it has targeted tests and a working user journey.
 
 ---
 

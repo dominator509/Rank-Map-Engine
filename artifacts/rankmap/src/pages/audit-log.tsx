@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Shield, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 
@@ -32,8 +37,15 @@ const ACTION_COLORS: Record<string, "default" | "secondary" | "destructive" | "o
 
 function ActionBadge({ action }: { action: string }) {
   const color = ACTION_COLORS[action] ?? "secondary";
-  const label = action.split(".").map((s) => s.replace(/_/g, " ")).join(" → ");
-  return <Badge variant={color} className="text-xs font-mono">{label}</Badge>;
+  const label = action
+    .split(".")
+    .map((s) => s.replace(/_/g, " "))
+    .join(" → ");
+  return (
+    <Badge variant={color} className="text-xs font-mono">
+      {label}
+    </Badge>
+  );
 }
 
 export default function AuditLog() {
@@ -56,11 +68,19 @@ export default function AuditLog() {
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Audit Log</h1>
-          <p className="text-muted-foreground mt-1">All significant actions performed in your workspace</p>
+          <p className="text-muted-foreground mt-1">
+            All significant actions performed in your workspace
+          </p>
         </div>
 
         <div className="flex gap-3">
-          <Select value={resourceType} onValueChange={(v) => { setResourceType(v); setOffset(0); }}>
+          <Select
+            value={resourceType}
+            onValueChange={(v) => {
+              setResourceType(v);
+              setOffset(0);
+            }}
+          >
             <SelectTrigger className="w-48">
               <SelectValue placeholder="All resource types" />
             </SelectTrigger>
@@ -128,9 +148,7 @@ export default function AuditLog() {
                       )}
                     </div>
                     <div className="text-right shrink-0">
-                      {entry.userName && (
-                        <p className="text-xs font-medium">{entry.userName}</p>
-                      )}
+                      {entry.userName && <p className="text-xs font-medium">{entry.userName}</p>}
                       {entry.ipAddress && (
                         <p className="text-xs text-muted-foreground font-mono">{entry.ipAddress}</p>
                       )}
@@ -146,10 +164,20 @@ export default function AuditLog() {
                   Showing {offset + 1}–{offset + entries.length}
                 </span>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - limit))}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={offset === 0}
+                    onClick={() => setOffset(Math.max(0, offset - limit))}
+                  >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="sm" disabled={entries.length < limit} onClick={() => setOffset(offset + limit)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={entries.length < limit}
+                    onClick={() => setOffset(offset + limit)}
+                  >
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>

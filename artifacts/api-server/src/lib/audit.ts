@@ -20,10 +20,11 @@ export async function audit(params: AuditParams): Promise<void> {
       resourceType: params.resourceType,
       resourceId: params.resourceId != null ? String(params.resourceId) : null,
       metadata: params.metadata ?? null,
-      ipAddress: params.req ? (
-        (params.req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ??
-        params.req.socket.remoteAddress ?? null
-      ) : null,
+      ipAddress: params.req
+        ? ((params.req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ??
+          params.req.socket.remoteAddress ??
+          null)
+        : null,
       userAgent: params.req?.headers["user-agent"] ?? null,
     });
   } catch {

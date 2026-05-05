@@ -44,7 +44,11 @@ export async function sendEmail(payload: EmailPayload): Promise<void> {
   }
 }
 
-export function inviteEmailHtml(inviteUrl: string, inviterName: string, workspaceName: string): string {
+export function inviteEmailHtml(
+  inviteUrl: string,
+  inviterName: string,
+  workspaceName: string,
+): string {
   return `
 <!DOCTYPE html>
 <html>
@@ -61,7 +65,11 @@ export function inviteEmailHtml(inviteUrl: string, inviterName: string, workspac
 </html>`.trim();
 }
 
-export function reportReadyEmailHtml(projectName: string, reportType: string, appUrl: string): string {
+export function reportReadyEmailHtml(
+  projectName: string,
+  reportType: string,
+  appUrl: string,
+): string {
   return `
 <!DOCTYPE html>
 <html>

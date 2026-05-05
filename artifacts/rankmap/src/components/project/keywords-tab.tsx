@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  useListKeywords, getListKeywordsQueryKey,
-  useCreateKeyword, useImportKeywords, useDeleteKeyword,
-  useGetScoreSettings, getGetScoreSettingsQueryKey,
+  useListKeywords,
+  getListKeywordsQueryKey,
+  useCreateKeyword,
+  useImportKeywords,
+  useDeleteKeyword,
+  useGetScoreSettings,
+  getGetScoreSettingsQueryKey,
   useUpdateScoreSettings,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -12,8 +16,21 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -26,7 +43,9 @@ const INTENT_COLORS: Record<string, string> = {
   transactional: "bg-green-500/10 text-green-600 border-green-200",
 };
 
-interface Props { projectId: number }
+interface Props {
+  projectId: number;
+}
 
 export function KeywordsTab({ projectId }: Props) {
   const { toast } = useToast();
@@ -64,7 +83,12 @@ export function KeywordsTab({ projectId }: Props) {
           searchVolume: fd.get("searchVolume") ? Number(fd.get("searchVolume")) : undefined,
           kd: fd.get("kd") ? Number(fd.get("kd")) : undefined,
           cpc: fd.get("cpc") ? Number(fd.get("cpc")) : undefined,
-          intent: (fd.get("intent") as "informational" | "navigational" | "commercial" | "transactional") || undefined,
+          intent:
+            (fd.get("intent") as
+              | "informational"
+              | "navigational"
+              | "commercial"
+              | "transactional") || undefined,
         },
       },
       {
@@ -80,8 +104,11 @@ export function KeywordsTab({ projectId }: Props) {
   };
 
   const handleImport = () => {
-    const lines = importText.split("\n").map(l => l.trim()).filter(Boolean);
-    const kwds = lines.map(phrase => ({ phrase }));
+    const lines = importText
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const kwds = lines.map((phrase) => ({ phrase }));
     importKeywords.mutate(
       { projectId, data: { source: importSource, keywords: kwds } },
       {
@@ -89,7 +116,9 @@ export function KeywordsTab({ projectId }: Props) {
           invalidate();
           setIsImportOpen(false);
           setImportText("");
-          toast({ title: `Imported ${res.imported} keywords (${res.duplicates} duplicates skipped)` });
+          toast({
+            title: `Imported ${res.imported} keywords (${res.duplicates} duplicates skipped)`,
+          });
         },
         onError: () => toast({ title: "Import failed", variant: "destructive" }),
       },
@@ -101,7 +130,10 @@ export function KeywordsTab({ projectId }: Props) {
     deleteKeyword.mutate(
       { projectId, id },
       {
-        onSuccess: () => { invalidate(); toast({ title: "Keyword deleted" }); },
+        onSuccess: () => {
+          invalidate();
+          toast({ title: "Keyword deleted" });
+        },
         onError: () => toast({ title: "Delete failed", variant: "destructive" }),
       },
     );
@@ -155,8 +187,13 @@ export function KeywordsTab({ projectId }: Props) {
               <div className="space-y-4 py-2">
                 <div className="space-y-2">
                   <Label>Source</Label>
-                  <Select value={importSource} onValueChange={(v) => setImportSource(v as "manual" | "csv")}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={importSource}
+                    onValueChange={(v) => setImportSource(v as "manual" | "csv")}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="csv">CSV / Paste</SelectItem>
                       <SelectItem value="manual">Manual</SelectItem>
@@ -169,10 +206,10 @@ export function KeywordsTab({ projectId }: Props) {
                     placeholder={"best seo tools\nkeyword research software\n..."}
                     rows={10}
                     value={importText}
-                    onChange={e => setImportText(e.target.value)}
+                    onChange={(e) => setImportText(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    {importText.split("\n").filter(l => l.trim()).length} keywords detected
+                    {importText.split("\n").filter((l) => l.trim()).length} keywords detected
                   </p>
                 </div>
               </div>
@@ -220,7 +257,9 @@ export function KeywordsTab({ projectId }: Props) {
                   <div className="space-y-2">
                     <Label>Intent</Label>
                     <Select name="intent">
-                      <SelectTrigger><SelectValue placeholder="Select intent" /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select intent" />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="informational">Informational</SelectItem>
                         <SelectItem value="navigational">Navigational</SelectItem>
@@ -246,17 +285,30 @@ export function KeywordsTab({ projectId }: Props) {
           <Button variant="ghost" size="sm" className="text-muted-foreground">
             <Settings2 className="w-4 h-4 mr-2" />
             Score Weights
-            <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${isSettingsOpen ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`w-4 h-4 ml-1 transition-transform ${isSettingsOpen ? "rotate-180" : ""}`}
+            />
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent>
           {scoreSettings && (
-            <form onSubmit={handleSaveWeights} className="mt-3 p-4 border rounded-lg bg-muted/30 space-y-4">
+            <form
+              onSubmit={handleSaveWeights}
+              className="mt-3 p-4 border rounded-lg bg-muted/30 space-y-4"
+            >
               <p className="text-xs text-muted-foreground">
                 Weights must sum to 1.0. Changing weights re-scores all keywords.
               </p>
               <div className="grid grid-cols-5 gap-3">
-                {(["volumeWeight", "kdWeight", "intentWeight", "cpcWeight", "freshnessWeight"] as const).map(key => (
+                {(
+                  [
+                    "volumeWeight",
+                    "kdWeight",
+                    "intentWeight",
+                    "cpcWeight",
+                    "freshnessWeight",
+                  ] as const
+                ).map((key) => (
                   <div key={key} className="space-y-1">
                     <Label className="text-xs capitalize">{key.replace("Weight", "")}</Label>
                     <Input
@@ -280,13 +332,17 @@ export function KeywordsTab({ projectId }: Props) {
 
       {isLoading ? (
         <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full" />
+          ))}
         </div>
       ) : !keywords?.length ? (
         <div className="text-center py-16 border-2 border-dashed rounded-xl">
           <Tag className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
           <h3 className="font-medium text-lg">No keywords yet</h3>
-          <p className="text-sm text-muted-foreground mt-1">Add keywords manually or import from a CSV export.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Add keywords manually or import from a CSV export.
+          </p>
         </div>
       ) : (
         <div className="border rounded-lg overflow-hidden">
@@ -303,7 +359,7 @@ export function KeywordsTab({ projectId }: Props) {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {keywords.map(kw => (
+              {keywords.map((kw) => (
                 <tr key={kw.id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3 font-medium">{kw.phrase}</td>
                   <td className="px-4 py-3 text-right text-muted-foreground">
@@ -317,7 +373,10 @@ export function KeywordsTab({ projectId }: Props) {
                   </td>
                   <td className="px-4 py-3 text-center">
                     {kw.intent ? (
-                      <Badge variant="outline" className={`text-xs ${INTENT_COLORS[kw.intent] ?? ""}`}>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${INTENT_COLORS[kw.intent] ?? ""}`}
+                      >
                         {kw.intent}
                       </Badge>
                     ) : (
@@ -326,10 +385,7 @@ export function KeywordsTab({ projectId }: Props) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Progress
-                        value={(kw.finalScore ?? 0) * 100}
-                        className="h-1.5 flex-1"
-                      />
+                      <Progress value={(kw.finalScore ?? 0) * 100} className="h-1.5 flex-1" />
                       <span className="text-xs font-medium w-8 text-right">
                         {kw.finalScore != null ? Math.round(kw.finalScore * 100) : "—"}
                       </span>

@@ -12,10 +12,15 @@ export const integrationCredentialsTable = pgTable("integration_credentials", {
   credentials: jsonb("credentials").notNull().default({}),
   isActive: text("is_active").notNull().default("true"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
-export const insertIntegrationCredentialSchema = createInsertSchema(integrationCredentialsTable).omit({
+export const insertIntegrationCredentialSchema = createInsertSchema(
+  integrationCredentialsTable,
+).omit({
   id: true,
   createdAt: true,
   updatedAt: true,

@@ -62,12 +62,20 @@ router.post(
         .update(integrationCredentialsTable)
         .set({ credentials, isActive: "true" })
         .where(eq(integrationCredentialsTable.id, existing.id))
-        .returning({ id: integrationCredentialsTable.id, provider: integrationCredentialsTable.provider, isActive: integrationCredentialsTable.isActive });
+        .returning({
+          id: integrationCredentialsTable.id,
+          provider: integrationCredentialsTable.provider,
+          isActive: integrationCredentialsTable.isActive,
+        });
     } else {
       [result] = await db
         .insert(integrationCredentialsTable)
         .values({ tenantId, provider, credentials })
-        .returning({ id: integrationCredentialsTable.id, provider: integrationCredentialsTable.provider, isActive: integrationCredentialsTable.isActive });
+        .returning({
+          id: integrationCredentialsTable.id,
+          provider: integrationCredentialsTable.provider,
+          isActive: integrationCredentialsTable.isActive,
+        });
     }
 
     await audit({
@@ -100,49 +108,52 @@ router.delete(
         ),
       );
 
-    await audit({ tenantId, userId, action: "integration.removed", resourceType: "integration", metadata: { provider }, req });
+    await audit({
+      tenantId,
+      userId,
+      action: "integration.removed",
+      resourceType: "integration",
+      metadata: { provider },
+      req,
+    });
     res.status(204).send();
   },
 );
 
-router.post(
-  "/integrations/:provider/search",
-  requireAuth,
-  async (req, res): Promise<void> => {
-    const { tenantId } = req.session.user!;
-    const provider = req.params.provider as string;
-    const { query } = req.body as { query?: string };
+router.post("/integrations/:provider/search", requireAuth, async (req, res): Promise<void> => {
+  const { tenantId } = req.session.user!;
+  const provider = req.params.provider as string;
+  const { query } = req.body as { query?: string };
 
-    if (!query || query.trim().length === 0) {
-      res.status(400).json({ error: "query is required" });
-      return;
-    }
+  if (!query || query.trim().length === 0) {
+    res.status(400).json({ error: "query is required" });
+    return;
+  }
 
-    if (!["ahrefs", "semrush", "dataforseo"].includes(provider)) {
-      res.status(400).json({ error: "Provider not supported for keyword search" });
-      return;
-    }
+  if (!["ahrefs", "semrush", "dataforseo"].includes(provider)) {
+    res.status(400).json({ error: "Provider not supported for keyword search" });
+    return;
+  }
 
-    const [cred] = await db
-      .select({ credentials: integrationCredentialsTable.credentials })
-      .from(integrationCredentialsTable)
-      .where(
-        and(
-          eq(integrationCredentialsTable.tenantId, tenantId),
-          eq(integrationCredentialsTable.provider, provider),
-        ),
-      )
-      .limit(1);
+  const [cred] = await db
+    .select({ credentials: integrationCredentialsTable.credentials })
+    .from(integrationCredentialsTable)
+    .where(
+      and(
+        eq(integrationCredentialsTable.tenantId, tenantId),
+        eq(integrationCredentialsTable.provider, provider),
+      ),
+    )
+    .limit(1);
 
-    const credentials = (cred?.credentials ?? {}) as Record<string, string>;
-    const keywords = await fetchKeywordsFromProvider(
-      provider as AdapterProvider,
-      query.trim(),
-      credentials,
-    );
+  const credentials = (cred?.credentials ?? {}) as Record<string, string>;
+  const keywords = await fetchKeywordsFromProvider(
+    provider as AdapterProvider,
+    query.trim(),
+    credentials,
+  );
 
-    res.json(keywords);
-  },
-);
+  res.json(keywords);
+});
 
 export default router;

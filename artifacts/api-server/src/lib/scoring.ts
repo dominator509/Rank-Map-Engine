@@ -47,11 +47,7 @@ export function computeScore(
   const fresh = freshnessScore(keyword.createdAt);
 
   const raw =
-    wVol * volScore +
-    wKd * kdScore +
-    wIntent * intentScore +
-    wCpc * cpcScore +
-    wFreshness * fresh;
+    wVol * volScore + wKd * kdScore + wIntent * intentScore + wCpc * cpcScore + wFreshness * fresh;
 
   const final = Math.round(raw * 100) / 100;
 

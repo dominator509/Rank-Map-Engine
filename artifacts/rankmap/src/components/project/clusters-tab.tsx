@@ -1,17 +1,34 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  useListClusters, getListClustersQueryKey,
-  useCreateCluster, useClusterKeywords,
-  useApproveCluster, useRejectCluster, useDeleteCluster,
+  useListClusters,
+  getListClustersQueryKey,
+  useCreateCluster,
+  useClusterKeywords,
+  useApproveCluster,
+  useRejectCluster,
+  useDeleteCluster,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Zap, CheckCircle, XCircle, Trash2, Layers, RefreshCw } from "lucide-react";
 
@@ -21,7 +38,9 @@ const STATUS_BADGE: Record<string, string> = {
   rejected: "bg-red-500/10 text-red-500 border-red-200",
 };
 
-interface Props { projectId: number }
+interface Props {
+  projectId: number;
+}
 
 export function ClustersTab({ projectId }: Props) {
   const { toast } = useToast();
@@ -83,7 +102,10 @@ export function ClustersTab({ projectId }: Props) {
     approveCluster.mutate(
       { projectId, id },
       {
-        onSuccess: () => { invalidate(); toast({ title: "Cluster approved" }); },
+        onSuccess: () => {
+          invalidate();
+          toast({ title: "Cluster approved" });
+        },
       },
     );
   };
@@ -92,7 +114,10 @@ export function ClustersTab({ projectId }: Props) {
     rejectCluster.mutate(
       { projectId, id },
       {
-        onSuccess: () => { invalidate(); toast({ title: "Cluster rejected" }); },
+        onSuccess: () => {
+          invalidate();
+          toast({ title: "Cluster rejected" });
+        },
       },
     );
   };
@@ -102,16 +127,18 @@ export function ClustersTab({ projectId }: Props) {
     deleteCluster.mutate(
       { projectId, id },
       {
-        onSuccess: () => { invalidate(); toast({ title: "Cluster deleted" }); },
+        onSuccess: () => {
+          invalidate();
+          toast({ title: "Cluster deleted" });
+        },
       },
     );
   };
 
-  const filtered = filterStatus === "all"
-    ? clusters
-    : clusters?.filter(c => c.status === filterStatus);
+  const filtered =
+    filterStatus === "all" ? clusters : clusters?.filter((c) => c.status === filterStatus);
 
-  const pendingCount = clusters?.filter(c => c.status === "pending").length ?? 0;
+  const pendingCount = clusters?.filter((c) => c.status === "pending").length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -121,7 +148,9 @@ export function ClustersTab({ projectId }: Props) {
           <p className="text-sm text-muted-foreground mt-0.5">
             {clusters?.length ?? 0} cluster{clusters?.length !== 1 ? "s" : ""}
             {pendingCount > 0 && (
-              <span className="ml-2 text-amber-600 font-medium">{pendingCount} awaiting review</span>
+              <span className="ml-2 text-amber-600 font-medium">
+                {pendingCount} awaiting review
+              </span>
             )}
           </p>
         </div>
@@ -132,10 +161,15 @@ export function ClustersTab({ projectId }: Props) {
             onClick={handleAutoCluster}
             disabled={clusterKeywords.isPending}
           >
-            {clusterKeywords.isPending
-              ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Clustering...</>
-              : <><Zap className="w-4 h-4 mr-2" /> Auto-Cluster</>
-            }
+            {clusterKeywords.isPending ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Clustering...
+              </>
+            ) : (
+              <>
+                <Zap className="w-4 h-4 mr-2" /> Auto-Cluster
+              </>
+            )}
           </Button>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
@@ -160,7 +194,9 @@ export function ClustersTab({ projectId }: Props) {
                   <div className="space-y-2">
                     <Label>Cluster Type</Label>
                     <Select name="clusterType" defaultValue="cluster">
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pillar">Pillar</SelectItem>
                         <SelectItem value="cluster">Cluster</SelectItem>
@@ -181,7 +217,7 @@ export function ClustersTab({ projectId }: Props) {
       </div>
 
       <div className="flex gap-2">
-        {["all", "pending", "approved", "rejected"].map(s => (
+        {["all", "pending", "approved", "rejected"].map((s) => (
           <button
             key={s}
             onClick={() => setFilterStatus(s)}
@@ -198,7 +234,9 @@ export function ClustersTab({ projectId }: Props) {
 
       {isLoading ? (
         <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
         </div>
       ) : !filtered?.length ? (
         <div className="text-center py-16 border-2 border-dashed rounded-xl">
@@ -210,7 +248,7 @@ export function ClustersTab({ projectId }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map(cluster => (
+          {filtered.map((cluster) => (
             <div
               key={cluster.id}
               className="flex items-center gap-4 p-4 border rounded-lg hover:border-primary/30 transition-colors"
@@ -230,7 +268,9 @@ export function ClustersTab({ projectId }: Props) {
                 </div>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   {cluster.pillarTopic && <span>Pillar: {cluster.pillarTopic}</span>}
-                  <span>{cluster.keywordCount} keyword{cluster.keywordCount !== 1 ? "s" : ""}</span>
+                  <span>
+                    {cluster.keywordCount} keyword{cluster.keywordCount !== 1 ? "s" : ""}
+                  </span>
                   {cluster.avgScore != null && (
                     <span>Avg score: {Math.round(cluster.avgScore * 100)}</span>
                   )}

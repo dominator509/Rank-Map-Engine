@@ -22,33 +22,27 @@ async function assertProjectAccess(projectId: number, tenantId: number) {
   return !!p;
 }
 
-router.get(
-  "/projects/:projectId/reports",
-  requireAuth,
-  async (req, res): Promise<void> => {
-    const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
+router.get("/projects/:projectId/reports", requireAuth, async (req, res): Promise<void> => {
+  const { tenantId } = req.session.user!;
+  const projectId = parseInt(req.params.projectId as string, 10);
 
-    if (isNaN(projectId)) {
-      res.status(400).json({ error: "Invalid projectId" });
-      return;
-    }
+  if (isNaN(projectId)) {
+    res.status(400).json({ error: "Invalid projectId" });
+    return;
+  }
 
-    if (!(await assertProjectAccess(projectId, tenantId))) {
-      res.status(404).json({ error: "Project not found" });
-      return;
-    }
+  if (!(await assertProjectAccess(projectId, tenantId))) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
 
-    const reports = await db
-      .select()
-      .from(reportsTable)
-      .where(
-        and(eq(reportsTable.projectId, projectId), eq(reportsTable.tenantId, tenantId)),
-      );
+  const reports = await db
+    .select()
+    .from(reportsTable)
+    .where(and(eq(reportsTable.projectId, projectId), eq(reportsTable.tenantId, tenantId)));
 
-    res.json(reports);
-  },
-);
+  res.json(reports);
+});
 
 router.post(
   "/projects/:projectId/reports",
@@ -78,9 +72,7 @@ router.post(
       db
         .select()
         .from(keywordsTable)
-        .where(
-          and(eq(keywordsTable.projectId, projectId), eq(keywordsTable.tenantId, tenantId)),
-        ),
+        .where(and(eq(keywordsTable.projectId, projectId), eq(keywordsTable.tenantId, tenantId))),
       db
         .select()
         .from(keywordClustersTable)
@@ -110,8 +102,7 @@ router.post(
         avgFinalScore:
           keywords.length > 0
             ? Math.round(
-                (keywords.reduce((sum, k) => sum + (k.finalScore ?? 0), 0) / keywords.length) *
-                  100,
+                (keywords.reduce((sum, k) => sum + (k.finalScore ?? 0), 0) / keywords.length) * 100,
               ) / 100
             : 0,
       },
@@ -150,39 +141,35 @@ router.post(
   },
 );
 
-router.get(
-  "/projects/:projectId/reports/:id",
-  requireAuth,
-  async (req, res): Promise<void> => {
-    const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
+router.get("/projects/:projectId/reports/:id", requireAuth, async (req, res): Promise<void> => {
+  const { tenantId } = req.session.user!;
+  const projectId = parseInt(req.params.projectId as string, 10);
+  const id = parseInt(req.params.id as string, 10);
 
-    if (isNaN(projectId) || isNaN(id)) {
-      res.status(400).json({ error: "Invalid id" });
-      return;
-    }
+  if (isNaN(projectId) || isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
 
-    const [report] = await db
-      .select()
-      .from(reportsTable)
-      .where(
-        and(
-          eq(reportsTable.id, id),
-          eq(reportsTable.projectId, projectId),
-          eq(reportsTable.tenantId, tenantId),
-        ),
-      )
-      .limit(1);
+  const [report] = await db
+    .select()
+    .from(reportsTable)
+    .where(
+      and(
+        eq(reportsTable.id, id),
+        eq(reportsTable.projectId, projectId),
+        eq(reportsTable.tenantId, tenantId),
+      ),
+    )
+    .limit(1);
 
-    if (!report) {
-      res.status(404).json({ error: "Report not found" });
-      return;
-    }
+  if (!report) {
+    res.status(404).json({ error: "Report not found" });
+    return;
+  }
 
-    res.json(report);
-  },
-);
+  res.json(report);
+});
 
 router.delete(
   "/projects/:projectId/reports/:id",

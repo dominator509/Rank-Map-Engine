@@ -37,10 +37,7 @@ export async function emitWebhookEvent(
     .select()
     .from(webhookEndpointsTable)
     .where(
-      and(
-        eq(webhookEndpointsTable.tenantId, tenantId),
-        eq(webhookEndpointsTable.isActive, true),
-      ),
+      and(eq(webhookEndpointsTable.tenantId, tenantId), eq(webhookEndpointsTable.isActive, true)),
     );
 
   const active = endpoints.filter((ep) => {

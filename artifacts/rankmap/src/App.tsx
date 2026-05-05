@@ -48,33 +48,121 @@ function AppRoutes() {
       <Route path="/register" component={Register} />
       <Route path="/accept-invite" component={AcceptInvite} />
 
-      <Route path="/dashboard"><PL><Dashboard /></PL></Route>
-      <Route path="/clients"><PL><Clients /></PL></Route>
-      <Route path="/clients/:clientId"><PL><ClientDetail /></PL></Route>
-      <Route path="/clients/:clientId/projects/:projectId/:tab?"><PL><ProjectDetail /></PL></Route>
-      <Route path="/ai-tasks"><PL><AiTasks /></PL></Route>
-      <Route path="/billing"><PL><Billing /></PL></Route>
-      <Route path="/settings"><PL><Settings /></PL></Route>
+      <Route path="/dashboard">
+        <PL>
+          <Dashboard />
+        </PL>
+      </Route>
+      <Route path="/clients">
+        <PL>
+          <Clients />
+        </PL>
+      </Route>
+      <Route path="/clients/:clientId">
+        <PL>
+          <ClientDetail />
+        </PL>
+      </Route>
+      <Route path="/clients/:clientId/projects/:projectId/:tab?">
+        <PL>
+          <ProjectDetail />
+        </PL>
+      </Route>
+      <Route path="/ai-tasks">
+        <PL>
+          <AiTasks />
+        </PL>
+      </Route>
+      <Route path="/billing">
+        <PL>
+          <Billing />
+        </PL>
+      </Route>
+      <Route path="/settings">
+        <PL>
+          <Settings />
+        </PL>
+      </Route>
 
       {/* Phase 11–18 */}
-      <Route path="/team"><PL><Team /></PL></Route>
-      <Route path="/audit-log"><PL><AuditLog /></PL></Route>
-      <Route path="/api-keys"><PL><ApiKeys /></PL></Route>
-      <Route path="/webhooks"><PL><Webhooks /></PL></Route>
-      <Route path="/integrations"><PL><Integrations /></PL></Route>
+      <Route path="/team">
+        <PL>
+          <Team />
+        </PL>
+      </Route>
+      <Route path="/audit-log">
+        <PL>
+          <AuditLog />
+        </PL>
+      </Route>
+      <Route path="/api-keys">
+        <PL>
+          <ApiKeys />
+        </PL>
+      </Route>
+      <Route path="/webhooks">
+        <PL>
+          <Webhooks />
+        </PL>
+      </Route>
+      <Route path="/integrations">
+        <PL>
+          <Integrations />
+        </PL>
+      </Route>
 
       {/* Phase 19–39 */}
-      <Route path="/notifications"><PL><Notifications /></PL></Route>
-      <Route path="/competitors"><PL><Competitors /></PL></Route>
-      <Route path="/rankings"><PL><Rankings /></PL></Route>
-      <Route path="/analytics"><PL><Analytics /></PL></Route>
-      <Route path="/usage"><PL><Usage /></PL></Route>
-      <Route path="/templates"><PL><Templates /></PL></Route>
-      <Route path="/custom-fields"><PL><CustomFields /></PL></Route>
-      <Route path="/report-schedules"><PL><ReportSchedules /></PL></Route>
-      <Route path="/privacy"><PL><GDPRSettings /></PL></Route>
+      <Route path="/notifications">
+        <PL>
+          <Notifications />
+        </PL>
+      </Route>
+      <Route path="/competitors">
+        <PL>
+          <Competitors />
+        </PL>
+      </Route>
+      <Route path="/rankings">
+        <PL>
+          <Rankings />
+        </PL>
+      </Route>
+      <Route path="/analytics">
+        <PL>
+          <Analytics />
+        </PL>
+      </Route>
+      <Route path="/usage">
+        <PL>
+          <Usage />
+        </PL>
+      </Route>
+      <Route path="/templates">
+        <PL>
+          <Templates />
+        </PL>
+      </Route>
+      <Route path="/custom-fields">
+        <PL>
+          <CustomFields />
+        </PL>
+      </Route>
+      <Route path="/report-schedules">
+        <PL>
+          <ReportSchedules />
+        </PL>
+      </Route>
+      <Route path="/privacy">
+        <PL>
+          <GDPRSettings />
+        </PL>
+      </Route>
 
-      <Route path="/"><PL><Dashboard /></PL></Route>
+      <Route path="/">
+        <PL>
+          <Dashboard />
+        </PL>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );

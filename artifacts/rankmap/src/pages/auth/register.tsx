@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useRegisterUser } from "@workspace/api-client-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -37,7 +44,7 @@ export default function Register() {
             description: error.message || "An error occurred",
           });
         },
-      }
+      },
     );
   };
 
@@ -104,7 +111,9 @@ export default function Register() {
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-                {registerMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {registerMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
                 Create Account
               </Button>
               <div className="text-center text-sm text-muted-foreground">

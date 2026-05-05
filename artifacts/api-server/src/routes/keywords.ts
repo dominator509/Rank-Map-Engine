@@ -1,20 +1,13 @@
 import { Router } from "express";
 import { eq, and } from "drizzle-orm";
 import { db, keywordsTable, projectsTable, projectScoreSettingsTable } from "@workspace/db";
-import {
-  CreateKeywordBody,
-  ImportKeywordsBody,
-  UpdateKeywordBody,
-} from "@workspace/api-zod";
+import { CreateKeywordBody, ImportKeywordsBody, UpdateKeywordBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 import { computeScore, defaultSettings } from "../lib/scoring.js";
 
 const router = Router();
 
-async function assertProjectAccess(
-  projectId: number,
-  tenantId: number,
-): Promise<boolean> {
+async function assertProjectAccess(projectId: number, tenantId: number): Promise<boolean> {
   const [p] = await db
     .select({ id: projectsTable.id })
     .from(projectsTable)
@@ -32,31 +25,27 @@ async function getScoreSettings(projectId: number) {
   return s ?? defaultSettings();
 }
 
-router.get(
-  "/projects/:projectId/keywords",
-  requireAuth,
-  async (req, res): Promise<void> => {
-    const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
+router.get("/projects/:projectId/keywords", requireAuth, async (req, res): Promise<void> => {
+  const { tenantId } = req.session.user!;
+  const projectId = parseInt(req.params.projectId as string, 10);
 
-    if (isNaN(projectId)) {
-      res.status(400).json({ error: "Invalid projectId" });
-      return;
-    }
+  if (isNaN(projectId)) {
+    res.status(400).json({ error: "Invalid projectId" });
+    return;
+  }
 
-    if (!(await assertProjectAccess(projectId, tenantId))) {
-      res.status(404).json({ error: "Project not found" });
-      return;
-    }
+  if (!(await assertProjectAccess(projectId, tenantId))) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
 
-    const keywords = await db
-      .select()
-      .from(keywordsTable)
-      .where(and(eq(keywordsTable.projectId, projectId), eq(keywordsTable.tenantId, tenantId)));
+  const keywords = await db
+    .select()
+    .from(keywordsTable)
+    .where(and(eq(keywordsTable.projectId, projectId), eq(keywordsTable.tenantId, tenantId)));
 
-    res.json(keywords);
-  },
-);
+  res.json(keywords);
+});
 
 router.post(
   "/projects/:projectId/keywords",
@@ -139,25 +128,32 @@ router.post(
 
     const toInsert = rows
       .filter((r: { phrase: string }) => r.phrase && !existingPhrases.has(r.phrase.toLowerCase()))
-      .map((r: { phrase: string; searchVolume?: number; cpc?: number; kd?: number; intent?: string }) => {
-        const { rawScore, finalScore } = computeScore(r, settings);
-        return {
-          projectId,
-          tenantId,
-          phrase: r.phrase,
-          searchVolume: r.searchVolume ?? null,
-          cpc: r.cpc ?? null,
-          kd: r.kd ?? null,
-          intent: r.intent ?? null,
-          source: parsed.data.source,
-          rawScore,
-          finalScore,
-        };
-      });
+      .map(
+        (r: {
+          phrase: string;
+          searchVolume?: number;
+          cpc?: number;
+          kd?: number;
+          intent?: string;
+        }) => {
+          const { rawScore, finalScore } = computeScore(r, settings);
+          return {
+            projectId,
+            tenantId,
+            phrase: r.phrase,
+            searchVolume: r.searchVolume ?? null,
+            cpc: r.cpc ?? null,
+            kd: r.kd ?? null,
+            intent: r.intent ?? null,
+            source: parsed.data.source,
+            rawScore,
+            finalScore,
+          };
+        },
+      );
 
-    const imported = toInsert.length > 0
-      ? await db.insert(keywordsTable).values(toInsert).returning()
-      : [];
+    const imported =
+      toInsert.length > 0 ? await db.insert(keywordsTable).values(toInsert).returning() : [];
 
     const duplicates = rows.length - toInsert.length;
     res.json({
@@ -168,39 +164,35 @@ router.post(
   },
 );
 
-router.get(
-  "/projects/:projectId/keywords/:id",
-  requireAuth,
-  async (req, res): Promise<void> => {
-    const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
+router.get("/projects/:projectId/keywords/:id", requireAuth, async (req, res): Promise<void> => {
+  const { tenantId } = req.session.user!;
+  const projectId = parseInt(req.params.projectId as string, 10);
+  const id = parseInt(req.params.id as string, 10);
 
-    if (isNaN(projectId) || isNaN(id)) {
-      res.status(400).json({ error: "Invalid id" });
-      return;
-    }
+  if (isNaN(projectId) || isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
 
-    const [keyword] = await db
-      .select()
-      .from(keywordsTable)
-      .where(
-        and(
-          eq(keywordsTable.id, id),
-          eq(keywordsTable.projectId, projectId),
-          eq(keywordsTable.tenantId, tenantId),
-        ),
-      )
-      .limit(1);
+  const [keyword] = await db
+    .select()
+    .from(keywordsTable)
+    .where(
+      and(
+        eq(keywordsTable.id, id),
+        eq(keywordsTable.projectId, projectId),
+        eq(keywordsTable.tenantId, tenantId),
+      ),
+    )
+    .limit(1);
 
-    if (!keyword) {
-      res.status(404).json({ error: "Keyword not found" });
-      return;
-    }
+  if (!keyword) {
+    res.status(404).json({ error: "Keyword not found" });
+    return;
+  }
 
-    res.json(keyword);
-  },
-);
+  res.json(keyword);
+});
 
 router.patch(
   "/projects/:projectId/keywords/:id",

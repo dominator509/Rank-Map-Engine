@@ -29,10 +29,7 @@ export async function enqueueAiTask(params: AiTaskInput): Promise<number> {
 }
 
 export async function runMockAiTask(taskId: number): Promise<void> {
-  await db
-    .update(aiTasksTable)
-    .set({ status: "running" })
-    .where(eq(aiTasksTable.id, taskId));
+  await db.update(aiTasksTable).set({ status: "running" }).where(eq(aiTasksTable.id, taskId));
 
   await new Promise((r) => setTimeout(r, 50));
 

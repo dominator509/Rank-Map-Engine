@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { eq } from "drizzle-orm";
-import { db, tenantsTable, keywordsTable, projectsTable, aiTasksTable } from "@workspace/db";
+import { and, eq, gte } from "drizzle-orm";
+import { db, tenantsTable, projectsTable, aiTasksTable } from "@workspace/db";
 import { CreateCheckoutSessionBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 
@@ -121,16 +121,11 @@ router.get("/billing/usage", requireAuth, async (req, res): Promise<void> => {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const [aiTasksThisMonth, keywordCount, projectCount] = await Promise.all([
+  const [aiTasksThisMonth, projectCount] = await Promise.all([
     db
       .select({ id: aiTasksTable.id })
       .from(aiTasksTable)
-      .where(eq(aiTasksTable.tenantId, tenantId))
-      .then((rows) => rows.length),
-    db
-      .select({ id: keywordsTable.id })
-      .from(keywordsTable)
-      .where(eq(keywordsTable.tenantId, tenantId))
+      .where(and(eq(aiTasksTable.tenantId, tenantId), gte(aiTasksTable.createdAt, startOfMonth)))
       .then((rows) => rows.length),
     db
       .select({ id: projectsTable.id })

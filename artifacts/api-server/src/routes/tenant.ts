@@ -3,7 +3,6 @@ import { eq, and } from "drizzle-orm";
 import {
   db,
   tenantsTable,
-  usersTable,
   clientsTable,
   projectsTable,
   keywordsTable,
@@ -48,7 +47,8 @@ router.patch(
     const updates: Record<string, unknown> = {};
 
     if (parsed.data.name !== undefined) updates.name = parsed.data.name;
-    if (parsed.data.whiteLabelConfig !== undefined) updates.whiteLabelConfig = parsed.data.whiteLabelConfig;
+    if (parsed.data.whiteLabelConfig !== undefined)
+      updates.whiteLabelConfig = parsed.data.whiteLabelConfig;
 
     const [updated] = await db
       .update(tenantsTable)
@@ -72,24 +72,52 @@ router.get("/tenant/dashboard", requireAuth, async (req, res): Promise<void> => 
     pendingApprovals,
     aiTasksThisMonth,
   ] = await Promise.all([
-    db.select({ id: clientsTable.id }).from(clientsTable)
-      .where(eq(clientsTable.tenantId, tenantId)).then((r) => r.length),
-    db.select({ id: projectsTable.id }).from(projectsTable)
-      .where(eq(projectsTable.tenantId, tenantId)).then((r) => r.length),
-    db.select({ id: keywordsTable.id }).from(keywordsTable)
-      .where(eq(keywordsTable.tenantId, tenantId)).then((r) => r.length),
-    db.select({ id: keywordClustersTable.id }).from(keywordClustersTable)
-      .where(eq(keywordClustersTable.tenantId, tenantId)).then((r) => r.length),
-    db.select({ id: contentBriefsTable.id }).from(contentBriefsTable)
-      .where(eq(contentBriefsTable.tenantId, tenantId)).then((r) => r.length),
-    db.select({ id: aiTasksTable.id }).from(aiTasksTable)
+    db
+      .select({ id: clientsTable.id })
+      .from(clientsTable)
+      .where(eq(clientsTable.tenantId, tenantId))
+      .then((r) => r.length),
+    db
+      .select({ id: projectsTable.id })
+      .from(projectsTable)
+      .where(eq(projectsTable.tenantId, tenantId))
+      .then((r) => r.length),
+    db
+      .select({ id: keywordsTable.id })
+      .from(keywordsTable)
+      .where(eq(keywordsTable.tenantId, tenantId))
+      .then((r) => r.length),
+    db
+      .select({ id: keywordClustersTable.id })
+      .from(keywordClustersTable)
+      .where(eq(keywordClustersTable.tenantId, tenantId))
+      .then((r) => r.length),
+    db
+      .select({ id: contentBriefsTable.id })
+      .from(contentBriefsTable)
+      .where(eq(contentBriefsTable.tenantId, tenantId))
+      .then((r) => r.length),
+    db
+      .select({ id: aiTasksTable.id })
+      .from(aiTasksTable)
       .where(and(eq(aiTasksTable.tenantId, tenantId), eq(aiTasksTable.status, "awaiting_approval")))
       .then((r) => r.length),
-    db.select({ id: aiTasksTable.id }).from(aiTasksTable)
-      .where(eq(aiTasksTable.tenantId, tenantId)).then((r) => r.length),
+    db
+      .select({ id: aiTasksTable.id })
+      .from(aiTasksTable)
+      .where(eq(aiTasksTable.tenantId, tenantId))
+      .then((r) => r.length),
   ]);
 
-  res.json({ clientCount, projectCount, keywordCount, clusterCount, briefCount, pendingApprovals, aiTasksThisMonth });
+  res.json({
+    clientCount,
+    projectCount,
+    keywordCount,
+    clusterCount,
+    briefCount,
+    pendingApprovals,
+    aiTasksThisMonth,
+  });
 });
 
 export default router;

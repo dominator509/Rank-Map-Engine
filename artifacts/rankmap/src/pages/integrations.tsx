@@ -5,10 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Plug, CheckCircle2, XCircle, Trash2, Settings } from "lucide-react";
+import { Plug, CheckCircle2, Trash2, Settings } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 
@@ -32,7 +38,9 @@ const PROVIDERS = [
     id: "semrush",
     name: "SEMrush",
     description: "Import keyword data from SEMrush Keyword Analytics",
-    fields: [{ key: "apiKey", label: "API Key", type: "password", placeholder: "Your SEMrush API key" }],
+    fields: [
+      { key: "apiKey", label: "API Key", type: "password", placeholder: "Your SEMrush API key" },
+    ],
     docsUrl: "https://developer.semrush.com/api/",
   },
   {
@@ -49,7 +57,14 @@ const PROVIDERS = [
     id: "google_search_console",
     name: "Google Search Console",
     description: "Import real-world search performance data",
-    fields: [{ key: "accessToken", label: "Access Token", type: "password", placeholder: "OAuth access token" }],
+    fields: [
+      {
+        key: "accessToken",
+        label: "Access Token",
+        type: "password",
+        placeholder: "OAuth access token",
+      },
+    ],
     docsUrl: "https://developers.google.com/webmaster-tools",
   },
 ];
@@ -57,7 +72,7 @@ const PROVIDERS = [
 export default function Integrations() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [configuring, setConfiguring] = useState<typeof PROVIDERS[0] | null>(null);
+  const [configuring, setConfiguring] = useState<(typeof PROVIDERS)[0] | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
 
   const { data: integrations, isLoading } = useQuery<Integration[]>({
@@ -66,10 +81,11 @@ export default function Integrations() {
   });
 
   const saveIntegration = useMutation({
-    mutationFn: () => customFetch("/api/integrations", {
-      method: "POST",
-      body: JSON.stringify({ provider: configuring?.id, credentials: formValues }),
-    }),
+    mutationFn: () =>
+      customFetch("/api/integrations", {
+        method: "POST",
+        body: JSON.stringify({ provider: configuring?.id, credentials: formValues }),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["integrations"] });
       setConfiguring(null);
@@ -80,8 +96,12 @@ export default function Integrations() {
   });
 
   const removeIntegration = useMutation({
-    mutationFn: (provider: string) => customFetch(`/api/integrations/${provider}`, { method: "DELETE" }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["integrations"] }); toast({ title: "Integration removed" }); },
+    mutationFn: (provider: string) =>
+      customFetch(`/api/integrations/${provider}`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      toast({ title: "Integration removed" });
+    },
   });
 
   const connectedIds = new Set(integrations?.map((i) => i.provider) ?? []);
@@ -91,12 +111,16 @@ export default function Integrations() {
       <div className="max-w-4xl mx-auto space-y-8">
         <div>
           <h1 className="text-2xl font-bold">Integrations</h1>
-          <p className="text-muted-foreground mt-1">Connect external data sources to import keyword data</p>
+          <p className="text-muted-foreground mt-1">
+            Connect external data sources to import keyword data
+          </p>
         </div>
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-40 w-full" />
+            ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,8 +136,12 @@ export default function Integrations() {
                       </div>
                       <Badge variant={isConnected ? "default" : "secondary"} className="text-xs">
                         {isConnected ? (
-                          <><CheckCircle2 className="w-3 h-3 mr-1" /> Connected</>
-                        ) : "Not connected"}
+                          <>
+                            <CheckCircle2 className="w-3 h-3 mr-1" /> Connected
+                          </>
+                        ) : (
+                          "Not connected"
+                        )}
                       </Badge>
                     </div>
                     <CardDescription className="text-xs">{provider.description}</CardDescription>
@@ -123,7 +151,10 @@ export default function Integrations() {
                       variant={isConnected ? "outline" : "default"}
                       size="sm"
                       className="flex-1"
-                      onClick={() => { setConfiguring(provider); setFormValues({}); }}
+                      onClick={() => {
+                        setConfiguring(provider);
+                        setFormValues({});
+                      }}
                     >
                       <Settings className="w-3.5 h-3.5 mr-1.5" />
                       {isConnected ? "Reconfigure" : "Configure"}
@@ -133,7 +164,10 @@ export default function Integrations() {
                         variant="ghost"
                         size="sm"
                         className="text-destructive h-8 w-8 p-0"
-                        onClick={() => { if (confirm(`Remove ${provider.name} integration?`)) removeIntegration.mutate(provider.id); }}
+                        onClick={() => {
+                          if (confirm(`Remove ${provider.name} integration?`))
+                            removeIntegration.mutate(provider.id);
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -145,7 +179,15 @@ export default function Integrations() {
           </div>
         )}
 
-        <Dialog open={!!configuring} onOpenChange={(o) => { if (!o) { setConfiguring(null); setFormValues({}); } }}>
+        <Dialog
+          open={!!configuring}
+          onOpenChange={(o) => {
+            if (!o) {
+              setConfiguring(null);
+              setFormValues({});
+            }
+          }}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Configure {configuring?.name}</DialogTitle>
@@ -159,20 +201,29 @@ export default function Integrations() {
                       type={field.type}
                       placeholder={field.placeholder}
                       value={formValues[field.key] ?? ""}
-                      onChange={(e) => setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                      onChange={(e) =>
+                        setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                      }
                     />
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground">
                   Credentials are stored securely.{" "}
-                  <a href={configuring.docsUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                  <a
+                    href={configuring.docsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
                     View API docs →
                   </a>
                 </p>
                 <DialogFooter>
                   <Button
                     onClick={() => saveIntegration.mutate()}
-                    disabled={saveIntegration.isPending || Object.values(formValues).some((v) => !v.trim())}
+                    disabled={
+                      saveIntegration.isPending || Object.values(formValues).some((v) => !v.trim())
+                    }
                     className="w-full"
                   >
                     {saveIntegration.isPending ? "Saving..." : "Save Integration"}

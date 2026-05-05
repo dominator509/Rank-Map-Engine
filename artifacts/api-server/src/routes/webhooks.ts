@@ -13,7 +13,14 @@ function isAllowedWebhookUrl(url: string): boolean {
     const parsed = new URL(url);
     return (
       parsed.protocol === "https:" &&
-      ["hooks.slack.com", "discord.com", "discordapp.com", "api.notion.com", "hook.integromat.com", "hooks.zapier.com"].includes(parsed.hostname)
+      [
+        "hooks.slack.com",
+        "discord.com",
+        "discordapp.com",
+        "api.notion.com",
+        "hook.integromat.com",
+        "hooks.zapier.com",
+      ].includes(parsed.hostname)
     );
   } catch {
     return false;
@@ -35,7 +42,11 @@ router.post(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId, id: userId } = req.session.user!;
-    const { url, events = [], description } = req.body as {
+    const {
+      url,
+      events = [],
+      description,
+    } = req.body as {
       url?: string;
       events?: string[];
       description?: string;
@@ -132,7 +143,14 @@ router.delete(
       .delete(webhookEndpointsTable)
       .where(and(eq(webhookEndpointsTable.id, id), eq(webhookEndpointsTable.tenantId, tenantId)));
 
-    await audit({ tenantId, userId, action: "webhook.deleted", resourceType: "webhook", resourceId: id, req });
+    await audit({
+      tenantId,
+      userId,
+      action: "webhook.deleted",
+      resourceType: "webhook",
+      resourceId: id,
+      req,
+    });
     res.status(204).send();
   },
 );
@@ -164,12 +182,14 @@ router.post(
 router.get("/webhooks/:id/deliveries", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
   const id = parseInt(req.params.id as string, 10);
-  const limit = Math.min(parseInt(req.query.limit as string || "20", 10), 100);
+  const limit = Math.min(parseInt((req.query.limit as string) || "20", 10), 100);
 
   const deliveries = await db
     .select()
     .from(webhookDeliveriesTable)
-    .where(and(eq(webhookDeliveriesTable.endpointId, id), eq(webhookDeliveriesTable.tenantId, tenantId)))
+    .where(
+      and(eq(webhookDeliveriesTable.endpointId, id), eq(webhookDeliveriesTable.tenantId, tenantId)),
+    )
     .orderBy(desc(webhookDeliveriesTable.createdAt))
     .limit(limit);
 

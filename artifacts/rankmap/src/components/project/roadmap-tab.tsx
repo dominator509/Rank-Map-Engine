@@ -5,7 +5,9 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Download, CalendarRange } from "lucide-react";
 
-interface Props { projectId: number }
+interface Props {
+  projectId: number;
+}
 
 const CLUSTER_STATUS_BADGE: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-600 border-amber-200",
@@ -32,7 +34,9 @@ export function RoadmapTab({ projectId }: Props) {
   if (isLoading) {
     return (
       <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 w-full" />
+        ))}
       </div>
     );
   }
@@ -85,13 +89,12 @@ export function RoadmapTab({ projectId }: Props) {
                   <td className="px-4 py-3 text-muted-foreground">
                     {item.pillarTopic ?? <span className="opacity-30">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-right text-muted-foreground">{item.keywordCount}</td>
+                  <td className="px-4 py-3 text-right text-muted-foreground">
+                    {item.keywordCount}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Progress
-                        value={(item.avgScore ?? 0) * 100}
-                        className="h-1.5 flex-1"
-                      />
+                      <Progress value={(item.avgScore ?? 0) * 100} className="h-1.5 flex-1" />
                       <span className="text-xs font-medium w-8 text-right">
                         {item.avgScore != null ? Math.round(item.avgScore * 100) : "—"}
                       </span>

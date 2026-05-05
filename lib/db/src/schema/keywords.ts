@@ -17,7 +17,10 @@ export const keywordClustersTable = pgTable("keyword_clusters", {
   clusterType: text("cluster_type").notNull().default("cluster"),
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const keywordsTable = pgTable("keywords", {
@@ -41,7 +44,10 @@ export const keywordsTable = pgTable("keywords", {
   rawScore: real("raw_score"),
   finalScore: real("final_score"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const insertKeywordSchema = createInsertSchema(keywordsTable).omit({

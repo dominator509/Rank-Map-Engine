@@ -12,7 +12,10 @@ export const projectTemplatesTable = pgTable("project_templates", {
   config: jsonb("config").notNull().default({}),
   createdBy: integer("created_by").references(() => usersTable.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export type ProjectTemplate = typeof projectTemplatesTable.$inferSelect;

@@ -1,17 +1,35 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  useListBriefs, getListBriefsQueryKey,
-  useCreateBrief, useGenerateBrief, useApproveBrief, useDeleteBrief,
-  useListClusters, getListClustersQueryKey,
+  useListBriefs,
+  getListBriefsQueryKey,
+  useCreateBrief,
+  useGenerateBrief,
+  useApproveBrief,
+  useDeleteBrief,
+  useListClusters,
+  getListClustersQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Sparkles, CheckCircle, Trash2, FileText } from "lucide-react";
 
@@ -22,7 +40,9 @@ const STATUS_STYLES: Record<string, string> = {
   published: "bg-purple-500/10 text-purple-600 border-purple-200",
 };
 
-interface Props { projectId: number }
+interface Props {
+  projectId: number;
+}
 
 export function BriefsTab({ projectId }: Props) {
   const { toast } = useToast();
@@ -88,7 +108,10 @@ export function BriefsTab({ projectId }: Props) {
     approveBrief.mutate(
       { projectId, id },
       {
-        onSuccess: () => { invalidate(); toast({ title: "Brief approved" }); },
+        onSuccess: () => {
+          invalidate();
+          toast({ title: "Brief approved" });
+        },
         onError: () => toast({ title: "Approve failed", variant: "destructive" }),
       },
     );
@@ -99,12 +122,15 @@ export function BriefsTab({ projectId }: Props) {
     deleteBrief.mutate(
       { projectId, id },
       {
-        onSuccess: () => { invalidate(); toast({ title: "Brief deleted" }); },
+        onSuccess: () => {
+          invalidate();
+          toast({ title: "Brief deleted" });
+        },
       },
     );
   };
 
-  const approvedClusters = clusters?.filter(c => c.status === "approved") ?? [];
+  const approvedClusters = clusters?.filter((c) => c.status === "approved") ?? [];
 
   return (
     <div className="space-y-6">
@@ -135,10 +161,14 @@ export function BriefsTab({ projectId }: Props) {
                   <div className="space-y-2">
                     <Label>Link to Cluster (optional)</Label>
                     <Select value={clusterId} onValueChange={setClusterId}>
-                      <SelectTrigger><SelectValue placeholder="Select cluster" /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select cluster" />
+                      </SelectTrigger>
                       <SelectContent>
-                        {approvedClusters.map(c => (
-                          <SelectItem key={c.id} value={String(c.id)}>{c.label}</SelectItem>
+                        {approvedClusters.map((c) => (
+                          <SelectItem key={c.id} value={String(c.id)}>
+                            {c.label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -161,7 +191,9 @@ export function BriefsTab({ projectId }: Props) {
 
       {isLoading ? (
         <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full" />
+          ))}
         </div>
       ) : !briefs?.length ? (
         <div className="text-center py-16 border-2 border-dashed rounded-xl">
@@ -173,8 +205,11 @@ export function BriefsTab({ projectId }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          {briefs.map(brief => (
-            <div key={brief.id} className="flex items-start gap-4 p-4 border rounded-lg hover:border-primary/30 transition-colors">
+          {briefs.map((brief) => (
+            <div
+              key={brief.id}
+              className="flex items-start gap-4 p-4 border rounded-lg hover:border-primary/30 transition-colors"
+            >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="font-medium">{brief.title}</span>
@@ -189,9 +224,7 @@ export function BriefsTab({ projectId }: Props) {
                   {brief.targetWordCount && (
                     <span>{brief.targetWordCount.toLocaleString()} words target</span>
                   )}
-                  {brief.outline && (
-                    <span className="text-green-600">Outline generated</span>
-                  )}
+                  {brief.outline && <span className="text-green-600">Outline generated</span>}
                   <span>{new Date(brief.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>

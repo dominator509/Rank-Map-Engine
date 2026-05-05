@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { eq, and, inArray } from "drizzle-orm";
-import { db, keywordClustersTable, keywordsTable, projectsTable, aiTasksTable } from "@workspace/db";
+import { db, keywordClustersTable, keywordsTable, projectsTable } from "@workspace/db";
 import { CreateClusterBody, UpdateClusterBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 import { enqueueAiTask } from "../lib/ai.js";
@@ -19,36 +19,32 @@ async function assertProjectAccess(projectId: number, tenantId: number) {
   return !!p;
 }
 
-router.get(
-  "/projects/:projectId/clusters",
-  requireAuth,
-  async (req, res): Promise<void> => {
-    const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
+router.get("/projects/:projectId/clusters", requireAuth, async (req, res): Promise<void> => {
+  const { tenantId } = req.session.user!;
+  const projectId = parseInt(req.params.projectId as string, 10);
 
-    if (isNaN(projectId)) {
-      res.status(400).json({ error: "Invalid projectId" });
-      return;
-    }
+  if (isNaN(projectId)) {
+    res.status(400).json({ error: "Invalid projectId" });
+    return;
+  }
 
-    if (!(await assertProjectAccess(projectId, tenantId))) {
-      res.status(404).json({ error: "Project not found" });
-      return;
-    }
+  if (!(await assertProjectAccess(projectId, tenantId))) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
 
-    const clusters = await db
-      .select()
-      .from(keywordClustersTable)
-      .where(
-        and(
-          eq(keywordClustersTable.projectId, projectId),
-          eq(keywordClustersTable.tenantId, tenantId),
-        ),
-      );
+  const clusters = await db
+    .select()
+    .from(keywordClustersTable)
+    .where(
+      and(
+        eq(keywordClustersTable.projectId, projectId),
+        eq(keywordClustersTable.tenantId, tenantId),
+      ),
+    );
 
-    res.json(clusters);
-  },
-);
+  res.json(clusters);
+});
 
 router.post(
   "/projects/:projectId/clusters",
@@ -109,9 +105,7 @@ router.post(
     const keywords = await db
       .select()
       .from(keywordsTable)
-      .where(
-        and(eq(keywordsTable.projectId, projectId), eq(keywordsTable.tenantId, tenantId)),
-      );
+      .where(and(eq(keywordsTable.projectId, projectId), eq(keywordsTable.tenantId, tenantId)));
 
     if (keywords.length === 0) {
       res.status(400).json({ error: "No keywords to cluster" });
@@ -127,7 +121,13 @@ router.post(
       if (group.keywordIds.length === 0) continue;
       const [cluster] = await db
         .insert(keywordClustersTable)
-        .values({ label: group.label, projectId, tenantId, clusterType: "cluster", status: "pending" })
+        .values({
+          label: group.label,
+          projectId,
+          tenantId,
+          clusterType: "cluster",
+          status: "pending",
+        })
         .returning();
 
       await db
@@ -143,58 +143,65 @@ router.post(
       projectId,
       taskType: "cluster",
       createdBy: userId,
-      input: { clusterIds: clusters.map((c) => c.id), provider: process.env.OPENAI_API_KEY ? "openai" : "mock" },
+      input: {
+        clusterIds: clusters.map((c) => c.id),
+        provider: process.env.OPENAI_API_KEY ? "openai" : "mock",
+      },
     });
 
     await audit({
-      tenantId, userId, action: "cluster.auto_clustered", resourceType: "project", resourceId: projectId,
-      metadata: { clusterCount: clusters.length, provider: process.env.OPENAI_API_KEY ? "openai" : "mock" }, req,
+      tenantId,
+      userId,
+      action: "cluster.auto_clustered",
+      resourceType: "project",
+      resourceId: projectId,
+      metadata: {
+        clusterCount: clusters.length,
+        provider: process.env.OPENAI_API_KEY ? "openai" : "mock",
+      },
+      req,
     });
 
-    await emitWebhookEvent(tenantId, "cluster.created", { projectId, clusterCount: clusters.length });
+    await emitWebhookEvent(tenantId, "cluster.created", {
+      projectId,
+      clusterCount: clusters.length,
+    });
 
     res.status(201).json({ clusters, taskId });
   },
 );
 
-router.get(
-  "/projects/:projectId/clusters/:id",
-  requireAuth,
-  async (req, res): Promise<void> => {
-    const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
+router.get("/projects/:projectId/clusters/:id", requireAuth, async (req, res): Promise<void> => {
+  const { tenantId } = req.session.user!;
+  const projectId = parseInt(req.params.projectId as string, 10);
+  const id = parseInt(req.params.id as string, 10);
 
-    if (isNaN(projectId) || isNaN(id)) {
-      res.status(400).json({ error: "Invalid id" });
-      return;
-    }
+  if (isNaN(projectId) || isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
 
-    const [cluster] = await db
-      .select()
-      .from(keywordClustersTable)
-      .where(
-        and(
-          eq(keywordClustersTable.id, id),
-          eq(keywordClustersTable.projectId, projectId),
-          eq(keywordClustersTable.tenantId, tenantId),
-        ),
-      )
-      .limit(1);
+  const [cluster] = await db
+    .select()
+    .from(keywordClustersTable)
+    .where(
+      and(
+        eq(keywordClustersTable.id, id),
+        eq(keywordClustersTable.projectId, projectId),
+        eq(keywordClustersTable.tenantId, tenantId),
+      ),
+    )
+    .limit(1);
 
-    if (!cluster) {
-      res.status(404).json({ error: "Cluster not found" });
-      return;
-    }
+  if (!cluster) {
+    res.status(404).json({ error: "Cluster not found" });
+    return;
+  }
 
-    const keywords = await db
-      .select()
-      .from(keywordsTable)
-      .where(eq(keywordsTable.clusterId, id));
+  const keywords = await db.select().from(keywordsTable).where(eq(keywordsTable.clusterId, id));
 
-    res.json({ ...cluster, keywords });
-  },
-);
+  res.json({ ...cluster, keywords });
+});
 
 router.patch(
   "/projects/:projectId/clusters/:id",
@@ -257,10 +264,7 @@ router.delete(
       return;
     }
 
-    await db
-      .update(keywordsTable)
-      .set({ clusterId: null })
-      .where(eq(keywordsTable.clusterId, id));
+    await db.update(keywordsTable).set({ clusterId: null }).where(eq(keywordsTable.clusterId, id));
 
     await db
       .delete(keywordClustersTable)

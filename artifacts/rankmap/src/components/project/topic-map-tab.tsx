@@ -4,7 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Map, ChevronRight } from "lucide-react";
 
-interface Props { projectId: number }
+interface Props {
+  projectId: number;
+}
 
 const STATUS_BADGE: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-600 border-amber-200",
@@ -81,7 +83,7 @@ export function TopicMapTab({ projectId }: Props) {
             </p>
           ) : (
             <div className="space-y-6">
-              {topicMap.pillars.map(pillar => (
+              {topicMap.pillars.map((pillar) => (
                 <div key={pillar.id} className="border rounded-xl overflow-hidden">
                   <div className="flex items-center gap-3 px-5 py-4 bg-muted/40 border-b">
                     <div className="w-2.5 h-2.5 rounded-full bg-primary shrink-0" />
@@ -91,12 +93,17 @@ export function TopicMapTab({ projectId }: Props) {
                         {pillar.keywordCount} keyword{pillar.keywordCount !== 1 ? "s" : ""}
                       </span>
                     </div>
-                    <Badge variant="outline" className="text-xs">Pillar</Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Pillar
+                    </Badge>
                   </div>
                   {pillar.clusters.length > 0 ? (
                     <div className="divide-y">
-                      {pillar.clusters.map(cluster => (
-                        <div key={cluster.id} className="flex items-center gap-3 px-5 py-3 hover:bg-muted/20 transition-colors">
+                      {pillar.clusters.map((cluster) => (
+                        <div
+                          key={cluster.id}
+                          className="flex items-center gap-3 px-5 py-3 hover:bg-muted/20 transition-colors"
+                        >
                           <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0 ml-2" />
                           <div className="flex-1 min-w-0">
                             <span className="text-sm font-medium">{cluster.label}</span>

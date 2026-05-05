@@ -33,6 +33,21 @@ const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
+
+router.use((req, _res, next) => {
+  if (req.path === "/tenants/me") {
+    req.url = req.url.replace("/tenants/me", "/tenant");
+  }
+  if (req.path === "/dashboard") {
+    req.url = req.url.replace("/dashboard", "/tenant/dashboard");
+  }
+  req.url = req.url.replace(
+    /^\/projects\/([^/]+)\/cluster-keywords(?=$|\?)/,
+    "/projects/$1/clusters/auto",
+  );
+  next();
+});
+
 router.use(tenantRouter);
 router.use(clientsRouter);
 router.use(projectsRouter);

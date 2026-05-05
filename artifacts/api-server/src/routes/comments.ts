@@ -22,7 +22,10 @@ router.get("/comments", requireAuth, async (req, res): Promise<void> => {
   }
 
   const eid = parseInt(entityId as string, 10);
-  if (isNaN(eid)) { res.status(400).json({ error: "Invalid entityId" }); return; }
+  if (isNaN(eid)) {
+    res.status(400).json({ error: "Invalid entityId" });
+    return;
+  }
 
   const rows = await db
     .select({
@@ -56,7 +59,10 @@ router.get("/comments", requireAuth, async (req, res): Promise<void> => {
 router.post("/comments", requireAuth, async (req, res): Promise<void> => {
   const { id: userId, tenantId } = req.session.user!;
   const parsed = CommentBody.safeParse(req.body);
-  if (!parsed.success) { res.status(400).json({ error: "Invalid input", details: parsed.error.issues }); return; }
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid input", details: parsed.error.issues });
+    return;
+  }
 
   const [comment] = await db
     .insert(commentsTable)
@@ -65,25 +71,39 @@ router.post("/comments", requireAuth, async (req, res): Promise<void> => {
   res.status(201).json(comment);
 });
 
-router.patch("/comments/:id/resolve", requireAuth, requireRole(["agency_admin", "agency_user", "super_admin"]), async (req, res): Promise<void> => {
-  const { tenantId } = req.session.user!;
-  const id = parseInt(req.params.id as string, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+router.patch(
+  "/comments/:id/resolve",
+  requireAuth,
+  requireRole(["agency_admin", "agency_user", "super_admin"]),
+  async (req, res): Promise<void> => {
+    const { tenantId } = req.session.user!;
+    const id = parseInt(req.params.id as string, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
 
-  const [updated] = await db
-    .update(commentsTable)
-    .set({ resolvedAt: new Date() })
-    .where(and(eq(commentsTable.id, id), eq(commentsTable.tenantId, tenantId)))
-    .returning();
+    const [updated] = await db
+      .update(commentsTable)
+      .set({ resolvedAt: new Date() })
+      .where(and(eq(commentsTable.id, id), eq(commentsTable.tenantId, tenantId)))
+      .returning();
 
-  if (!updated) { res.status(404).json({ error: "Comment not found" }); return; }
-  res.json(updated);
-});
+    if (!updated) {
+      res.status(404).json({ error: "Comment not found" });
+      return;
+    }
+    res.json(updated);
+  },
+);
 
 router.delete("/comments/:id", requireAuth, async (req, res): Promise<void> => {
   const { id: userId, tenantId } = req.session.user!;
   const id = parseInt(req.params.id as string, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
 
   const [existing] = await db
     .select({ userId: commentsTable.userId })
@@ -91,9 +111,16 @@ router.delete("/comments/:id", requireAuth, async (req, res): Promise<void> => {
     .where(and(eq(commentsTable.id, id), eq(commentsTable.tenantId, tenantId)))
     .limit(1);
 
-  if (!existing) { res.status(404).json({ error: "Comment not found" }); return; }
-  if (existing.userId !== userId && !["agency_admin", "super_admin"].includes(req.session.user!.role)) {
-    res.status(403).json({ error: "Forbidden" }); return;
+  if (!existing) {
+    res.status(404).json({ error: "Comment not found" });
+    return;
+  }
+  if (
+    existing.userId !== userId &&
+    !["agency_admin", "super_admin"].includes(req.session.user!.role)
+  ) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
   }
 
   await db.delete(commentsTable).where(eq(commentsTable.id, id));

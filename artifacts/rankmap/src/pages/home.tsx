@@ -3,7 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHealthCheck, getHealthCheckQueryKey } from "@workspace/api-client-react";
-import { CheckCircle2, Circle, Activity, ShieldCheck, ListTodo, Route as RouteIcon } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  Activity,
+  ShieldCheck,
+  ListTodo,
+  Route as RouteIcon,
+} from "lucide-react";
 
 const ROADMAP_PHASES = [
   { id: 0, name: "Repository Init & App Shell", status: "complete" },
@@ -31,26 +38,32 @@ const SHIPPED_ITEMS = [
 ];
 
 export default function Home() {
-  const { data: healthData, isLoading: isHealthLoading, isError: isHealthError } = useHealthCheck({
-    query: { queryKey: getHealthCheckQueryKey() }
+  const {
+    data: healthData,
+    isLoading: isHealthLoading,
+    isError: isHealthError,
+  } = useHealthCheck({
+    query: { queryKey: getHealthCheckQueryKey() },
   });
 
   return (
     <MainLayout>
       <div className="flex-1 overflow-y-auto p-8 lg:p-12">
         <div className="max-w-5xl mx-auto space-y-10">
-          
           <div className="space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground" data-testid="text-app-name">
+            <h1
+              className="text-4xl font-bold tracking-tight text-foreground"
+              data-testid="text-app-name"
+            >
               RankMap Initialization
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl" data-testid="text-tagline">
-              Precision SEO instrumentation. Phase 0 systems are online, authenticated, and ready for product development.
+              Precision SEO instrumentation. Phase 0 systems are online, authenticated, and ready
+              for product development.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
             {/* Health Check Card */}
             <Card className="md:col-span-1 shadow-sm border-border/50" data-testid="card-health">
               <CardHeader className="pb-4">
@@ -67,17 +80,26 @@ export default function Home() {
                     <Skeleton className="h-4 w-2/3" />
                   </div>
                 ) : isHealthError ? (
-                  <div className="p-4 bg-destructive/10 text-destructive rounded-lg flex items-start gap-3 border border-destructive/20" data-testid="status-health-error">
+                  <div
+                    className="p-4 bg-destructive/10 text-destructive rounded-lg flex items-start gap-3 border border-destructive/20"
+                    data-testid="status-health-error"
+                  >
                     <Circle className="w-5 h-5 mt-0.5 shrink-0" />
                     <div className="text-sm font-medium">API Connection Failed</div>
                   </div>
                 ) : (
-                  <div className="p-4 bg-primary/10 text-primary-foreground rounded-lg flex items-start gap-3 border border-primary/20" data-testid="status-health-ok">
+                  <div
+                    className="p-4 bg-primary/10 text-primary-foreground rounded-lg flex items-start gap-3 border border-primary/20"
+                    data-testid="status-health-ok"
+                  >
                     <ShieldCheck className="w-5 h-5 mt-0.5 shrink-0 text-primary" />
                     <div>
                       <div className="text-sm font-semibold text-foreground">API Online</div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Status: <span className="font-mono bg-background/50 px-1 rounded">{healthData?.status || "ok"}</span>
+                        Status:{" "}
+                        <span className="font-mono bg-background/50 px-1 rounded">
+                          {healthData?.status || "ok"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -97,7 +119,11 @@ export default function Home() {
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {SHIPPED_ITEMS.map((item, i) => (
-                    <div key={i} className="flex items-start gap-2.5" data-testid={`item-shipped-${i}`}>
+                    <div
+                      key={i}
+                      className="flex items-start gap-2.5"
+                      data-testid={`item-shipped-${i}`}
+                    >
                       <CheckCircle2 className="w-4 h-4 mt-0.5 text-primary shrink-0" />
                       <span className="text-sm text-foreground/80">{item}</span>
                     </div>
@@ -118,8 +144,8 @@ export default function Home() {
               <CardContent>
                 <div className="space-y-4">
                   {ROADMAP_PHASES.map((phase) => (
-                    <div 
-                      key={phase.id} 
+                    <div
+                      key={phase.id}
                       className="flex items-center gap-4 p-3 rounded-lg border border-border/40 bg-card hover:bg-accent/20 transition-colors"
                       data-testid={`item-phase-${phase.id}`}
                     >
@@ -142,7 +168,10 @@ export default function Home() {
                       </div>
                       <div className="shrink-0">
                         {phase.status === "complete" ? (
-                          <Badge variant="default" className="bg-primary/10 text-primary hover:bg-primary/20 border-0">
+                          <Badge
+                            variant="default"
+                            className="bg-primary/10 text-primary hover:bg-primary/20 border-0"
+                          >
                             Shipped
                           </Badge>
                         ) : (
@@ -156,7 +185,6 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
-
           </div>
         </div>
       </div>

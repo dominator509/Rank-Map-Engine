@@ -17,9 +17,7 @@ export interface ClusterResult {
   keywordIds: number[];
 }
 
-export async function clusterKeywordsWithAI(
-  keywords: ClusterKeyword[],
-): Promise<ClusterResult[]> {
+export async function clusterKeywordsWithAI(keywords: ClusterKeyword[]): Promise<ClusterResult[]> {
   const provider = getProvider();
 
   if (provider === "openai") {
@@ -66,8 +64,7 @@ Return ONLY valid JSON, no explanation.`;
     const clusters = Array.isArray(parsed) ? parsed : parsed.clusters;
 
     return clusters.filter(
-      (c): c is ClusterResult =>
-        typeof c.label === "string" && Array.isArray(c.keywordIds),
+      (c): c is ClusterResult => typeof c.label === "string" && Array.isArray(c.keywordIds),
     );
   } catch (err) {
     logger.warn({ err }, "OpenAI clustering failed, falling back to mock");
@@ -174,12 +171,21 @@ Include 4-6 sections. Be specific and actionable.`;
 function generateBriefMock(title: string, keywords: string[]): BriefOutline {
   return {
     sections: [
-      { heading: "Introduction", notes: `Introduce the topic of "${title}" and why it matters for readers.` },
+      {
+        heading: "Introduction",
+        notes: `Introduce the topic of "${title}" and why it matters for readers.`,
+      },
       { heading: "Key Concepts", notes: "Define core terminology and foundational ideas." },
-      { heading: "In-Depth Analysis", notes: "Deep-dive into subtopics with supporting data and examples." },
+      {
+        heading: "In-Depth Analysis",
+        notes: "Deep-dive into subtopics with supporting data and examples.",
+      },
       { heading: "Best Practices", notes: "Actionable tips and expert recommendations." },
       { heading: "Common Mistakes to Avoid", notes: "Address common pitfalls and misconceptions." },
-      { heading: "Conclusion & Next Steps", notes: "Summarize key takeaways and include a clear call to action." },
+      {
+        heading: "Conclusion & Next Steps",
+        notes: "Summarize key takeaways and include a clear call to action.",
+      },
     ],
     targetWordCount: 1800,
     targetKeywords: keywords.slice(0, 5),

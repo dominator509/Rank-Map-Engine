@@ -5,15 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, LayoutTemplate, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 interface Template {
-  id: number; name: string; description?: string;
-  config: Record<string, unknown>; createdAt: string;
+  id: number;
+  name: string;
+  description?: string;
+  config: Record<string, unknown>;
+  createdAt: string;
 }
 
 export default function Templates() {
@@ -29,13 +38,16 @@ export default function Templates() {
   });
 
   const create = useMutation({
-    mutationFn: () => customFetch("/api/templates", {
-      method: "POST",
-      body: JSON.stringify({ name, description: description || undefined }),
-    }),
+    mutationFn: () =>
+      customFetch("/api/templates", {
+        method: "POST",
+        body: JSON.stringify({ name, description: description || undefined }),
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["/api/templates"] });
-      setOpen(false); setName(""); setDescription("");
+      setOpen(false);
+      setName("");
+      setDescription("");
       toast({ title: "Template created" });
     },
     onError: () => toast({ title: "Failed to create template", variant: "destructive" }),
@@ -54,25 +66,46 @@ export default function Templates() {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2"><LayoutTemplate className="w-7 h-7" />Project Templates</h1>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <LayoutTemplate className="w-7 h-7" />
+              Project Templates
+            </h1>
             <p className="text-muted-foreground mt-1">Save and reuse project configurations</p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-2" />New Template</Button>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                New Template
+              </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Create Template</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>Create Template</DialogTitle>
+              </DialogHeader>
               <div className="space-y-4 pt-2">
                 <div className="space-y-1.5">
                   <Label>Name</Label>
-                  <Input placeholder="e.g. E-commerce SEO Starter" value={name} onChange={(e) => setName(e.target.value)} />
+                  <Input
+                    placeholder="e.g. E-commerce SEO Starter"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Description (optional)</Label>
-                  <Textarea placeholder="What does this template set up?" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+                  <Textarea
+                    placeholder="What does this template set up?"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
+                  />
                 </div>
-                <Button className="w-full" onClick={() => create.mutate()} disabled={!name || create.isPending}>
+                <Button
+                  className="w-full"
+                  onClick={() => create.mutate()}
+                  disabled={!name || create.isPending}
+                >
                   Create Template
                 </Button>
               </div>
@@ -82,7 +115,9 @@ export default function Templates() {
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2, 3].map((i) => <div key={i} className="h-40 bg-muted rounded-xl animate-pulse" />)}
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-40 bg-muted rounded-xl animate-pulse" />
+            ))}
           </div>
         ) : (templates as Template[]).length === 0 ? (
           <Card>
@@ -100,9 +135,16 @@ export default function Templates() {
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-base">{t.name}</CardTitle>
-                      {t.description && <CardDescription className="mt-1">{t.description}</CardDescription>}
+                      {t.description && (
+                        <CardDescription className="mt-1">{t.description}</CardDescription>
+                      )}
                     </div>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive shrink-0" onClick={() => remove.mutate(t.id)}>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-destructive shrink-0"
+                      onClick={() => remove.mutate(t.id)}
+                    >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -113,7 +155,9 @@ export default function Templates() {
                     Created {format(new Date(t.createdAt), "MMM d, yyyy")}
                   </p>
                   {Object.keys(t.config).length > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1">{Object.keys(t.config).join(", ")} configured</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {Object.keys(t.config).join(", ")} configured
+                    </p>
                   )}
                 </CardContent>
               </Card>

@@ -17,7 +17,10 @@ export const reportSchedulesTable = pgTable("report_schedules", {
   nextSendAt: timestamp("next_send_at", { withTimezone: true }),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export type ReportSchedule = typeof reportSchedulesTable.$inferSelect;

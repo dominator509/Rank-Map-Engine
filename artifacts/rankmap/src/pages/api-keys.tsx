@@ -4,8 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Key, Plus, Trash2, Copy, Eye, EyeOff } from "lucide-react";
@@ -37,7 +43,8 @@ export default function ApiKeys() {
   });
 
   const createKey = useMutation({
-    mutationFn: () => customFetch("/api/api-keys", { method: "POST", body: JSON.stringify({ name }) }),
+    mutationFn: () =>
+      customFetch("/api/api-keys", { method: "POST", body: JSON.stringify({ name }) }),
     onSuccess: (data: ApiKey & { key: string }) => {
       queryClient.invalidateQueries({ queryKey: ["api-keys"] });
       setNewKey(data.key);
@@ -62,9 +69,20 @@ export default function ApiKeys() {
             <h1 className="text-2xl font-bold">API Keys</h1>
             <p className="text-muted-foreground mt-1">Programmatic access to RankMap</p>
           </div>
-          <Dialog open={isCreateOpen} onOpenChange={(o) => { setIsCreateOpen(o); if (!o) { setNewKey(null); setName(""); } }}>
+          <Dialog
+            open={isCreateOpen}
+            onOpenChange={(o) => {
+              setIsCreateOpen(o);
+              if (!o) {
+                setNewKey(null);
+                setName("");
+              }
+            }}
+          >
             <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-2" /> New API Key</Button>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" /> New API Key
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -73,29 +91,64 @@ export default function ApiKeys() {
               {newKey ? (
                 <div className="space-y-4">
                   <div className="rounded-md bg-amber-50 border border-amber-200 p-4">
-                    <p className="text-sm font-medium text-amber-800 mb-2">Copy your API key now — you won't see it again.</p>
+                    <p className="text-sm font-medium text-amber-800 mb-2">
+                      Copy your API key now — you won't see it again.
+                    </p>
                     <div className="flex items-center gap-2">
                       <code className="text-xs font-mono flex-1 break-all">
                         {showKey ? newKey : `${newKey.slice(0, 14)}${"•".repeat(40)}`}
                       </code>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setShowKey(!showKey)}>
-                        {showKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => setShowKey(!showKey)}
+                      >
+                        {showKey ? (
+                          <EyeOff className="w-3.5 h-3.5" />
+                        ) : (
+                          <Eye className="w-3.5 h-3.5" />
+                        )}
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { navigator.clipboard.writeText(newKey); toast({ title: "Copied!" }); }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => {
+                          navigator.clipboard.writeText(newKey);
+                          toast({ title: "Copied!" });
+                        }}
+                      >
                         <Copy className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </div>
-                  <Button onClick={() => { setIsCreateOpen(false); setNewKey(null); }} className="w-full">Done</Button>
+                  <Button
+                    onClick={() => {
+                      setIsCreateOpen(false);
+                      setNewKey(null);
+                    }}
+                    className="w-full"
+                  >
+                    Done
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="space-y-1.5">
                     <Label>Key name</Label>
-                    <Input placeholder="e.g. CI/CD Pipeline" value={name} onChange={(e) => setName(e.target.value)} />
+                    <Input
+                      placeholder="e.g. CI/CD Pipeline"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
                   </div>
                   <DialogFooter>
-                    <Button onClick={() => createKey.mutate()} disabled={!name.trim() || createKey.isPending} className="w-full">
+                    <Button
+                      onClick={() => createKey.mutate()}
+                      disabled={!name.trim() || createKey.isPending}
+                      className="w-full"
+                    >
                       {createKey.isPending ? "Creating..." : "Create Key"}
                     </Button>
                   </DialogFooter>
@@ -108,12 +161,16 @@ export default function ApiKeys() {
         <Card>
           <CardHeader>
             <CardTitle>Active Keys</CardTitle>
-            <CardDescription>API keys grant full access to your workspace. Keep them secret.</CardDescription>
+            <CardDescription>
+              API keys grant full access to your workspace. Keep them secret.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-14 w-full" />
+                ))}
               </div>
             ) : !keys || keys.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground">
@@ -127,18 +184,29 @@ export default function ApiKeys() {
                     <Key className="w-4 h-4 text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm">{k.name}</p>
-                      <p className="text-xs text-muted-foreground font-mono">{k.keyPrefix}{"•".repeat(20)}</p>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        {k.keyPrefix}
+                        {"•".repeat(20)}
+                      </p>
                     </div>
                     <div className="text-right text-xs text-muted-foreground">
                       <p>Created {new Date(k.createdAt).toLocaleDateString()}</p>
-                      {k.lastUsedAt && <p>Last used {new Date(k.lastUsedAt).toLocaleDateString()}</p>}
-                      {k.expiresAt && <p className="text-amber-600">Expires {new Date(k.expiresAt).toLocaleDateString()}</p>}
+                      {k.lastUsedAt && (
+                        <p>Last used {new Date(k.lastUsedAt).toLocaleDateString()}</p>
+                      )}
+                      {k.expiresAt && (
+                        <p className="text-amber-600">
+                          Expires {new Date(k.expiresAt).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="text-destructive h-8 w-8 p-0"
-                      onClick={() => { if (confirm("Revoke this API key?")) revokeKey.mutate(k.id); }}
+                      onClick={() => {
+                        if (confirm("Revoke this API key?")) revokeKey.mutate(k.id);
+                      }}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -154,9 +222,12 @@ export default function ApiKeys() {
             <CardTitle>Usage</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
-            <p>Include your API key in requests using the <code className="bg-muted px-1 rounded text-xs">Authorization</code> header:</p>
+            <p>
+              Include your API key in requests using the{" "}
+              <code className="bg-muted px-1 rounded text-xs">Authorization</code> header:
+            </p>
             <pre className="bg-muted rounded-md p-3 text-xs font-mono overflow-x-auto">
-{`curl https://your-domain.com/api/tenant/dashboard \\
+              {`curl https://your-domain.com/api/tenant/dashboard \\
   -H "Authorization: Bearer rm_your_api_key_here"`}
             </pre>
           </CardContent>

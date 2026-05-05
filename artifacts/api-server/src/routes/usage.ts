@@ -32,15 +32,38 @@ router.get("/usage", requireAuth, async (req, res): Promise<void> => {
   ] = await Promise.all([
     db.select().from(tenantsTable).where(eq(tenantsTable.id, tenantId)).limit(1),
     db.select({ c: count() }).from(keywordsTable).where(eq(keywordsTable.tenantId, tenantId)),
-    db.select({ c: count() }).from(contentBriefsTable).where(eq(contentBriefsTable.tenantId, tenantId)),
-    db.select({ c: count() }).from(aiTasksTable).where(and(eq(aiTasksTable.tenantId, tenantId), gte(aiTasksTable.createdAt, monthStart))),
-    db.select({ c: count() }).from(reportsTable).where(and(eq(reportsTable.tenantId, tenantId), gte(reportsTable.createdAt, monthStart))),
+    db
+      .select({ c: count() })
+      .from(contentBriefsTable)
+      .where(eq(contentBriefsTable.tenantId, tenantId)),
+    db
+      .select({ c: count() })
+      .from(aiTasksTable)
+      .where(and(eq(aiTasksTable.tenantId, tenantId), gte(aiTasksTable.createdAt, monthStart))),
+    db
+      .select({ c: count() })
+      .from(reportsTable)
+      .where(and(eq(reportsTable.tenantId, tenantId), gte(reportsTable.createdAt, monthStart))),
     db.select({ c: count() }).from(usersTable).where(eq(usersTable.tenantId, tenantId)),
-    db.select({ c: count() }).from(apiKeysTable).where(and(eq(apiKeysTable.tenantId, tenantId))),
-    db.select({ c: count() }).from(webhookDeliveriesTable).where(and(eq(webhookDeliveriesTable.tenantId, tenantId), gte(webhookDeliveriesTable.createdAt, monthStart))),
+    db
+      .select({ c: count() })
+      .from(apiKeysTable)
+      .where(and(eq(apiKeysTable.tenantId, tenantId))),
+    db
+      .select({ c: count() })
+      .from(webhookDeliveriesTable)
+      .where(
+        and(
+          eq(webhookDeliveriesTable.tenantId, tenantId),
+          gte(webhookDeliveriesTable.createdAt, monthStart),
+        ),
+      ),
   ]);
 
-  const planLimits: Record<string, { keywords: number; briefs: number; aiTasks: number; seats: number }> = {
+  const planLimits: Record<
+    string,
+    { keywords: number; briefs: number; aiTasks: number; seats: number }
+  > = {
     solo: { keywords: 500, briefs: 20, aiTasks: 50, seats: 1 },
     starter: { keywords: 5000, briefs: 200, aiTasks: 500, seats: 5 },
     agency: { keywords: 50000, briefs: 2000, aiTasks: 5000, seats: 25 },

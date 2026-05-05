@@ -28,7 +28,11 @@ router.get("/api-keys", requireAuth, async (req, res): Promise<void> => {
 
 router.post("/api-keys", requireAuth, async (req, res): Promise<void> => {
   const { tenantId, id: userId } = req.session.user!;
-  const { name, scopes = [], expiresInDays } = req.body as {
+  const {
+    name,
+    scopes = [],
+    expiresInDays,
+  } = req.body as {
     name?: string;
     scopes?: string[];
     expiresInDays?: number;
@@ -95,10 +99,7 @@ router.delete("/api-keys/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  await db
-    .update(apiKeysTable)
-    .set({ revokedAt: new Date() })
-    .where(eq(apiKeysTable.id, id));
+  await db.update(apiKeysTable).set({ revokedAt: new Date() }).where(eq(apiKeysTable.id, id));
 
   await audit({
     tenantId,

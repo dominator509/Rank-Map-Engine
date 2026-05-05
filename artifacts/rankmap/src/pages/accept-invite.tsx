@@ -64,11 +64,20 @@ export default function AcceptInvite() {
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
               <Label>Full name</Label>
-              <Input placeholder="Jane Smith" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              <Input
+                placeholder="Jane Smith"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Password</Label>
-              <Input type="password" placeholder="At least 8 characters" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Input
+                type="password"
+                placeholder="At least 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Confirm password</Label>
@@ -80,7 +89,13 @@ export default function AcceptInvite() {
             <Button
               className="w-full"
               onClick={() => accept.mutate()}
-              disabled={!fullName || !password || password !== confirm || password.length < 8 || accept.isPending}
+              disabled={
+                !fullName ||
+                !password ||
+                password !== confirm ||
+                password.length < 8 ||
+                accept.isPending
+              }
             >
               {accept.isPending ? "Setting up..." : "Join Workspace"}
             </Button>

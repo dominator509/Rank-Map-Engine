@@ -19,7 +19,10 @@ export const contentCalendarEntriesTable = pgTable("content_calendar_entries", {
   assignedTo: integer("assigned_to").references(() => usersTable.id, { onDelete: "set null" }),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export type ContentCalendarEntry = typeof contentCalendarEntriesTable.$inferSelect;

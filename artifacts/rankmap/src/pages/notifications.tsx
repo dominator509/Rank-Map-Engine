@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -60,7 +59,11 @@ export default function Notifications() {
             <p className="text-muted-foreground mt-1">Your activity and alerts</p>
           </div>
           {unread.length > 0 && (
-            <Button variant="outline" onClick={() => markAllRead.mutate()} disabled={markAllRead.isPending}>
+            <Button
+              variant="outline"
+              onClick={() => markAllRead.mutate()}
+              disabled={markAllRead.isPending}
+            >
               <CheckCheck className="w-4 h-4 mr-2" />
               Mark all read
             </Button>
@@ -69,7 +72,9 @@ export default function Notifications() {
 
         {isLoading ? (
           <div className="space-y-3">
-            {[1, 2, 3].map((i) => <div key={i} className="h-20 bg-muted rounded-lg animate-pulse" />)}
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-20 bg-muted rounded-lg animate-pulse" />
+            ))}
           </div>
         ) : notifications.length === 0 ? (
           <Card>
@@ -82,7 +87,10 @@ export default function Notifications() {
         ) : (
           <div className="space-y-2">
             {notifications.map((n) => (
-              <Card key={n.id} className={n.readAt ? "opacity-60" : "border-primary/40 bg-primary/5"}>
+              <Card
+                key={n.id}
+                className={n.readAt ? "opacity-60" : "border-primary/40 bg-primary/5"}
+              >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -94,11 +102,21 @@ export default function Notifications() {
                     </div>
                     <div className="flex gap-1 shrink-0">
                       {!n.readAt && (
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => markRead.mutate(n.id)}>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
+                          onClick={() => markRead.mutate(n.id)}
+                        >
                           <Check className="w-3.5 h-3.5" />
                         </Button>
                       )}
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteNotif.mutate(n.id)}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-destructive"
+                        onClick={() => deleteNotif.mutate(n.id)}
+                      >
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>

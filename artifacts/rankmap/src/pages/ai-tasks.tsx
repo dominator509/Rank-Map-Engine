@@ -44,7 +44,7 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function AiTasks() {
   const { data: tasks, isLoading } = useListAiTasks(undefined, {
-    query: { queryKey: getListAiTasksQueryKey(), refetchInterval: 5000 }
+    query: { queryKey: getListAiTasksQueryKey(), refetchInterval: 5000 },
   });
 
   return (
@@ -80,7 +80,7 @@ export default function AiTasks() {
               </div>
             ) : (
               <div className="space-y-3">
-                {tasks.map(task => (
+                {tasks.map((task) => (
                   <div
                     key={task.id}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors"
@@ -90,7 +90,8 @@ export default function AiTasks() {
                         {task.taskType.replace(/_/g, " ")}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {task.projectId ? `Project ${task.projectId}` : "Workspace-level"} &middot; via {task.provider}
+                        {task.projectId ? `Project ${task.projectId}` : "Workspace-level"} &middot;
+                        via {task.provider}
                       </div>
                     </div>
                     <StatusBadge status={task.status} />

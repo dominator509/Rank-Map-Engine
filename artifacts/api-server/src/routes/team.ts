@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, usersTable, userInvitationsTable, tenantsTable } from "@workspace/db";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 import { audit } from "../lib/audit.js";
@@ -160,7 +160,9 @@ router.post(
       .limit(1);
 
     if (tenant && tenant.seatsUsed >= tenant.seatsMax) {
-      res.status(402).json({ error: "Seat limit reached. Upgrade your plan to invite more members." });
+      res
+        .status(402)
+        .json({ error: "Seat limit reached. Upgrade your plan to invite more members." });
       return;
     }
 
@@ -179,9 +181,7 @@ router.post(
       .limit(1);
 
     if (existing) {
-      await db
-        .delete(userInvitationsTable)
-        .where(eq(userInvitationsTable.id, existing.id));
+      await db.delete(userInvitationsTable).where(eq(userInvitationsTable.id, existing.id));
     }
 
     const [invitation] = await db
@@ -217,18 +217,19 @@ router.post(
   },
 );
 
-router.get("/team/invitations", requireAuth, requireRole(["agency_admin", "super_admin"]), async (req, res): Promise<void> => {
-  const { tenantId } = req.session.user!;
-  const invitations = await db
-    .select()
-    .from(userInvitationsTable)
-    .where(
-      and(
-        eq(userInvitationsTable.tenantId, tenantId),
-      ),
-    );
-  res.json(invitations);
-});
+router.get(
+  "/team/invitations",
+  requireAuth,
+  requireRole(["agency_admin", "super_admin"]),
+  async (req, res): Promise<void> => {
+    const { tenantId } = req.session.user!;
+    const invitations = await db
+      .select()
+      .from(userInvitationsTable)
+      .where(and(eq(userInvitationsTable.tenantId, tenantId)));
+    res.json(invitations);
+  },
+);
 
 router.delete(
   "/team/invitations/:id",

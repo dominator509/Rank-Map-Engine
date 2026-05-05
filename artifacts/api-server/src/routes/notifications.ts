@@ -30,24 +30,37 @@ router.get("/notifications/unread-count", requireAuth, async (req, res): Promise
   res.json({ count: rows.length });
 });
 
-router.patch("/notifications/:id/read", requireAuth, async (req, res): Promise<void> => {
-  const { id: userId, tenantId } = req.session.user!;
-  const id = parseInt(req.params.id as string, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
-  await db
-    .update(notificationsTable)
-    .set({ readAt: new Date() })
-    .where(and(eq(notificationsTable.id, id), eq(notificationsTable.userId, userId), eq(notificationsTable.tenantId, tenantId)));
-  res.json({ ok: true });
-});
-
 router.patch("/notifications/read-all", requireAuth, async (req, res): Promise<void> => {
   const { id: userId, tenantId } = req.session.user!;
   await db
     .update(notificationsTable)
     .set({ readAt: new Date() })
     .where(
-      and(eq(notificationsTable.userId, userId), eq(notificationsTable.tenantId, tenantId), isNull(notificationsTable.readAt)),
+      and(
+        eq(notificationsTable.userId, userId),
+        eq(notificationsTable.tenantId, tenantId),
+        isNull(notificationsTable.readAt),
+      ),
+    );
+  res.json({ ok: true });
+});
+
+router.patch("/notifications/:id/read", requireAuth, async (req, res): Promise<void> => {
+  const { id: userId, tenantId } = req.session.user!;
+  const id = parseInt(req.params.id as string, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+  await db
+    .update(notificationsTable)
+    .set({ readAt: new Date() })
+    .where(
+      and(
+        eq(notificationsTable.id, id),
+        eq(notificationsTable.userId, userId),
+        eq(notificationsTable.tenantId, tenantId),
+      ),
     );
   res.json({ ok: true });
 });
@@ -55,10 +68,19 @@ router.patch("/notifications/read-all", requireAuth, async (req, res): Promise<v
 router.delete("/notifications/:id", requireAuth, async (req, res): Promise<void> => {
   const { id: userId, tenantId } = req.session.user!;
   const id = parseInt(req.params.id as string, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
   await db
     .delete(notificationsTable)
-    .where(and(eq(notificationsTable.id, id), eq(notificationsTable.userId, userId), eq(notificationsTable.tenantId, tenantId)));
+    .where(
+      and(
+        eq(notificationsTable.id, id),
+        eq(notificationsTable.userId, userId),
+        eq(notificationsTable.tenantId, tenantId),
+      ),
+    );
   res.json({ ok: true });
 });
 

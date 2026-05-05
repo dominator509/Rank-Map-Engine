@@ -1,12 +1,16 @@
 import { Router } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, contentBriefsTable, projectsTable, aiTasksTable, keywordsTable, keywordClustersTable } from "@workspace/db";
+import {
+  db,
+  contentBriefsTable,
+  projectsTable,
+  keywordsTable,
+  keywordClustersTable,
+} from "@workspace/db";
 import { CreateBriefBody, UpdateBriefBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 import { enqueueAiTask } from "../lib/ai.js";
 import { generateBriefWithAI } from "../lib/ai-provider.js";
-import { audit } from "../lib/audit.js";
-import { emitWebhookEvent } from "../lib/webhook-emitter.js";
 
 const router = Router();
 
@@ -19,36 +23,29 @@ async function assertProjectAccess(projectId: number, tenantId: number) {
   return !!p;
 }
 
-router.get(
-  "/projects/:projectId/briefs",
-  requireAuth,
-  async (req, res): Promise<void> => {
-    const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
+router.get("/projects/:projectId/briefs", requireAuth, async (req, res): Promise<void> => {
+  const { tenantId } = req.session.user!;
+  const projectId = parseInt(req.params.projectId as string, 10);
 
-    if (isNaN(projectId)) {
-      res.status(400).json({ error: "Invalid projectId" });
-      return;
-    }
+  if (isNaN(projectId)) {
+    res.status(400).json({ error: "Invalid projectId" });
+    return;
+  }
 
-    if (!(await assertProjectAccess(projectId, tenantId))) {
-      res.status(404).json({ error: "Project not found" });
-      return;
-    }
+  if (!(await assertProjectAccess(projectId, tenantId))) {
+    res.status(404).json({ error: "Project not found" });
+    return;
+  }
 
-    const briefs = await db
-      .select()
-      .from(contentBriefsTable)
-      .where(
-        and(
-          eq(contentBriefsTable.projectId, projectId),
-          eq(contentBriefsTable.tenantId, tenantId),
-        ),
-      );
+  const briefs = await db
+    .select()
+    .from(contentBriefsTable)
+    .where(
+      and(eq(contentBriefsTable.projectId, projectId), eq(contentBriefsTable.tenantId, tenantId)),
+    );
 
-    res.json(briefs);
-  },
-);
+  res.json(briefs);
+});
 
 router.post(
   "/projects/:projectId/briefs",
@@ -83,39 +80,35 @@ router.post(
   },
 );
 
-router.get(
-  "/projects/:projectId/briefs/:id",
-  requireAuth,
-  async (req, res): Promise<void> => {
-    const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
+router.get("/projects/:projectId/briefs/:id", requireAuth, async (req, res): Promise<void> => {
+  const { tenantId } = req.session.user!;
+  const projectId = parseInt(req.params.projectId as string, 10);
+  const id = parseInt(req.params.id as string, 10);
 
-    if (isNaN(projectId) || isNaN(id)) {
-      res.status(400).json({ error: "Invalid id" });
-      return;
-    }
+  if (isNaN(projectId) || isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
 
-    const [brief] = await db
-      .select()
-      .from(contentBriefsTable)
-      .where(
-        and(
-          eq(contentBriefsTable.id, id),
-          eq(contentBriefsTable.projectId, projectId),
-          eq(contentBriefsTable.tenantId, tenantId),
-        ),
-      )
-      .limit(1);
+  const [brief] = await db
+    .select()
+    .from(contentBriefsTable)
+    .where(
+      and(
+        eq(contentBriefsTable.id, id),
+        eq(contentBriefsTable.projectId, projectId),
+        eq(contentBriefsTable.tenantId, tenantId),
+      ),
+    )
+    .limit(1);
 
-    if (!brief) {
-      res.status(404).json({ error: "Brief not found" });
-      return;
-    }
+  if (!brief) {
+    res.status(404).json({ error: "Brief not found" });
+    return;
+  }
 
-    res.json(brief);
-  },
-);
+  res.json(brief);
+});
 
 router.patch(
   "/projects/:projectId/briefs/:id",

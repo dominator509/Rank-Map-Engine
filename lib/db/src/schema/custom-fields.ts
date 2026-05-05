@@ -27,7 +27,10 @@ export const customFieldValuesTable = pgTable("custom_field_values", {
   entityId: integer("entity_id").notNull(),
   value: jsonb("value"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export type CustomField = typeof customFieldsTable.$inferSelect;

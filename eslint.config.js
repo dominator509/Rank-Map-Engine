@@ -19,6 +19,17 @@ export default [
   // Base JS rules
   js.configs.recommended,
 
+  {
+    files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+
   // TypeScript files
   {
     files: ["**/*.ts", "**/*.tsx"],
@@ -39,6 +50,8 @@ export default [
     rules: {
       ...tsPlugin.configs.recommended.rules,
 
+      "no-undef": "off",
+
       // No console.log in server code
       "no-console": ["warn", { allow: ["warn", "error"] }],
 
@@ -47,29 +60,24 @@ export default [
         "error",
         {
           selector: "Literal[value=/sk-[a-zA-Z0-9]{20,}/]",
-          message:
-            "Hardcoded API key detected. Use environment variables instead.",
+          message: "Hardcoded API key detected. Use environment variables instead.",
         },
         {
           selector: "Literal[value=/pk_(live|test)_[a-zA-Z0-9]{20,}/]",
-          message:
-            "Hardcoded Stripe key detected. Use environment variables instead.",
+          message: "Hardcoded Stripe key detected. Use environment variables instead.",
         },
         {
           selector: "Literal[value=/whsec_[a-zA-Z0-9]{20,}/]",
-          message:
-            "Hardcoded Stripe webhook secret detected. Use environment variables instead.",
+          message: "Hardcoded Stripe webhook secret detected. Use environment variables instead.",
         },
         {
-          selector:
-            "Literal[value=/-----BEGIN (RSA |EC )?PRIVATE KEY-----/]",
-          message:
-            "Hardcoded private key detected. Use environment variables instead.",
+          selector: "Literal[value=/-----BEGIN (RSA |EC )?PRIVATE KEY-----/]",
+          message: "Hardcoded private key detected. Use environment variables instead.",
         },
       ],
 
       // TypeScript-specific relaxations for Phase 0
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
@@ -94,13 +102,7 @@ export default [
 
   // Config / script files — allow console
   {
-    files: [
-      "*.config.ts",
-      "*.config.js",
-      "*.config.mjs",
-      "scripts/**/*.ts",
-      "vite.config.ts",
-    ],
+    files: ["*.config.ts", "*.config.js", "*.config.mjs", "scripts/**/*.ts", "vite.config.ts"],
     rules: {
       "no-console": "off",
       "@typescript-eslint/no-require-imports": "off",

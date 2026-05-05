@@ -1,15 +1,30 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  useListReports, getListReportsQueryKey,
-  useGenerateReport, useDeleteReport,
+  useListReports,
+  getListReportsQueryKey,
+  useGenerateReport,
+  useDeleteReport,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, BarChart3, FileDown } from "lucide-react";
 
@@ -25,13 +40,17 @@ const FORMAT_STYLES: Record<string, string> = {
   json: "bg-blue-500/10 text-blue-600 border-blue-200",
 };
 
-interface Props { projectId: number }
+interface Props {
+  projectId: number;
+}
 
 export function ReportsTab({ projectId }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
-  const [reportType, setReportType] = useState<"project_summary" | "topical_authority" | "content_pipeline">("project_summary");
+  const [reportType, setReportType] = useState<
+    "project_summary" | "topical_authority" | "content_pipeline"
+  >("project_summary");
   const [reportFormat, setReportFormat] = useState<"pdf" | "csv" | "json">("pdf");
 
   const { data: reports, isLoading } = useListReports(projectId, {
@@ -63,7 +82,10 @@ export function ReportsTab({ projectId }: Props) {
     deleteReport.mutate(
       { projectId, id },
       {
-        onSuccess: () => { invalidate(); toast({ title: "Report deleted" }); },
+        onSuccess: () => {
+          invalidate();
+          toast({ title: "Report deleted" });
+        },
       },
     );
   };
@@ -94,7 +116,9 @@ export function ReportsTab({ projectId }: Props) {
                   value={reportType}
                   onValueChange={(v) => setReportType(v as typeof reportType)}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="project_summary">Project Summary</SelectItem>
                     <SelectItem value="topical_authority">Topical Authority</SelectItem>
@@ -108,7 +132,9 @@ export function ReportsTab({ projectId }: Props) {
                   value={reportFormat}
                   onValueChange={(v) => setReportFormat(v as typeof reportFormat)}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pdf">PDF</SelectItem>
                     <SelectItem value="csv">CSV</SelectItem>
@@ -128,7 +154,9 @@ export function ReportsTab({ projectId }: Props) {
 
       {isLoading ? (
         <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
         </div>
       ) : !reports?.length ? (
         <div className="text-center py-16 border-2 border-dashed rounded-xl">
@@ -140,12 +168,18 @@ export function ReportsTab({ projectId }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          {reports.map(report => (
-            <div key={report.id} className="flex items-center gap-4 p-4 border rounded-lg hover:border-primary/30 transition-colors">
+          {reports.map((report) => (
+            <div
+              key={report.id}
+              className="flex items-center gap-4 p-4 border rounded-lg hover:border-primary/30 transition-colors"
+            >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-medium">{TYPE_LABELS[report.type] ?? report.type}</span>
-                  <Badge variant="outline" className={`text-xs uppercase ${FORMAT_STYLES[report.format] ?? ""}`}>
+                  <Badge
+                    variant="outline"
+                    className={`text-xs uppercase ${FORMAT_STYLES[report.format] ?? ""}`}
+                  >
                     {report.format}
                   </Badge>
                 </div>

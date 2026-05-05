@@ -1,22 +1,33 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { 
-  useListClients, 
+import {
+  useListClients,
   getListClientsQueryKey,
   useCreateClient,
-  useUpdateClient,
-  useDeleteClient
+  useDeleteClient,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Users, Search, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Plus, Users, Search, MoreHorizontal, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Clients() {
   const [search, setSearch] = useState("");
@@ -25,27 +36,28 @@ export default function Clients() {
   const queryClient = useQueryClient();
 
   const { data: clients, isLoading } = useListClients({
-    query: { queryKey: getListClientsQueryKey() }
+    query: { queryKey: getListClientsQueryKey() },
   });
 
   const createClient = useCreateClient();
   const deleteClient = useDeleteClient();
 
-  const filteredClients = clients?.filter(c => 
-    c.name.toLowerCase().includes(search.toLowerCase()) || 
-    c.domain?.toLowerCase().includes(search.toLowerCase())
+  const filteredClients = clients?.filter(
+    (c) =>
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.domain?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     createClient.mutate(
-      { 
+      {
         data: {
           name: formData.get("name") as string,
           domain: formData.get("domain") as string,
           industry: formData.get("industry") as string,
-        }
+        },
       },
       {
         onSuccess: () => {
@@ -55,8 +67,8 @@ export default function Clients() {
         },
         onError: () => {
           toast({ title: "Failed to create client", variant: "destructive" });
-        }
-      }
+        },
+      },
     );
   };
 
@@ -68,8 +80,8 @@ export default function Clients() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
           toast({ title: "Client deleted" });
-        }
-      }
+        },
+      },
     );
   };
 
@@ -79,9 +91,11 @@ export default function Clients() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
-            <p className="text-muted-foreground mt-1">Manage your agency's clients and their projects</p>
+            <p className="text-muted-foreground mt-1">
+              Manage your agency's clients and their projects
+            </p>
           </div>
-          
+
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -121,10 +135,10 @@ export default function Clients() {
         <div className="flex items-center gap-2 max-w-sm">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              type="search" 
-              placeholder="Search clients..." 
-              className="pl-9" 
+            <Input
+              type="search"
+              placeholder="Search clients..."
+              className="pl-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -168,7 +182,7 @@ export default function Clients() {
                           View Details
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         className="text-destructive focus:text-destructive cursor-pointer"
                         onClick={() => handleDelete(client.id)}
                       >

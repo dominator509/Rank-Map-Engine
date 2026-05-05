@@ -91,15 +91,17 @@ async function fetchFromSEMrush(
     const text = await resp.text();
     const lines = text.trim().split("\n").slice(1);
 
-    return lines.map((line) => {
-      const [phrase, volume, cpc, kd] = line.split(";");
-      return {
-        phrase: phrase?.trim() ?? "",
-        searchVolume: parseInt(volume ?? "0", 10) || undefined,
-        cpc: parseFloat(cpc ?? "0") || undefined,
-        kd: parseInt(kd ?? "0", 10) || undefined,
-      };
-    }).filter((k) => k.phrase);
+    return lines
+      .map((line) => {
+        const [phrase, volume, cpc, kd] = line.split(";");
+        return {
+          phrase: phrase?.trim() ?? "",
+          searchVolume: parseInt(volume ?? "0", 10) || undefined,
+          cpc: parseFloat(cpc ?? "0") || undefined,
+          kd: parseInt(kd ?? "0", 10) || undefined,
+        };
+      })
+      .filter((k) => k.phrase);
   } catch (err) {
     logger.warn({ err }, "SEMrush fetch failed, returning mock");
     return mockKeywordData(query, "semrush");

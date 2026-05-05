@@ -1,10 +1,21 @@
 import {
-  useGetSubscription, getGetSubscriptionQueryKey,
-  useListPlans, getListPlansQueryKey,
-  useGetBillingUsage, getGetBillingUsageQueryKey,
-  useCreateCheckoutSession, useCreateBillingPortal,
+  useGetSubscription,
+  getGetSubscriptionQueryKey,
+  useListPlans,
+  getListPlansQueryKey,
+  useGetBillingUsage,
+  getGetBillingUsageQueryKey,
+  useCreateCheckoutSession,
+  useCreateBillingPortal,
 } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -38,8 +49,7 @@ export default function Billing() {
       const parsed = new URL(url);
       if (
         parsed.protocol === "https:" &&
-        (parsed.hostname === "checkout.stripe.com" ||
-          parsed.hostname === "billing.stripe.com")
+        (parsed.hostname === "checkout.stripe.com" || parsed.hostname === "billing.stripe.com")
       ) {
         // nosemgrep: javascript.browser.security.js-open-redirect-from-function
         // URL is validated above — only checkout.stripe.com and billing.stripe.com are allowed.
@@ -90,9 +100,10 @@ export default function Billing() {
   }
 
   const seatPct = sub ? Math.round((sub.seatsUsed / Math.max(sub.seatsMax, 1)) * 100) : 0;
-  const aiPct = usage && usage.aiTasksLimit > 0
-    ? Math.round((usage.aiTasksThisMonth / usage.aiTasksLimit) * 100)
-    : 0;
+  const aiPct =
+    usage && usage.aiTasksLimit > 0
+      ? Math.round((usage.aiTasksThisMonth / usage.aiTasksLimit) * 100)
+      : 0;
 
   return (
     <div className="flex-1 overflow-y-auto p-8">
@@ -135,7 +146,9 @@ export default function Billing() {
                     <span className="flex items-center gap-1.5 text-muted-foreground">
                       <Users className="w-3.5 h-3.5" /> Seats
                     </span>
-                    <span className="font-medium">{sub?.seatsUsed ?? 0} / {sub?.seatsMax ?? 1}</span>
+                    <span className="font-medium">
+                      {sub?.seatsUsed ?? 0} / {sub?.seatsMax ?? 1}
+                    </span>
                   </div>
                   <Progress value={seatPct} className="h-1.5" />
                 </div>
@@ -146,7 +159,8 @@ export default function Billing() {
                         <Zap className="w-3.5 h-3.5" /> AI Tasks (this month)
                       </span>
                       <span className="font-medium">
-                        {usage.aiTasksThisMonth} / {usage.aiTasksLimit > 0 ? usage.aiTasksLimit : "∞"}
+                        {usage.aiTasksThisMonth} /{" "}
+                        {usage.aiTasksLimit > 0 ? usage.aiTasksLimit : "∞"}
                       </span>
                     </div>
                     {usage.aiTasksLimit > 0 && <Progress value={aiPct} className="h-1.5" />}
@@ -213,14 +227,9 @@ export default function Billing() {
               {plans.map((plan) => {
                 const isCurrent = sub?.plan === plan.name;
                 return (
-                  <Card
-                    key={plan.id}
-                    className={isCurrent ? "border-primary shadow-sm" : ""}
-                  >
+                  <Card key={plan.id} className={isCurrent ? "border-primary shadow-sm" : ""}>
                     <CardHeader className="pb-4">
-                      {isCurrent && (
-                        <Badge className="self-start mb-2 text-xs">Current Plan</Badge>
-                      )}
+                      {isCurrent && <Badge className="self-start mb-2 text-xs">Current Plan</Badge>}
                       <CardTitle className="capitalize text-lg">{plan.displayName}</CardTitle>
                       <div className="text-3xl font-bold">
                         ${plan.priceMonthly}
@@ -230,12 +239,15 @@ export default function Billing() {
                     <CardContent className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-green-500 shrink-0" />
-                        <span>{plan.seats} seat{plan.seats !== 1 ? "s" : ""}</span>
+                        <span>
+                          {plan.seats} seat{plan.seats !== 1 ? "s" : ""}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-green-500 shrink-0" />
                         <span>
-                          {plan.projectsMax > 0 ? plan.projectsMax : "Unlimited"} project{plan.projectsMax !== 1 ? "s" : ""}
+                          {plan.projectsMax > 0 ? plan.projectsMax : "Unlimited"} project
+                          {plan.projectsMax !== 1 ? "s" : ""}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">

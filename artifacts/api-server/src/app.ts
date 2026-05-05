@@ -37,11 +37,7 @@ const _devOrigins =
     ? ["http://localhost:3000", "http://localhost:5173", "http://localhost:80"]
     : [];
 
-const ALLOWED_ORIGINS = new Set([
-  ..._replitDomains,
-  ..._extraOrigins,
-  ..._devOrigins,
-]);
+const ALLOWED_ORIGINS = new Set([..._replitDomains, ..._extraOrigins, ..._devOrigins]);
 
 app.use(
   helmet({

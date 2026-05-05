@@ -1,6 +1,17 @@
-import { useGetMyTenant, getGetMyTenantQueryKey, useUpdateMyTenant } from "@workspace/api-client-react";
+import {
+  useGetMyTenant,
+  getGetMyTenantQueryKey,
+  useUpdateMyTenant,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -112,14 +123,17 @@ export default function Settings() {
                   <Input
                     id="name"
                     value={name}
-                    onChange={e => setName(e.target.value)}
+                    onChange={(e) => setName(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Plan</Label>
                   <div className="pt-2">
-                    <Badge variant="outline" className={`capitalize ${PLAN_BADGE[tenant?.plan ?? "solo"] ?? ""}`}>
+                    <Badge
+                      variant="outline"
+                      className={`capitalize ${PLAN_BADGE[tenant?.plan ?? "solo"] ?? ""}`}
+                    >
                       {tenant?.plan ?? "solo"}
                     </Badge>
                   </div>
@@ -131,15 +145,13 @@ export default function Settings() {
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <Users className="w-4 h-4" />
                 <span>
-                  {tenant?.seatsUsed ?? 0} of {tenant?.seatsMax ?? 1} seat{(tenant?.seatsMax ?? 1) !== 1 ? "s" : ""} used
+                  {tenant?.seatsUsed ?? 0} of {tenant?.seatsMax ?? 1} seat
+                  {(tenant?.seatsMax ?? 1) !== 1 ? "s" : ""} used
                 </span>
               </div>
             </CardContent>
             <CardFooter className="border-t pt-6">
-              <Button
-                type="submit"
-                disabled={updateTenant.isPending || name === tenant?.name}
-              >
+              <Button type="submit" disabled={updateTenant.isPending || name === tenant?.name}>
                 Save Profile
               </Button>
             </CardFooter>
@@ -163,7 +175,7 @@ export default function Settings() {
                 <Input
                   id="appName"
                   value={appName}
-                  onChange={e => setAppName(e.target.value)}
+                  onChange={(e) => setAppName(e.target.value)}
                   placeholder="Acme SEO Portal"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -175,7 +187,7 @@ export default function Settings() {
                 <Input
                   id="logoUrl"
                   value={logoUrl}
-                  onChange={e => setLogoUrl(e.target.value)}
+                  onChange={(e) => setLogoUrl(e.target.value)}
                   placeholder="https://yoursite.com/logo.png"
                 />
               </div>
@@ -185,7 +197,7 @@ export default function Settings() {
                   <Input
                     id="primaryColor"
                     value={primaryColor}
-                    onChange={e => setPrimaryColor(e.target.value)}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
                     placeholder="#2563eb"
                     className="font-mono"
                   />

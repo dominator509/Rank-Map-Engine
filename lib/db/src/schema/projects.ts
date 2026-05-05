@@ -17,7 +17,10 @@ export const projectsTable = pgTable("projects", {
   locale: text("locale").notNull().default("en-US"),
   status: text("status").notNull().default("active"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const projectScoreSettingsTable = pgTable("project_score_settings", {
@@ -32,7 +35,10 @@ export const projectScoreSettingsTable = pgTable("project_score_settings", {
   cpcWeight: text("cpc_weight").notNull().default("0.15"),
   freshnessWeight: text("freshness_weight").notNull().default("0.10"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const insertProjectSchema = createInsertSchema(projectsTable).omit({

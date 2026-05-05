@@ -31,13 +31,20 @@ function UsageBar({ label, used, limit }: { label: string; used: number; limit: 
     <div className="space-y-2">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">{label}</span>
-        <span className={critical ? "text-destructive" : warning ? "text-yellow-600" : "text-muted-foreground"}>
+        <span
+          className={
+            critical ? "text-destructive" : warning ? "text-yellow-600" : "text-muted-foreground"
+          }
+        >
           {used.toLocaleString()} / {unlimited ? "Unlimited" : limit.toLocaleString()}
           {!unlimited && ` (${pct}%)`}
         </span>
       </div>
       {!unlimited && (
-        <Progress value={pct} className={critical ? "[&>div]:bg-destructive" : warning ? "[&>div]:bg-yellow-500" : ""} />
+        <Progress
+          value={pct}
+          className={critical ? "[&>div]:bg-destructive" : warning ? "[&>div]:bg-yellow-500" : ""}
+        />
       )}
     </div>
   );
@@ -62,11 +69,18 @@ export default function Usage() {
     <div className="flex-1 overflow-y-auto p-8">
       <div className="max-w-3xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2"><Activity className="w-7 h-7" />Usage</h1>
-          <p className="text-muted-foreground mt-1">Your workspace resource consumption this billing period</p>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Activity className="w-7 h-7" />
+            Usage
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Your workspace resource consumption this billing period
+          </p>
         </div>
 
-        {isLoading ? <Skeleton className="h-64 rounded-xl" /> : (
+        {isLoading ? (
+          <Skeleton className="h-64 rounded-xl" />
+        ) : (
           <>
             <Card>
               <CardHeader>
@@ -74,25 +88,71 @@ export default function Usage() {
                   <div>
                     <CardTitle>Current Plan</CardTitle>
                     <CardDescription>
-                      Period: {data?.period.start ? format(new Date(data.period.start), "MMM d") : "—"} –{" "}
+                      Period:{" "}
+                      {data?.period.start ? format(new Date(data.period.start), "MMM d") : "—"} –{" "}
                       {data?.period.end ? format(new Date(data.period.end), "MMM d, yyyy") : "—"}
                     </CardDescription>
                   </div>
-                  <Badge className={`${plan?.color ?? "bg-gray-500"} text-white`}>{plan?.label ?? data?.plan}</Badge>
+                  <Badge className={`${plan?.color ?? "bg-gray-500"} text-white`}>
+                    {plan?.label ?? data?.plan}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <UsageBar label="Keywords" used={data?.usage.keywords.used ?? 0} limit={data?.usage.keywords.limit ?? 500} />
-                <UsageBar label="Content Briefs" used={data?.usage.briefs.used ?? 0} limit={data?.usage.briefs.limit ?? 20} />
-                <UsageBar label="AI Tasks (this month)" used={data?.usage.aiTasks.used ?? 0} limit={data?.usage.aiTasks.limit ?? 50} />
-                <UsageBar label="Team Seats" used={data?.usage.seats.used ?? 0} limit={data?.usage.seats.limit ?? 1} />
+                <UsageBar
+                  label="Keywords"
+                  used={data?.usage.keywords.used ?? 0}
+                  limit={data?.usage.keywords.limit ?? 500}
+                />
+                <UsageBar
+                  label="Content Briefs"
+                  used={data?.usage.briefs.used ?? 0}
+                  limit={data?.usage.briefs.limit ?? 20}
+                />
+                <UsageBar
+                  label="AI Tasks (this month)"
+                  used={data?.usage.aiTasks.used ?? 0}
+                  limit={data?.usage.aiTasks.limit ?? 50}
+                />
+                <UsageBar
+                  label="Team Seats"
+                  used={data?.usage.seats.used ?? 0}
+                  limit={data?.usage.seats.limit ?? 1}
+                />
               </CardContent>
             </Card>
 
             <div className="grid grid-cols-3 gap-4">
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Reports This Month</CardTitle></CardHeader><CardContent><div className="text-3xl font-bold">{data?.usage.reportsThisMonth ?? 0}</div></CardContent></Card>
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Active API Keys</CardTitle></CardHeader><CardContent><div className="text-3xl font-bold">{data?.usage.apiKeys ?? 0}</div></CardContent></Card>
-              <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Webhook Deliveries (30d)</CardTitle></CardHeader><CardContent><div className="text-3xl font-bold">{data?.usage.webhookDeliveriesThisMonth ?? 0}</div></CardContent></Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground">
+                    Reports This Month
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{data?.usage.reportsThisMonth ?? 0}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground">Active API Keys</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{data?.usage.apiKeys ?? 0}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground">
+                    Webhook Deliveries (30d)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">
+                    {data?.usage.webhookDeliveriesThisMonth ?? 0}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </>
         )}
