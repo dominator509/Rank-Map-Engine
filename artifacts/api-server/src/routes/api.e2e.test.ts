@@ -1,4 +1,5 @@
 import type { Server } from "node:http";
+import { createHmac } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const describeApiE2e = process.env.RUN_API_E2E === "1" ? describe : describe.skip;
@@ -27,6 +28,19 @@ class ApiAgent {
     return this.request<T>(path, { method: "POST", body });
   }
 
+  postRaw<T = unknown>(
+    path: string,
+    body: string,
+    extraHeaders: Record<string, string> = {},
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>(path, {
+      method: "POST",
+      body,
+      rawBody: true,
+      extraHeaders,
+    });
+  }
+
   patch<T = unknown>(path: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(path, { method: "PATCH", body });
   }
@@ -37,18 +51,31 @@ class ApiAgent {
 
   private async request<T = unknown>(
     path: string,
-    options: { method?: string; body?: unknown } = {},
+    options: {
+      method?: string;
+      body?: unknown;
+      rawBody?: boolean;
+      extraHeaders?: Record<string, string>;
+    } = {},
   ): Promise<ApiResponse<T>> {
     const headers = new Headers();
     headers.set("accept", "application/json");
     if (options.body !== undefined) headers.set("content-type", "application/json");
+    for (const [key, value] of Object.entries(options.extraHeaders ?? {})) {
+      headers.set(key, value);
+    }
     if (this.cookie) headers.set("cookie", this.cookie);
     if (this.authorization) headers.set("authorization", this.authorization);
 
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: options.method ?? "GET",
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body:
+        options.body === undefined
+          ? undefined
+          : options.rawBody
+            ? (options.body as string)
+            : JSON.stringify(options.body),
     });
 
     this.storeCookies(response.headers);
@@ -91,6 +118,15 @@ function idFrom(record: Record<string, unknown>, key = "id"): number {
   return value as number;
 }
 
+function stripeSignature(payload: string, secret: string): string {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const signature = createHmac("sha256", secret)
+    .update(`${timestamp}.`)
+    .update(payload)
+    .digest("hex");
+  return `t=${timestamp},v1=${signature}`;
+}
+
 describeApiE2e("API end-to-end workflows", () => {
   let server: Server;
   let baseUrl = "";
@@ -98,7 +134,10 @@ describeApiE2e("API end-to-end workflows", () => {
   beforeAll(async () => {
     process.env.NODE_ENV = "test";
     process.env.SESSION_SECRET = "test-session-secret-with-at-least-32-characters";
+    process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_webhook_secret";
     delete process.env.OPENAI_API_KEY;
+    delete process.env.FEATURE_BILLING;
+    delete process.env.FEATURE_STRIPE_BILLING;
 
     const { ensureSessionTable } = await import("../lib/session-table");
     await ensureSessionTable();
@@ -147,7 +186,9 @@ describeApiE2e("API end-to-end workflows", () => {
 
     const tenantAlias = await tenantA.get("/api/tenants/me");
     expect(tenantAlias.status).toBe(200);
-    expect(expectRecord(tenantAlias.body).name).toBe(`Tenant A ${stamp}`);
+    const tenantRecord = expectRecord(tenantAlias.body);
+    const tenantId = idFrom(tenantRecord);
+    expect(tenantRecord.name).toBe(`Tenant A ${stamp}`);
 
     const client = expectRecord(
       (
@@ -255,6 +296,168 @@ describeApiE2e("API end-to-end workflows", () => {
       format: "json",
     });
     expect(report.status).toBe(201);
+
+    const billingUsage = await tenantA.get("/api/billing/usage");
+    expect(billingUsage.status).toBe(200);
+    expect(typeof expectRecord(billingUsage.body).aiTasksThisMonth).toBe("number");
+
+    const checkoutDisabled = await tenantA.post("/api/billing/checkout", { planId: "agency" });
+    expect(checkoutDisabled.status).toBe(501);
+
+    const portalDisabled = await tenantA.post("/api/billing/portal");
+    expect(portalDisabled.status).toBe(501);
+
+    const unsignedWebhook = await unauthenticated.postRaw(
+      "/api/billing/webhook",
+      JSON.stringify({ type: "checkout.session.completed" }),
+    );
+    expect(unsignedWebhook.status).toBe(400);
+
+    const checkoutWebhookPayload = JSON.stringify({
+      id: `evt_checkout_${stamp}`,
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          object: "checkout.session",
+          customer: "cus_e2e",
+          subscription: "sub_e2e",
+          client_reference_id: String(tenantId),
+          metadata: {
+            tenantId: String(tenantId),
+            planId: "agency",
+          },
+        },
+      },
+    });
+    const checkoutWebhook = await unauthenticated.postRaw(
+      "/api/billing/webhook",
+      checkoutWebhookPayload,
+      {
+        "stripe-signature": stripeSignature(
+          checkoutWebhookPayload,
+          process.env.STRIPE_WEBHOOK_SECRET!,
+        ),
+      },
+    );
+    expect(checkoutWebhook.status).toBe(200);
+
+    const upgradedSubscription = await tenantA.get("/api/billing/subscription");
+    expect(upgradedSubscription.status).toBe(200);
+    const upgradedSubscriptionBody = expectRecord(upgradedSubscription.body);
+    expect(upgradedSubscriptionBody.plan).toBe("agency");
+    expect(upgradedSubscriptionBody.status).toBe("active");
+    expect(upgradedSubscriptionBody.seatsMax).toBe(5);
+    expect(upgradedSubscriptionBody.stripeSubscriptionId).toBe("sub_e2e");
+    expect(upgradedSubscriptionBody.currentPeriodEnd).toBeNull();
+    expect(upgradedSubscriptionBody.cancelAtPeriodEnd).toBe(false);
+
+    const periodEndUnix = 1893456000;
+    const subscriptionUpdatedPayload = JSON.stringify({
+      id: `evt_subscription_${stamp}`,
+      type: "customer.subscription.updated",
+      data: {
+        object: {
+          object: "subscription",
+          id: "sub_e2e",
+          customer: "cus_e2e",
+          status: "active",
+          current_period_end: periodEndUnix,
+          cancel_at_period_end: true,
+          metadata: {
+            tenantId: String(tenantId),
+            planId: "agency",
+          },
+        },
+      },
+    });
+    const subscriptionUpdatedWebhook = await unauthenticated.postRaw(
+      "/api/billing/webhook",
+      subscriptionUpdatedPayload,
+      {
+        "stripe-signature": stripeSignature(
+          subscriptionUpdatedPayload,
+          process.env.STRIPE_WEBHOOK_SECRET!,
+        ),
+      },
+    );
+    expect(subscriptionUpdatedWebhook.status).toBe(200);
+
+    const syncedSubscription = await tenantA.get("/api/billing/subscription");
+    expect(syncedSubscription.status).toBe(200);
+    const syncedSubscriptionBody = expectRecord(syncedSubscription.body);
+    expect(syncedSubscriptionBody.plan).toBe("agency");
+    expect(syncedSubscriptionBody.status).toBe("active");
+    expect(syncedSubscriptionBody.currentPeriodEnd).toBe(
+      new Date(periodEndUnix * 1000).toISOString(),
+    );
+    expect(syncedSubscriptionBody.cancelAtPeriodEnd).toBe(true);
+
+    const paymentFailedPayload = JSON.stringify({
+      id: `evt_payment_failed_${stamp}`,
+      type: "invoice.payment_failed",
+      data: {
+        object: {
+          object: "invoice",
+          customer: "cus_e2e",
+          subscription: "sub_e2e",
+        },
+      },
+    });
+    const paymentFailedWebhook = await unauthenticated.postRaw(
+      "/api/billing/webhook",
+      paymentFailedPayload,
+      {
+        "stripe-signature": stripeSignature(
+          paymentFailedPayload,
+          process.env.STRIPE_WEBHOOK_SECRET!,
+        ),
+      },
+    );
+    expect(paymentFailedWebhook.status).toBe(200);
+
+    const pastDueSubscription = await tenantA.get("/api/billing/subscription");
+    expect(pastDueSubscription.status).toBe(200);
+    const pastDueSubscriptionBody = expectRecord(pastDueSubscription.body);
+    expect(pastDueSubscriptionBody.plan).toBe("agency");
+    expect(pastDueSubscriptionBody.status).toBe("past_due");
+
+    const canceledWebhookPayload = JSON.stringify({
+      id: `evt_cancel_${stamp}`,
+      type: "customer.subscription.deleted",
+      data: {
+        object: {
+          object: "subscription",
+          id: "sub_e2e",
+          customer: "cus_e2e",
+          status: "canceled",
+          metadata: {
+            tenantId: String(tenantId),
+            planId: "agency",
+          },
+        },
+      },
+    });
+    const canceledWebhook = await unauthenticated.postRaw(
+      "/api/billing/webhook",
+      canceledWebhookPayload,
+      {
+        "stripe-signature": stripeSignature(
+          canceledWebhookPayload,
+          process.env.STRIPE_WEBHOOK_SECRET!,
+        ),
+      },
+    );
+    expect(canceledWebhook.status).toBe(200);
+
+    const downgradedSubscription = await tenantA.get("/api/billing/subscription");
+    expect(downgradedSubscription.status).toBe(200);
+    const downgradedSubscriptionBody = expectRecord(downgradedSubscription.body);
+    expect(downgradedSubscriptionBody.plan).toBe("solo");
+    expect(downgradedSubscriptionBody.status).toBe("canceled");
+    expect(downgradedSubscriptionBody.seatsMax).toBe(1);
+    expect(downgradedSubscriptionBody.stripeSubscriptionId).toBeNull();
+    expect(downgradedSubscriptionBody.currentPeriodEnd).toBeNull();
+    expect(downgradedSubscriptionBody.cancelAtPeriodEnd).toBe(false);
 
     const apiKeyResponse = await tenantA.post("/api/api-keys", { name: "E2E API Key" });
     expect(apiKeyResponse.status).toBe(201);

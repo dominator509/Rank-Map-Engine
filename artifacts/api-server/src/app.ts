@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { pool } from "@workspace/db";
 import router from "./routes/index.js";
+import { stripeWebhookHandler } from "./routes/billing.js";
 import { logger } from "./lib/logger.js";
 
 if (!process.env.SESSION_SECRET) {
@@ -88,6 +89,12 @@ app.use(
     },
     credentials: true,
   }),
+);
+
+app.post(
+  "/api/billing/webhook",
+  express.raw({ type: "application/json", limit: "2mb" }),
+  stripeWebhookHandler,
 );
 
 app.use(express.json({ limit: "2mb" }));

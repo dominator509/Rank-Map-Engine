@@ -27,10 +27,20 @@ router.get("/healthz/detailed", async (_req, res) => {
 
   const aiOk = !!process.env.OPENAI_API_KEY;
   const smtpOk = !!process.env.SMTP_HOST;
+  const billingEnabled =
+    process.env.FEATURE_BILLING === "true" || process.env.FEATURE_STRIPE_BILLING === "true";
+  const missingBillingConfig = [
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET",
+    "STRIPE_PRICE_SOLO",
+    "STRIPE_PRICE_AGENCY",
+    "STRIPE_PRICE_ENTERPRISE",
+  ].filter((name) => !process.env[name]);
+  const billingOk = !billingEnabled || missingBillingConfig.length === 0;
   const uptime = process.uptime();
   const mem = process.memoryUsage();
 
-  const allOk = dbOk;
+  const allOk = dbOk && billingOk;
   const status = allOk ? "ok" : "degraded";
 
   res.status(allOk ? 200 : 503).json({
@@ -42,6 +52,10 @@ router.get("/healthz/detailed", async (_req, res) => {
       database: { status: dbOk ? "ok" : "error", latencyMs: dbLatencyMs },
       ai: { status: aiOk ? "configured" : "mock-fallback" },
       smtp: { status: smtpOk ? "configured" : "mock-fallback" },
+      billing: {
+        status: billingEnabled ? (billingOk ? "configured" : "missing-config") : "disabled",
+        missing: billingEnabled ? missingBillingConfig : [],
+      },
     },
     memory: {
       heapUsedMB: Math.round(mem.heapUsed / 1024 / 1024),

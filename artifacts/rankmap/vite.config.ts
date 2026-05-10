@@ -23,6 +23,53 @@ if (!basePath) {
   throw new Error("BASE_PATH environment variable is required but was not provided.");
 }
 
+const dependencyChunk = (id: string) => {
+  const normalizedId = id.replaceAll("\\", "/");
+
+  if (!normalizedId.includes("/node_modules/")) {
+    return undefined;
+  }
+
+  if (normalizedId.includes("/lucide-react/")) {
+    return "icons";
+  }
+
+  if (normalizedId.includes("/@radix-ui/")) {
+    return "radix-ui";
+  }
+
+  if (
+    normalizedId.includes("/react/") ||
+    normalizedId.includes("/react-dom/") ||
+    normalizedId.includes("/scheduler/")
+  ) {
+    return "react";
+  }
+
+  if (
+    normalizedId.includes("/recharts/") ||
+    normalizedId.includes("/d3-") ||
+    normalizedId.includes("/victory-vendor/")
+  ) {
+    return "charts";
+  }
+
+  if (normalizedId.includes("/@tanstack/")) {
+    return "tanstack";
+  }
+
+  if (
+    normalizedId.includes("/class-variance-authority/") ||
+    normalizedId.includes("/clsx/") ||
+    normalizedId.includes("/date-fns/") ||
+    normalizedId.includes("/tailwind-merge/")
+  ) {
+    return "ui-utils";
+  }
+
+  return undefined;
+};
+
 export default defineConfig({
   base: basePath,
   plugins: [
@@ -50,6 +97,11 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: dependencyChunk,
+      },
+    },
   },
   server: {
     port,

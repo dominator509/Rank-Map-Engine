@@ -1,8 +1,9 @@
 import { spawn } from "node:child_process";
+import net from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
 
 const containerName = `rankmap-api-e2e-${Date.now()}`;
-const port = String(55000 + Math.floor(Math.random() * 5000));
+const port = String(await getFreePort());
 const databaseUrl = `postgresql://rankmap:rankmap@localhost:${port}/rankmap_test`;
 
 function quoteWindowsArg(value) {
@@ -51,6 +52,24 @@ function run(command, args, options = {}) {
   });
 }
 
+function getFreePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.unref();
+    server.on("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      server.close(() => {
+        if (!address || typeof address === "string") {
+          reject(new Error("Unable to allocate a local Postgres test port."));
+          return;
+        }
+        resolve(address.port);
+      });
+    });
+  });
+}
+
 async function waitForPostgres() {
   for (let attempt = 0; attempt < 30; attempt += 1) {
     const result = await run(
@@ -78,14 +97,14 @@ try {
     "-e",
     "POSTGRES_DB=rankmap_test",
     "-p",
-    `${port}:5432`,
+    `127.0.0.1:${port}:5432`,
     "-d",
     "postgres:16-alpine",
   ]);
 
   await waitForPostgres();
 
-  await run("corepack", ["pnpm", "--filter", "@workspace/db", "run", "push"], {
+  await run("corepack", ["pnpm", "--filter", "@workspace/db", "run", "migrate"], {
     env: { DATABASE_URL: databaseUrl },
   });
 

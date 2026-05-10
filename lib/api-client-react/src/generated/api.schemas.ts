@@ -73,6 +73,11 @@ export interface Tenant {
   stripeCustomerId?: string | null;
   /** @nullable */
   stripeSubscriptionId?: string | null;
+  /** @nullable */
+  stripeSubscriptionStatus?: string | null;
+  /** @nullable */
+  stripeCurrentPeriodEnd?: string | null;
+  stripeCancelAtPeriodEnd: boolean;
   createdAt: string;
   updatedAt: string;
 }
