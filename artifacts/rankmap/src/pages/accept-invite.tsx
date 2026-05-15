@@ -35,18 +35,18 @@ export default function AcceptInvite() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <main className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-sm">
           <CardContent className="pt-6 text-center text-muted-foreground">
             Invalid or missing invitation token.
           </CardContent>
         </Card>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -102,6 +102,6 @@ export default function AcceptInvite() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </main>
   );
 }

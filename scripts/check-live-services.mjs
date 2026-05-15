@@ -7,6 +7,9 @@ import tls from "node:tls";
 const workspaceRoot = resolve(import.meta.dirname, "..");
 const fakeValuePattern = /fake|placeholder|change-me|donotuse/i;
 const truthyPattern = /^(1|true|yes)$/i;
+const liveServicesOptional =
+  truthyPattern.test(process.env.LIVE_SERVICES_OPTIONAL ?? "") ||
+  truthyPattern.test(process.env.ALLOW_NO_LIVE_SERVICE_CREDENTIALS ?? "");
 
 loadEnvFile(".env.local");
 loadEnvFile(".env");
@@ -143,8 +146,13 @@ await checkKeywordProvider(
 console.log(`\nLive service diagnostics: ${passed} passed, ${failed} failed, ${skipped} skipped.`);
 
 if (attempted === 0) {
-  console.error("No live provider credentials were available, so no live checks could run.");
-  process.exitCode = 1;
+  const message = "No live provider credentials were available, so no live checks could run.";
+  if (liveServicesOptional) {
+    console.log(message);
+  } else {
+    console.error(message);
+    process.exitCode = 1;
+  }
 } else if (failed > 0) {
   process.exitCode = 1;
 }

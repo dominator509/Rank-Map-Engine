@@ -23,7 +23,7 @@ RankMap uses Drizzle migration files for production database changes.
 2. Run `corepack pnpm run db:generate`.
 3. Review and commit the generated files under `lib/db/drizzle`.
 4. Run `corepack pnpm run test:e2e:api`; this builds a disposable Postgres database from migrations.
-5. During deployment, run `corepack pnpm run db:migrate` before starting the new app version.
+5. During deployment, run `corepack pnpm run deploy:preflight` before starting the new app version. The preflight applies pending migrations with `db:migrate`.
 
 ## Important Notes
 

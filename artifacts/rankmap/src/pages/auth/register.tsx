@@ -49,7 +49,7 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-[100dvh] w-full items-center justify-center bg-background p-4">
+    <main className="flex min-h-[100dvh] w-full items-center justify-center bg-background p-4">
       <div className="w-full max-w-[400px]">
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
@@ -126,6 +126,6 @@ export default function Register() {
           </form>
         </Card>
       </div>
-    </div>
+    </main>
   );
 }

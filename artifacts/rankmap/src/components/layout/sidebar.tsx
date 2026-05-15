@@ -108,7 +108,7 @@ export function Sidebar() {
   });
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col">
+    <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border md:flex flex-col">
       <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
         <Link
           href="/dashboard"

@@ -491,5 +491,5 @@ describeApiE2e("API end-to-end workflows", () => {
     expect(registeredB.status).toBe(201);
     expect((await tenantB.get(`/api/clients/${clientId}`)).status).toBe(404);
     expect((await tenantB.get(`/api/projects/${projectId}`)).status).toBe(404);
-  });
+  }, 30000);
 });

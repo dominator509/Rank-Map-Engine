@@ -4,58 +4,75 @@
 
 ---
 
-## Current Phase: Post-Replit Audit / Repair
+## Current Phase: Phase 37 - Browser E2E and Frontend Production QA
 
-**Status:** Partially repaired and smoke-tested, not fully production-certified  
-**Last audited:** 2026-05-05  
-**Do not treat the old "all 39 phases complete" claim as verified.** The repo originally claimed
-Phase 39 completion, but the architecture roadmap only defines the early phases in detail and the
-codebase still had real build, route, browser, and API contract failures during audit.
+**Status:** The false generated "all 39 phases complete" claim has been retired. Phases 11-39 now follow the canonical roadmap in `BUILD_ROADMAP.md`; implementation status must be proven phase by phase.
 
-The generated phase table below is retained as historical context only. Treat each item as
-unverified until it has targeted tests and a working user journey.
+**Last audited:** 2026-05-10
+
+**Current production-readiness focus:** expand browser E2E from the first proven core journey into broader frontend production QA, then continue into performance and final launch readiness.
+
+The summary below is the working truth table. The detailed generated checklist sections later in this file are retained as historical implementation notes only; do not treat their "complete" headings as launch sign-off until they are reconciled against the canonical acceptance criteria.
 
 ---
 
-## Phase Summary
+## Canonical Phase Summary
 
-| Phase | Name | Status | Completed |
-|-------|------|--------|-----------|
-| 0 | Repository Initialization | ✅ Complete | 2026-05-02 |
-| 1 | Auth, RBAC, Tenant Isolation | ✅ Complete | 2026-05-03 |
-| 2 | Client & Project Management | ✅ Complete | 2026-05-03 |
-| 3 | Keyword Import Engine | ✅ Complete | 2026-05-03 |
-| 4 | Keyword Scoring Engine | ✅ Complete | 2026-05-03 |
-| 5 | AI Clustering (Mock → Real) | ✅ Complete | 2026-05-03 |
-| 6 | Topic Maps & Content Roadmaps | ✅ Complete | 2026-05-03 |
-| 7 | Content Briefs (AI + Manual) | ✅ Complete | 2026-05-03 |
-| 8 | Reporting & Exports | ✅ Complete | 2026-05-03 |
-| 9 | Client Dashboard (White-Label) | ✅ Complete | 2026-05-03 |
-| 10 | Stripe Licensing & Billing | ✅ Complete | 2026-05-03 |
-| 11 | Ahrefs Keyword Adapter | ✅ Complete | 2026-05-03 |
-| 12 | SEMrush Keyword Adapter | ✅ Complete | 2026-05-03 |
-| 13 | DataForSEO Keyword Adapter | ✅ Complete | 2026-05-03 |
-| 14 | Real AI Providers (OpenAI) | ✅ Complete | 2026-05-03 |
-| 15 | Audit Log System | ✅ Complete | 2026-05-03 |
-| 16 | Team Management | ✅ Complete | 2026-05-03 |
-| 17 | API Key System | ✅ Complete | 2026-05-03 |
-| 18 | Webhook System | ✅ Complete | 2026-05-03 |
-| 19 | In-App Notification System | ✅ Complete | 2026-05-03 |
-| 20 | Content Calendar | ✅ Complete | 2026-05-03 |
-| 21 | Comments & Collaboration | ✅ Complete | 2026-05-03 |
-| 22 | Competitor Analysis & Keyword Gap | ✅ Complete | 2026-05-03 |
-| 23 | Rank Tracking | ✅ Complete | 2026-05-03 |
-| 24 | Email Notification System | ✅ Complete | 2026-05-03 |
-| 25 | Advanced Analytics Dashboard | ✅ Complete | 2026-05-03 |
-| 26 | Bulk Keyword Export (CSV) | ✅ Complete | 2026-05-03 |
-| 27 | Project Templates | ✅ Complete | 2026-05-03 |
-| 28 | Custom Fields | ✅ Complete | 2026-05-03 |
-| 29 | Full Project Data Export (JSON) | ✅ Complete | 2026-05-03 |
-| 30 | Scheduled Reports | ✅ Complete | 2026-05-03 |
-| 31 | Usage Analytics & Plan Metering | ✅ Complete | 2026-05-03 |
-| 32 | GDPR Compliance Tools | ✅ Complete | 2026-05-03 |
-| 33 | Enhanced Health & Monitoring | ✅ Complete | 2026-05-03 |
-| 34–39 | Production Hardening (see below) | ✅ Complete | 2026-05-03 |
+| Phase | Canonical Name | Truthful Status | Next Evidence Needed |
+|-------|----------------|-----------------|----------------------|
+| 0 | Repository Initialization | Implemented; evidence needs reconciliation | Confirm setup works from clean checkout |
+| 1 | Auth, RBAC, Tenant Isolation | Implemented; needs canonical re-verification | Auth and cross-tenant route tests |
+| 2 | Client and Project Management | Implemented; needs canonical re-verification | CRUD browser and API journey evidence |
+| 3 | Keyword Import Engine | Implemented; needs canonical re-verification | Import validation and edge-case tests |
+| 4 | Keyword Scoring Engine | Implemented; needs canonical re-verification | Deterministic scoring tests |
+| 5 | AI Clustering | Implemented with mock/manual paths; live AI unverified | AI provider fixture and fallback tests |
+| 6 | Topic Maps and Content Roadmaps | Implemented; needs canonical re-verification | End-to-end topic map journey |
+| 7 | Content Briefs | Implemented with mock/manual paths; live AI unverified | Brief generation and manual fallback evidence |
+| 8 | Reporting and Exports | Implemented; needs canonical re-verification | Export correctness and authorization tests |
+| 9 | Client Dashboard and White Labeling | Implemented; needs canonical re-verification | Browser coverage for dashboard states |
+| 10 | Stripe Licensing and Billing | Implemented with real checkout/portal/webhook paths; live credentials pending | Live Stripe smoke test in staging |
+| 11 | Ahrefs Keyword Adapter | Canonical phase defined; not verified complete | Provider adapter, fixtures, and live-provider notes |
+| 12 | Semrush Keyword Adapter | Canonical phase defined; not verified complete | Provider adapter, fixtures, and live-provider notes |
+| 13 | DataForSEO Keyword Adapter | Canonical phase defined; not verified complete | Provider adapter, task polling tests |
+| 14 | Real AI Providers | Canonical phase defined; partially supported by mock/manual flows | Real provider adapter verification |
+| 15 | Audit Log System | Canonical phase defined; not verified complete | Append-only audit model and route coverage |
+| 16 | Team Management | Canonical phase defined; not verified complete | Invite, role, and tenant-isolation tests |
+| 17 | API Key System | Canonical phase defined; not verified complete | Hashed keys, scopes, and public API tests |
+| 18 | Webhook System | Canonical phase defined; inbound Stripe exists; outbound customer webhooks unverified | Outbound delivery, signing, replay tests |
+| 19 | In-App Notification System | Canonical phase defined; not verified complete | Notification model and UI journey |
+| 20 | Content Calendar | Canonical phase defined; not verified complete | Calendar model, UI, and status transitions |
+| 21 | Comments and Collaboration | Canonical phase defined; not verified complete | Comments, mentions, and permissions tests |
+| 22 | Competitor Analysis and Keyword Gap | Canonical phase defined; not verified complete | Competitor model and gap scoring evidence |
+| 23 | Rank Tracking | Canonical phase defined; not verified complete | Snapshot storage and scheduled collection tests |
+| 24 | Email Notification System | Canonical phase defined; not verified complete | Mock and real email provider evidence |
+| 25 | Advanced Analytics Dashboard | Canonical phase defined; not verified complete | Metric definitions and aggregation tests |
+| 26 | Bulk Keyword Export | Canonical phase defined; not verified complete | Bulk job, filters, and authorization tests |
+| 27 | Project Templates | Canonical phase defined; not verified complete | Template application and permission tests |
+| 28 | Custom Fields | Canonical phase defined; not verified complete | Field definitions, validation, and export support |
+| 29 | Full Project Data Export | Canonical phase defined; not verified complete | Full export package and tenant safety tests |
+| 30 | Scheduled Reports | Canonical phase defined; not verified complete | Scheduler, delivery, and report history tests |
+| 31 | Usage Analytics and Plan Metering | Canonical phase defined; not verified complete | Usage counters and plan-limit enforcement |
+| 32 | GDPR Compliance Tools | Canonical phase defined; not verified complete | Data export, deletion/anonymization, retention evidence |
+| 33 | Enhanced Health and Monitoring | Partially implemented through health/config checks | Dependency readiness and degraded-state coverage |
+| 34 | Security Hardening | Canonical phase defined; not verified complete | Threat model, rate limits, and security scan evidence |
+| 35 | Observability and Incident Readiness | Canonical phase defined; not verified complete | Runbooks, metrics, tracing/logging evidence |
+| 36 | Database Migrations and Release Gate | Implemented and locally verified; live production config pending | CI/preflight evidence plus staging credentials |
+| 37 | Browser E2E and Frontend Production QA | In progress; core product, admin, mobile responsive, accessibility, and visual checks passing | Begin Phase 38 performance baselines |
+| 38 | Performance, Scalability, and Reliability | Planned | Load baseline and reliability testing |
+| 39 | Launch Readiness and Operational Handoff | Planned | Go/no-go sign-off with launch evidence |
+
+---
+
+## Phase 37 Evidence - 2026-05-10
+
+| Check | Result | Notes |
+|-------|--------|-------|
+| `pnpm run test:e2e:browser` | Pass | Starts disposable Postgres, applies migrations, starts API and frontend, then verifies register, login, dashboard, client creation, project creation, project detail navigation, manual keyword creation, pasted keyword import, manual brief creation, brief approval, workspace profile update, white-label settings update, billing disabled-state behavior, current plan display, team member display, solo-plan invite limit handling, mobile navigation at 390px width, and axe accessibility checks for registration plus authenticated critical screens: dashboard, clients, project detail, settings, billing, and team. |
+| Phase 37 accessibility remediation | Pass | Fixed auth/invite page landmarks, mobile layout navigation, empty-client heading order, project detail tab semantics, project back-link name, billing progress labels, and team member action button label. |
+| Phase 37 visual snapshots | Pass | Added Playwright screenshot baselines for registration, empty dashboard, empty clients, solo billing, and mobile primary navigation. Snapshot update mode is available through `UPDATE_PLAYWRIGHT_SNAPSHOTS=1 pnpm run test:e2e:browser`; normal browser E2E verifies against committed baselines. |
+| `pnpm run typecheck` | Pass | Full workspace typecheck completed after browser E2E changes. |
+| `pnpm run format:check` | Pass | Generated Playwright output folders are ignored so local artifacts do not break formatting checks. |
+| `pnpm run lint` | Pass | ESLint completed with zero warnings. |
 
 ---
 

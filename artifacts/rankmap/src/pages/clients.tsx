@@ -154,7 +154,7 @@ export default function Clients() {
         ) : filteredClients?.length === 0 ? (
           <div className="text-center py-20 border-2 border-dashed rounded-xl">
             <Users className="w-10 h-10 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium">No clients found</h3>
+            <h2 className="text-lg font-medium">No clients found</h2>
             <p className="text-muted-foreground">Get started by creating your first client.</p>
           </div>
         ) : (

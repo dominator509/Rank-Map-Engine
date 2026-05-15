@@ -150,7 +150,7 @@ export default function Billing() {
                       {sub?.seatsUsed ?? 0} / {sub?.seatsMax ?? 1}
                     </span>
                   </div>
-                  <Progress value={seatPct} className="h-1.5" />
+                  <Progress value={seatPct} className="h-1.5" aria-label="Seats used" />
                 </div>
                 {usage && (
                   <div>
@@ -163,7 +163,9 @@ export default function Billing() {
                         {usage.aiTasksLimit > 0 ? usage.aiTasksLimit : "∞"}
                       </span>
                     </div>
-                    {usage.aiTasksLimit > 0 && <Progress value={aiPct} className="h-1.5" />}
+                    {usage.aiTasksLimit > 0 && (
+                      <Progress value={aiPct} className="h-1.5" aria-label="AI tasks used" />
+                    )}
                   </div>
                 )}
                 {usage && (

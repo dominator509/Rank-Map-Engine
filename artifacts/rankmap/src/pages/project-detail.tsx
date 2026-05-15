@@ -1,6 +1,6 @@
 import { useParams, Link } from "wouter";
 import { useGetProject, getGetProjectQueryKey } from "@workspace/api-client-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,12 +57,12 @@ export default function ProjectDetail() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <Tabs value={tab} onValueChange={handleTabChange} className="flex flex-col h-full">
       <div className="shrink-0 px-8 pt-8 pb-0 border-b bg-background">
         <div className="max-w-7xl mx-auto space-y-5">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
-              <Link href={`/clients/${cId}`}>
+              <Link href={`/clients/${cId}`} aria-label="Back to client">
                 <ArrowLeft className="w-4 h-4" />
               </Link>
             </Button>
@@ -83,32 +83,42 @@ export default function ProjectDetail() {
             </div>
           </div>
 
-          <Tabs value={tab} onValueChange={handleTabChange}>
-            <TabsList className="bg-transparent border-b-0 w-full justify-start rounded-none h-auto p-0 gap-1">
-              {TABS.map((t) => (
-                <TabsTrigger
-                  key={t.value}
-                  value={t.value}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground px-3 pb-3 pt-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {t.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          <TabsList className="bg-transparent border-b-0 w-full justify-start rounded-none h-auto p-0 gap-1">
+            {TABS.map((t) => (
+              <TabsTrigger
+                key={t.value}
+                value={t.value}
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground px-3 pb-3 pt-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-8">
         <div className="max-w-7xl mx-auto">
-          {tab === "keywords" && <KeywordsTab projectId={pId} />}
-          {tab === "clusters" && <ClustersTab projectId={pId} />}
-          {tab === "topic-map" && <TopicMapTab projectId={pId} />}
-          {tab === "roadmap" && <RoadmapTab projectId={pId} />}
-          {tab === "briefs" && <BriefsTab projectId={pId} />}
-          {tab === "reports" && <ReportsTab projectId={pId} />}
+          <TabsContent value="keywords" className="m-0">
+            <KeywordsTab projectId={pId} />
+          </TabsContent>
+          <TabsContent value="clusters" className="m-0">
+            <ClustersTab projectId={pId} />
+          </TabsContent>
+          <TabsContent value="topic-map" className="m-0">
+            <TopicMapTab projectId={pId} />
+          </TabsContent>
+          <TabsContent value="roadmap" className="m-0">
+            <RoadmapTab projectId={pId} />
+          </TabsContent>
+          <TabsContent value="briefs" className="m-0">
+            <BriefsTab projectId={pId} />
+          </TabsContent>
+          <TabsContent value="reports" className="m-0">
+            <ReportsTab projectId={pId} />
+          </TabsContent>
         </div>
       </div>
-    </div>
+    </Tabs>
   );
 }

@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      PORT: "3000"
+      BASE_PATH: "/"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Generated Artifacts Are Current
+        run: |
+          corepack pnpm run db:generate
+          corepack pnpm --filter @workspace/api-spec run codegen
+          git diff --exit-code -- lib/db/drizzle lib/api-client-react/src/generated lib/api-zod/src/generated
+
+      - name: Format
+        run: corepack pnpm run format:check
+
+      - name: Lint
+        run: corepack pnpm run lint
+
+      - name: Typecheck
+        run: corepack pnpm run typecheck
+
+      - name: Unit Tests
+        run: corepack pnpm run test
+
+      - name: API E2E
+        run: corepack pnpm run test:e2e:api
+
+      - name: Build
+        run: corepack pnpm run build
