@@ -4,13 +4,13 @@
 
 ---
 
-## Current Phase: Phase 37 - Browser E2E and Frontend Production QA
+## Current Phase: Phase 38 - Performance, Scalability, and Reliability
 
 **Status:** The false generated "all 39 phases complete" claim has been retired. Phases 11-39 now follow the canonical roadmap in `BUILD_ROADMAP.md`; implementation status must be proven phase by phase.
 
-**Last audited:** 2026-05-10
+**Last audited:** 2026-05-15
 
-**Current production-readiness focus:** expand browser E2E from the first proven core journey into broader frontend production QA, then continue into performance and final launch readiness.
+**Current production-readiness focus:** expand performance and reliability baselines beyond the first local API latency guard.
 
 The summary below is the working truth table. The detailed generated checklist sections later in this file are retained as historical implementation notes only; do not treat their "complete" headings as launch sign-off until they are reconciled against the canonical acceptance criteria.
 
@@ -57,8 +57,8 @@ The summary below is the working truth table. The detailed generated checklist s
 | 34 | Security Hardening | Canonical phase defined; not verified complete | Threat model, rate limits, and security scan evidence |
 | 35 | Observability and Incident Readiness | Canonical phase defined; not verified complete | Runbooks, metrics, tracing/logging evidence |
 | 36 | Database Migrations and Release Gate | Implemented and locally verified; live production config pending | CI/preflight evidence plus staging credentials |
-| 37 | Browser E2E and Frontend Production QA | In progress; core product, admin, mobile responsive, accessibility, and visual checks passing | Begin Phase 38 performance baselines |
-| 38 | Performance, Scalability, and Reliability | Planned | Load baseline and reliability testing |
+| 37 | Browser E2E and Frontend Production QA | Substantially complete; browser E2E, mobile, accessibility, and visual baselines passing | Broaden browser coverage opportunistically as new features stabilize |
+| 38 | Performance, Scalability, and Reliability | In progress; local API latency, export/report, concurrent read/export, billing-degraded, and database-outage baselines passing | Add page-load, queue, backup/restore, larger tenant-size, and slow-provider baselines |
 | 39 | Launch Readiness and Operational Handoff | Planned | Go/no-go sign-off with launch evidence |
 
 ---
@@ -73,6 +73,22 @@ The summary below is the working truth table. The detailed generated checklist s
 | `pnpm run typecheck` | Pass | Full workspace typecheck completed after browser E2E changes. |
 | `pnpm run format:check` | Pass | Generated Playwright output folders are ignored so local artifacts do not break formatting checks. |
 | `pnpm run lint` | Pass | ESLint completed with zero warnings. |
+
+---
+
+## Phase 38 Evidence - 2026-05-15
+
+| Check | Result | Notes |
+|-------|--------|-------|
+| `pnpm run perf:baseline` | Pass | Starts disposable Postgres, applies migrations, builds and starts API, seeds tenant/client/project plus 100 keywords, verifies sequential API, report/export, concurrent read/export p95 budgets, and checks billing-misconfig plus database-outage degraded health behavior. |
+| Keyword import seed | Pass | 100 keywords imported in 51ms against the disposable baseline database. |
+| Core API p95 baseline | Pass | healthz 6ms, auth.me 17ms, tenant.dashboard 11ms, clients.list 7ms, projects.list 8ms, project.detail 10ms, keywords.list 18ms, briefs.list 9ms. |
+| Report/export p95 baseline | Pass | report.generate 21ms, export.keywords.csv 12ms, export.project.json 13ms, with generated reports and seeded export data validated. |
+| Concurrent read/export baseline | Pass | healthz.concurrent p95 20ms, dashboard.concurrent p95 37ms, keywords.concurrent p95 43ms, export.project.concurrent p95 50ms, all with 0 failures. |
+| Degraded billing health baseline | Pass | With billing enabled and Stripe config absent, detailed health returned 503 in 12ms with database ok and billing `missing-config`. |
+| Database outage health baseline | Pass | After the disposable database was stopped, detailed health returned 503 in 11ms with database `error` instead of resetting the request. |
+| Database pool resilience | Fixed | Added a shared PostgreSQL pool error handler so idle client errors are logged and do not terminate the API process during database interruption. |
+| `docs/PERFORMANCE_BASELINE.md` | Added | Documents sequential budgets, report/export budgets, concurrent budgets, degraded billing and database-outage coverage, latest local numbers, and remaining Phase 38 limitations. |
 
 ---
 
