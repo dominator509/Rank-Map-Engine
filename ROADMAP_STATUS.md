@@ -8,7 +8,7 @@
 
 **Status:** The false generated "all 39 phases complete" claim has been retired. Phases 11-39 now follow the canonical roadmap in `BUILD_ROADMAP.md`; implementation status must be proven phase by phase.
 
-**Last audited:** 2026-05-15
+**Last audited:** 2026-05-16
 
 **Current production-readiness focus:** expand performance and reliability baselines beyond the first local API latency guard.
 
@@ -58,7 +58,7 @@ The summary below is the working truth table. The detailed generated checklist s
 | 35 | Observability and Incident Readiness | Canonical phase defined; not verified complete | Runbooks, metrics, tracing/logging evidence |
 | 36 | Database Migrations and Release Gate | Implemented and locally verified; live production config pending | CI/preflight evidence plus staging credentials |
 | 37 | Browser E2E and Frontend Production QA | Substantially complete; browser E2E, mobile, accessibility, and visual baselines passing | Broaden browser coverage opportunistically as new features stabilize |
-| 38 | Performance, Scalability, and Reliability | In progress; local API latency, export/report, concurrent read/export, billing-degraded, and database-outage baselines passing | Add page-load, queue, backup/restore, larger tenant-size, and slow-provider baselines |
+| 38 | Performance, Scalability, and Reliability | In progress; local API latency, export/report, concurrent read/export, page-load, billing-degraded, and database-outage baselines passing | Add queue, backup/restore, larger tenant-size, and slow-provider baselines |
 | 39 | Launch Readiness and Operational Handoff | Planned | Go/no-go sign-off with launch evidence |
 
 ---
@@ -76,7 +76,7 @@ The summary below is the working truth table. The detailed generated checklist s
 
 ---
 
-## Phase 38 Evidence - 2026-05-15
+## Phase 38 Evidence - 2026-05-16
 
 | Check | Result | Notes |
 |-------|--------|-------|
@@ -88,7 +88,9 @@ The summary below is the working truth table. The detailed generated checklist s
 | Degraded billing health baseline | Pass | With billing enabled and Stripe config absent, detailed health returned 503 in 12ms with database ok and billing `missing-config`. |
 | Database outage health baseline | Pass | After the disposable database was stopped, detailed health returned 503 in 11ms with database `error` instead of resetting the request. |
 | Database pool resilience | Fixed | Added a shared PostgreSQL pool error handler so idle client errors are logged and do not terminate the API process during database interruption. |
-| `docs/PERFORMANCE_BASELINE.md` | Added | Documents sequential budgets, report/export budgets, concurrent budgets, degraded billing and database-outage coverage, latest local numbers, and remaining Phase 38 limitations. |
+| `pnpm run perf:pages` | Pass | Starts disposable Postgres, applies migrations, builds the API, builds the production frontend bundle, serves it through a same-origin local harness, seeds an authenticated workspace, and measures key screens in Chromium. |
+| Production page-load baseline | Pass | login 1076ms, dashboard 698ms, clients 631ms, client.detail 646ms, project.detail 681ms with 100 keywords, analytics 671ms, billing 661ms, settings 734ms, mobile.dashboard 618ms, and 0 browser runtime errors. |
+| `docs/PERFORMANCE_BASELINE.md` | Added | Documents sequential budgets, report/export budgets, concurrent budgets, degraded billing and database-outage coverage, production page-load budgets, latest local numbers, and remaining Phase 38 limitations. |
 
 ---
 

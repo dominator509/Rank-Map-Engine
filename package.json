@@ -17,6 +17,7 @@
     "test:e2e:api": "node ./scripts/run-api-e2e.mjs",
     "test:e2e:browser": "node ./scripts/run-browser-e2e.mjs",
     "perf:baseline": "node ./scripts/run-performance-baseline.mjs",
+    "perf:pages": "node ./scripts/run-page-load-baseline.mjs",
     "test:live:services": "node ./scripts/check-live-services.mjs",
     "db:generate": "corepack pnpm --filter @workspace/db run generate",
     "db:migrate": "corepack pnpm --filter @workspace/db run migrate",
