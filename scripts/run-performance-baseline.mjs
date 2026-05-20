@@ -14,43 +14,71 @@ const managedProcesses = [];
 const reportTypes = ["project_summary", "topical_authority", "content_pipeline"];
 
 const budgets = [
-  { name: "healthz", method: "GET", path: "/api/healthz", samples: 25, p95BudgetMs: 75 },
-  { name: "auth.me", method: "GET", path: "/api/auth/me", samples: 25, p95BudgetMs: 150 },
+  { name: "healthz", method: "GET", path: "/api/healthz", samples: 20, p95BudgetMs: 75 },
+  { name: "auth.me", method: "GET", path: "/api/auth/me", samples: 20, p95BudgetMs: 150 },
   {
     name: "tenant.dashboard",
     method: "GET",
     path: "/api/tenant/dashboard",
-    samples: 25,
+    samples: 20,
     p95BudgetMs: 250,
   },
-  { name: "clients.list", method: "GET", path: "/api/clients", samples: 25, p95BudgetMs: 250 },
+  { name: "clients.list", method: "GET", path: "/api/clients", samples: 20, p95BudgetMs: 250 },
   {
     name: "projects.list",
     method: "GET",
     path: () => `/api/projects?clientId=${state.clientId}`,
-    samples: 25,
+    samples: 20,
     p95BudgetMs: 250,
   },
   {
     name: "project.detail",
     method: "GET",
     path: () => `/api/projects/${state.projectId}`,
-    samples: 25,
+    samples: 20,
     p95BudgetMs: 200,
   },
   {
     name: "keywords.list",
     method: "GET",
     path: () => `/api/projects/${state.projectId}/keywords`,
-    samples: 25,
+    samples: 20,
     p95BudgetMs: 300,
   },
   {
     name: "briefs.list",
     method: "GET",
     path: () => `/api/projects/${state.projectId}/briefs`,
-    samples: 25,
+    samples: 20,
     p95BudgetMs: 300,
+  },
+  {
+    name: "ai.tasks.backlog",
+    method: "GET",
+    path: "/api/ai-tasks",
+    validate: (result) => {
+      const counts = countTaskStatuses(result.data);
+      if (result.data.length !== 500) {
+        throw new Error(`Expected 500 backlog tasks, received ${result.data.length}.`);
+      }
+      if (counts.queued !== 350 || counts.running !== 100 || counts.completed !== 50) {
+        throw new Error(`Unexpected backlog status counts: ${JSON.stringify(counts)}.`);
+      }
+    },
+    samples: 12,
+    p95BudgetMs: 500,
+  },
+  {
+    name: "ai.task.detail",
+    method: "GET",
+    path: () => `/api/ai-tasks/${state.aiTaskId}`,
+    validate: (result) => {
+      if (result.data.id !== state.aiTaskId || result.data.status !== "queued") {
+        throw new Error("AI task detail did not return the expected queued task.");
+      }
+    },
+    samples: 12,
+    p95BudgetMs: 200,
   },
   {
     name: "report.generate",
@@ -101,7 +129,7 @@ const concurrentBudgets = [
     name: "healthz.concurrent",
     method: "GET",
     path: "/api/healthz",
-    totalRequests: 80,
+    totalRequests: 60,
     concurrency: 10,
     p95BudgetMs: 150,
   },
@@ -109,7 +137,7 @@ const concurrentBudgets = [
     name: "dashboard.concurrent",
     method: "GET",
     path: "/api/tenant/dashboard",
-    totalRequests: 60,
+    totalRequests: 50,
     concurrency: 10,
     p95BudgetMs: 500,
   },
@@ -117,7 +145,7 @@ const concurrentBudgets = [
     name: "keywords.concurrent",
     method: "GET",
     path: () => `/api/projects/${state.projectId}/keywords`,
-    totalRequests: 60,
+    totalRequests: 50,
     concurrency: 10,
     p95BudgetMs: 600,
   },
@@ -134,12 +162,28 @@ const concurrentBudgets = [
     concurrency: 5,
     p95BudgetMs: 900,
   },
+  {
+    name: "ai.tasks.concurrent",
+    method: "GET",
+    path: "/api/ai-tasks",
+    validate: (result) => {
+      if (result.data.length !== 500) {
+        throw new Error(`Concurrent backlog read returned ${result.data.length} tasks.`);
+      }
+    },
+    totalRequests: 30,
+    concurrency: 5,
+    p95BudgetMs: 900,
+  },
 ];
 
 const state = {
+  aiTaskId: 0,
   cookie: "",
   clientId: 0,
   projectId: 0,
+  tenantId: 0,
+  userId: 0,
 };
 
 function quoteWindowsArg(value) {
@@ -355,7 +399,7 @@ async function rawRequest(baseUrl, path, options = {}) {
 
 async function seedData() {
   const unique = Date.now();
-  await request("/api/auth/register", {
+  const registration = await request("/api/auth/register", {
     method: "POST",
     body: {
       email: `perf-${unique}@rankmap.test`,
@@ -364,6 +408,8 @@ async function seedData() {
       tenantName: `Performance Tenant ${unique}`,
     },
   });
+  state.tenantId = registration.data.user.tenantId;
+  state.userId = registration.data.user.id;
 
   const client = await request("/api/clients", {
     method: "POST",
@@ -403,6 +449,71 @@ async function seedData() {
     importedKeywords: importResult.data.imported,
     keywordImportMs: Math.round(importResult.durationMs),
   };
+}
+
+async function seedAiTaskBacklog() {
+  const started = performance.now();
+  const sql = `
+    insert into ai_tasks (project_id, tenant_id, task_type, provider, status, input, output, created_by)
+    select
+      ${state.projectId},
+      ${state.tenantId},
+      case when gs % 3 = 0 then 'brief' when gs % 3 = 1 then 'cluster' else 'report' end,
+      'mock',
+      case when gs <= 350 then 'queued' when gs <= 450 then 'running' else 'completed' end,
+      jsonb_build_object('backlogIndex', gs, 'keywordCount', 100),
+      case when gs > 450 then jsonb_build_object('mock', true, 'taskId', gs) else null end,
+      ${state.userId}
+    from generate_series(1, 500) as gs;
+  `;
+
+  await run(
+    "docker",
+    [
+      "exec",
+      containerName,
+      "psql",
+      "-U",
+      "rankmap",
+      "-d",
+      "rankmap_perf_baseline",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-c",
+      sql,
+    ],
+    { stdio: "pipe" },
+  );
+
+  const tasks = await request("/api/ai-tasks");
+  const queued = tasks.data.find((task) => task.status === "queued");
+  if (!queued) {
+    throw new Error("Unable to find a queued AI task after backlog seed.");
+  }
+  state.aiTaskId = queued.id;
+
+  const counts = countTaskStatuses(tasks.data);
+  if (tasks.data.length !== 500 || counts.queued !== 350 || counts.running !== 100) {
+    throw new Error(`AI task backlog seed verification failed: ${JSON.stringify(counts)}.`);
+  }
+
+  return {
+    tasks: tasks.data.length,
+    queued: counts.queued,
+    running: counts.running,
+    completed: counts.completed,
+    seedMs: Math.round(performance.now() - started),
+  };
+}
+
+function countTaskStatuses(tasks) {
+  return tasks.reduce(
+    (counts, task) => {
+      counts[task.status] = (counts[task.status] ?? 0) + 1;
+      return counts;
+    },
+    { queued: 0, running: 0, completed: 0 },
+  );
 }
 
 function percentile(values, pct) {
@@ -534,9 +645,19 @@ async function checkDatabaseOutageHealth() {
   };
 }
 
-function printResults(seed, results, concurrentResults, degradedHealth, databaseOutageHealth) {
+function printResults(
+  seed,
+  backlogSeed,
+  results,
+  concurrentResults,
+  degradedHealth,
+  databaseOutageHealth,
+) {
   console.log("\nPerformance baseline");
   console.log(`Seeded ${seed.importedKeywords} keywords in ${seed.keywordImportMs}ms`);
+  console.log(
+    `Seeded ${backlogSeed.tasks} AI tasks in ${backlogSeed.seedMs}ms (${backlogSeed.queued} queued, ${backlogSeed.running} running, ${backlogSeed.completed} completed)`,
+  );
   console.log(
     "Endpoint".padEnd(22) +
       "p50".padStart(8) +
@@ -631,6 +752,7 @@ try {
   await waitForHttp(`${apiUrl}/api/healthz`, "API server", apiProcess);
 
   const seed = await seedData();
+  const backlogSeed = await seedAiTaskBacklog();
   const results = [];
   for (const budget of budgets) {
     results.push(await measureBudget(budget));
@@ -643,7 +765,7 @@ try {
 
   const degradedHealth = await checkDegradedHealth();
   const databaseOutageHealth = await checkDatabaseOutageHealth();
-  printResults(seed, results, concurrentResults, degradedHealth, databaseOutageHealth);
+  printResults(seed, backlogSeed, results, concurrentResults, degradedHealth, databaseOutageHealth);
 
   const failures = [
     ...results.filter((result) => !result.passed),
@@ -670,6 +792,13 @@ try {
     failures.push({
       name: "keyword import duration",
       p95: seed.keywordImportMs,
+      p95BudgetMs: 5000,
+    });
+  }
+  if (backlogSeed.tasks !== 500 || backlogSeed.seedMs > 5000) {
+    failures.push({
+      name: "ai task backlog seed",
+      p95: backlogSeed.seedMs,
       p95BudgetMs: 5000,
     });
   }

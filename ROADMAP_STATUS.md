@@ -8,7 +8,7 @@
 
 **Status:** The false generated "all 39 phases complete" claim has been retired. Phases 11-39 now follow the canonical roadmap in `BUILD_ROADMAP.md`; implementation status must be proven phase by phase.
 
-**Last audited:** 2026-05-16
+**Last audited:** 2026-05-18
 
 **Current production-readiness focus:** expand performance and reliability baselines beyond the first local API latency guard.
 
@@ -58,7 +58,7 @@ The summary below is the working truth table. The detailed generated checklist s
 | 35 | Observability and Incident Readiness | Canonical phase defined; not verified complete | Runbooks, metrics, tracing/logging evidence |
 | 36 | Database Migrations and Release Gate | Implemented and locally verified; live production config pending | CI/preflight evidence plus staging credentials |
 | 37 | Browser E2E and Frontend Production QA | Substantially complete; browser E2E, mobile, accessibility, and visual baselines passing | Broaden browser coverage opportunistically as new features stabilize |
-| 38 | Performance, Scalability, and Reliability | In progress; local API latency, export/report, concurrent read/export, page-load, billing-degraded, and database-outage baselines passing | Add queue, backup/restore, larger tenant-size, and slow-provider baselines |
+| 38 | Performance, Scalability, and Reliability | In progress; local API latency, export/report, queue backlog, concurrent read/export/backlog, page-load, backup/restore, billing-degraded, and database-outage baselines passing | Add larger tenant-size and slow-provider baselines |
 | 39 | Launch Readiness and Operational Handoff | Planned | Go/no-go sign-off with launch evidence |
 
 ---
@@ -76,21 +76,26 @@ The summary below is the working truth table. The detailed generated checklist s
 
 ---
 
-## Phase 38 Evidence - 2026-05-16
+## Phase 38 Evidence - 2026-05-18
 
 | Check | Result | Notes |
 |-------|--------|-------|
-| `pnpm run perf:baseline` | Pass | Starts disposable Postgres, applies migrations, builds and starts API, seeds tenant/client/project plus 100 keywords, verifies sequential API, report/export, concurrent read/export p95 budgets, and checks billing-misconfig plus database-outage degraded health behavior. |
-| Keyword import seed | Pass | 100 keywords imported in 51ms against the disposable baseline database. |
-| Core API p95 baseline | Pass | healthz 6ms, auth.me 17ms, tenant.dashboard 11ms, clients.list 7ms, projects.list 8ms, project.detail 10ms, keywords.list 18ms, briefs.list 9ms. |
-| Report/export p95 baseline | Pass | report.generate 21ms, export.keywords.csv 12ms, export.project.json 13ms, with generated reports and seeded export data validated. |
-| Concurrent read/export baseline | Pass | healthz.concurrent p95 20ms, dashboard.concurrent p95 37ms, keywords.concurrent p95 43ms, export.project.concurrent p95 50ms, all with 0 failures. |
-| Degraded billing health baseline | Pass | With billing enabled and Stripe config absent, detailed health returned 503 in 12ms with database ok and billing `missing-config`. |
-| Database outage health baseline | Pass | After the disposable database was stopped, detailed health returned 503 in 11ms with database `error` instead of resetting the request. |
+| `pnpm run perf:baseline` | Pass | Starts disposable Postgres, applies migrations, builds and starts API, seeds tenant/client/project plus 100 keywords, seeds a 500-task AI backlog, verifies sequential API, report/export, queue backlog, concurrent read/export/backlog p95 budgets, and checks billing-misconfig plus database-outage degraded health behavior. |
+| Keyword import seed | Pass | 100 keywords imported in 68ms against the disposable baseline database. |
+| AI task backlog seed | Pass | 500 tasks inserted and verified in 364ms: 350 queued, 100 running, and 50 completed. |
+| Core API p95 baseline | Pass | healthz 9ms, auth.me 18ms, tenant.dashboard 65ms, clients.list 30ms, projects.list 17ms, project.detail 10ms, keywords.list 16ms, briefs.list 11ms. |
+| Queue backlog p95 baseline | Pass | ai.tasks.backlog 33ms for 500 tasks and ai.task.detail 8ms for a queued task. |
+| Report/export p95 baseline | Pass | report.generate 84ms, export.keywords.csv 12ms, export.project.json 20ms, with generated reports and seeded export data validated. |
+| Concurrent read/export/backlog baseline | Pass | healthz.concurrent p95 21ms, dashboard.concurrent p95 48ms, keywords.concurrent p95 54ms, export.project.concurrent p95 43ms, ai.tasks.concurrent p95 77ms, all with 0 failures. |
+| Degraded billing health baseline | Pass | With billing enabled and Stripe config absent, detailed health returned 503 in 10ms with database ok and billing `missing-config`. |
+| Database outage health baseline | Pass | After the disposable database was stopped, detailed health returned 503 in 10ms with database `error` instead of resetting the request. |
 | Database pool resilience | Fixed | Added a shared PostgreSQL pool error handler so idle client errors are logged and do not terminate the API process during database interruption. |
 | `pnpm run perf:pages` | Pass | Starts disposable Postgres, applies migrations, builds the API, builds the production frontend bundle, serves it through a same-origin local harness, seeds an authenticated workspace, and measures key screens in Chromium. |
 | Production page-load baseline | Pass | login 1076ms, dashboard 698ms, clients 631ms, client.detail 646ms, project.detail 681ms with 100 keywords, analytics 671ms, billing 661ms, settings 734ms, mobile.dashboard 618ms, and 0 browser runtime errors. |
-| `docs/PERFORMANCE_BASELINE.md` | Added | Documents sequential budgets, report/export budgets, concurrent budgets, degraded billing and database-outage coverage, production page-load budgets, latest local numbers, and remaining Phase 38 limitations. |
+| `pnpm run recovery:baseline` | Pass | Starts disposable source and restore PostgreSQL databases, applies migrations to source, seeds representative tenant/project data, creates a custom-format dump, restores into a clean database, and verifies source/restored counts plus checksums. |
+| Backup/restore baseline | Pass | Dump completed in 803ms, restore completed in 2876ms, and restored tenants=1, users=2, clients=1, projects=1, keywords=120, aiTasks=60, reports=2 with matching source/restored fingerprints. |
+| `docs/BACKUP_RESTORE.md` | Added | Documents local recovery proof plus production backup requirements for managed backups, point-in-time recovery, restore drills, access control, and sensitive restored data handling. |
+| `docs/PERFORMANCE_BASELINE.md` | Added | Documents sequential budgets, report/export budgets, queue backlog budgets, concurrent budgets, degraded billing and database-outage coverage, production page-load budgets, recovery baseline, latest local numbers, and remaining Phase 38 limitations. |
 
 ---
 

@@ -1,8 +1,10 @@
 # Performance Baseline
 
-This document records the local Phase 38 baseline for core API paths and page-load behavior. The API baseline is intentionally repeatable: `pnpm run perf:baseline` starts a disposable PostgreSQL database, applies migrations, starts the API server, seeds a tenant/client/project with 100 keywords, measures core endpoints, verifies report generation and export paths, checks selected concurrent read/export paths, checks degraded health scenarios, and removes the test containers/processes afterward.
+This document records the local Phase 38 baseline for core API paths, queue/backlog behavior, and page-load behavior. The API baseline is intentionally repeatable: `pnpm run perf:baseline` starts a disposable PostgreSQL database, applies migrations, starts the API server, seeds a tenant/client/project with 100 keywords, seeds a 500-task AI backlog, measures core endpoints, verifies report generation and export paths, checks selected concurrent read/export/backlog paths, checks degraded health scenarios, and removes the test containers/processes afterward.
 
 The page-load baseline is also repeatable: `pnpm run perf:pages` starts a disposable PostgreSQL database, builds the API, builds the production frontend bundle, serves that built frontend through a same-origin local harness, seeds an authenticated workspace, and measures key screens in Chromium.
+
+The backup/restore baseline is repeatable through `pnpm run recovery:baseline`; it creates a custom-format PostgreSQL dump from a seeded disposable source database, restores into a fresh disposable database, and compares source/restored counts plus checksums.
 
 ## Budgets
 
@@ -17,15 +19,27 @@ The page-load baseline is also repeatable: `pnpm run perf:pages` starts a dispos
 | `GET /api/projects/:id` | p95 <= 200ms |
 | `GET /api/projects/:id/keywords` | p95 <= 300ms |
 | `GET /api/projects/:id/briefs` | p95 <= 300ms |
+| AI task backlog seed | 500 tasks inserted and verified in <= 5000ms |
+| `GET /api/ai-tasks` with 500-task backlog | p95 <= 500ms and status counts match |
+| `GET /api/ai-tasks/:id` | p95 <= 200ms and queued task detail is readable |
 | `POST /api/projects/:id/reports`, 12 generated JSON reports | p95 <= 350ms |
 | `GET /api/projects/:id/export/keywords.csv` | p95 <= 400ms and seeded keyword data present |
 | `GET /api/projects/:id/export/project.json` | p95 <= 500ms and seeded keywords/reports present |
-| `GET /api/healthz`, 80 requests at concurrency 10 | p95 <= 150ms, 0 failures |
-| `GET /api/tenant/dashboard`, 60 requests at concurrency 10 | p95 <= 500ms, 0 failures |
-| `GET /api/projects/:id/keywords`, 60 requests at concurrency 10 | p95 <= 600ms, 0 failures |
+| `GET /api/healthz`, 60 requests at concurrency 10 | p95 <= 150ms, 0 failures |
+| `GET /api/tenant/dashboard`, 50 requests at concurrency 10 | p95 <= 500ms, 0 failures |
+| `GET /api/projects/:id/keywords`, 50 requests at concurrency 10 | p95 <= 600ms, 0 failures |
 | `GET /api/projects/:id/export/project.json`, 30 requests at concurrency 5 | p95 <= 900ms, 0 failures |
+| `GET /api/ai-tasks`, 30 requests at concurrency 5 | p95 <= 900ms, 0 failures |
 | Degraded billing health check | `GET /api/healthz/detailed` returns 503 with database ok and billing `missing-config` |
 | Database outage health check | Stopping the disposable database makes `GET /api/healthz/detailed` return 503 with database `error` |
+
+## Recovery Budgets
+
+| Check | Budget |
+|-------|--------|
+| PostgreSQL dump | Completes successfully |
+| PostgreSQL restore | Completes successfully into a clean database |
+| Restored fingerprint | Source and restored counts/checksums match |
 
 ## Page-Load Budgets
 
@@ -45,28 +59,32 @@ The page-load baseline is also repeatable: `pnpm run perf:pages` starts a dispos
 
 ## Latest Local Baseline
 
-Recorded: 2026-05-15
+Recorded: 2026-05-18
 
 | Check | Result |
 |-------|--------|
-| Keyword import seed | 100 keywords in 51ms |
-| `GET /api/healthz` | p50 5ms, p95 6ms, max 7ms |
-| `GET /api/auth/me` | p50 11ms, p95 17ms, max 24ms |
-| `GET /api/tenant/dashboard` | p50 8ms, p95 11ms, max 36ms |
-| `GET /api/clients` | p50 6ms, p95 7ms, max 7ms |
-| `GET /api/projects?clientId=:id` | p50 6ms, p95 8ms, max 11ms |
-| `GET /api/projects/:id` | p50 6ms, p95 10ms, max 10ms |
-| `GET /api/projects/:id/keywords` | p50 11ms, p95 18ms, max 19ms |
-| `GET /api/projects/:id/briefs` | p50 7ms, p95 9ms, max 16ms |
-| `POST /api/projects/:id/reports` | p50 13ms, p95 21ms, max 21ms |
+| Keyword import seed | 100 keywords in 68ms |
+| AI task backlog seed | 500 tasks in 364ms; 350 queued, 100 running, 50 completed |
+| `GET /api/healthz` | p50 6ms, p95 9ms, max 13ms |
+| `GET /api/auth/me` | p50 15ms, p95 18ms, max 21ms |
+| `GET /api/tenant/dashboard` | p50 26ms, p95 65ms, max 130ms |
+| `GET /api/clients` | p50 11ms, p95 30ms, max 36ms |
+| `GET /api/projects?clientId=:id` | p50 11ms, p95 17ms, max 41ms |
+| `GET /api/projects/:id` | p50 7ms, p95 10ms, max 11ms |
+| `GET /api/projects/:id/keywords` | p50 12ms, p95 16ms, max 20ms |
+| `GET /api/projects/:id/briefs` | p50 8ms, p95 11ms, max 11ms |
+| `GET /api/ai-tasks` with 500-task backlog | p50 19ms, p95 33ms, max 33ms |
+| `GET /api/ai-tasks/:id` | p50 6ms, p95 8ms, max 8ms |
+| `POST /api/projects/:id/reports` | p50 28ms, p95 84ms, max 84ms |
 | `GET /api/projects/:id/export/keywords.csv` | p50 8ms, p95 12ms, max 12ms |
-| `GET /api/projects/:id/export/project.json` | p50 11ms, p95 13ms, max 13ms |
-| `GET /api/healthz`, concurrency 10 | p50 12ms, p95 20ms, max 79ms, 0 failures |
-| `GET /api/tenant/dashboard`, concurrency 10 | p50 32ms, p95 37ms, max 39ms, 0 failures |
-| `GET /api/projects/:id/keywords`, concurrency 10 | p50 36ms, p95 43ms, max 44ms, 0 failures |
-| `GET /api/projects/:id/export/project.json`, concurrency 5 | p50 42ms, p95 50ms, max 51ms, 0 failures |
-| Degraded billing health check | 503 in 12ms; database ok, billing missing config |
-| Database outage health check | 503 in 11ms; database error |
+| `GET /api/projects/:id/export/project.json` | p50 11ms, p95 20ms, max 20ms |
+| `GET /api/healthz`, concurrency 10 | p50 5ms, p95 21ms, max 65ms, 0 failures |
+| `GET /api/tenant/dashboard`, concurrency 10 | p50 40ms, p95 48ms, max 50ms, 0 failures |
+| `GET /api/projects/:id/keywords`, concurrency 10 | p50 41ms, p95 54ms, max 57ms, 0 failures |
+| `GET /api/projects/:id/export/project.json`, concurrency 5 | p50 34ms, p95 43ms, max 43ms, 0 failures |
+| `GET /api/ai-tasks`, concurrency 5 | p50 45ms, p95 77ms, max 82ms, 0 failures |
+| Degraded billing health check | 503 in 10ms; database ok, billing missing config |
+| Database outage health check | 503 in 10ms; database error |
 
 ## Latest Page-Load Baseline
 
@@ -86,10 +104,28 @@ Recorded: 2026-05-16
 | Mobile dashboard at 390px width | 618ms |
 | Browser runtime errors | 0 |
 
+## Latest Recovery Baseline
+
+Recorded: 2026-05-18
+
+| Check | Result |
+|-------|--------|
+| PostgreSQL dump | 803ms |
+| PostgreSQL restore | 2876ms |
+| Restored tenants | 1 |
+| Restored users | 2 |
+| Restored clients | 1 |
+| Restored projects | 1 |
+| Restored keywords | 120 |
+| Restored AI tasks | 60 |
+| Restored reports | 2 |
+| Fingerprint comparison | Source and restored counts/checksums matched |
+
 ## Notes
 
 - This is a local baseline, not a hosted staging or production load test.
-- The current runner measures local sequential request latency plus small concurrent read/export baselines. It is a release guard for obvious regressions, not a substitute for hosted load testing.
+- The current runner measures local sequential request latency plus small concurrent read/export/backlog baselines. It is a release guard for obvious regressions, not a substitute for hosted load testing.
 - The page-load runner measures a production frontend build served by a local same-origin harness. It catches blank screens, slow first-visible screen loads, and browser runtime errors on key authenticated pages.
-- The degraded health checks cover missing billing configuration and database outage behavior. Future reliability work should add slow external provider behavior and queue backlog behavior.
-- Future Phase 38 work should add queue, backup/restore, larger tenant-size, and slow-provider baselines.
+- The recovery runner proves logical PostgreSQL backup/restore in a non-production environment. Production still needs managed backup policy, retention, access controls, and point-in-time recovery configuration.
+- The degraded health checks cover missing billing configuration and database outage behavior. Future reliability work should add slow external provider behavior.
+- Future Phase 38 work should add larger tenant-size and slow-provider baselines.

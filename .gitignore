@@ -34,6 +34,7 @@ node_modules
 /test-results
 /playwright-report
 /artifacts/playwright-report
+/artifacts/recovery-baseline
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
