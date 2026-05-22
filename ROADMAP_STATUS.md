@@ -4,13 +4,13 @@
 
 ---
 
-## Current Phase: Phase 38 - Performance, Scalability, and Reliability
+## Current Phase: Phase 39 - Launch Readiness and Operational Handoff
 
 **Status:** The false generated "all 39 phases complete" claim has been retired. Phases 11-39 now follow the canonical roadmap in `BUILD_ROADMAP.md`; implementation status must be proven phase by phase.
 
-**Last audited:** 2026-05-18
+**Last audited:** 2026-05-22
 
-**Current production-readiness focus:** expand performance and reliability baselines beyond the first local API latency guard.
+**Current production-readiness focus:** collect hosted staging load-test evidence, real-provider smoke-test evidence, operational handoff approvals, and final go/no-go sign-off.
 
 The summary below is the working truth table. The detailed generated checklist sections later in this file are retained as historical implementation notes only; do not treat their "complete" headings as launch sign-off until they are reconciled against the canonical acceptance criteria.
 
@@ -58,8 +58,8 @@ The summary below is the working truth table. The detailed generated checklist s
 | 35 | Observability and Incident Readiness | Canonical phase defined; not verified complete | Runbooks, metrics, tracing/logging evidence |
 | 36 | Database Migrations and Release Gate | Implemented and locally verified; live production config pending | CI/preflight evidence plus staging credentials |
 | 37 | Browser E2E and Frontend Production QA | Substantially complete; browser E2E, mobile, accessibility, and visual baselines passing | Broaden browser coverage opportunistically as new features stabilize |
-| 38 | Performance, Scalability, and Reliability | In progress; local API latency, export/report, queue backlog, concurrent read/export/backlog, page-load, backup/restore, billing-degraded, and database-outage baselines passing | Add larger tenant-size and slow-provider baselines |
-| 39 | Launch Readiness and Operational Handoff | Planned | Go/no-go sign-off with launch evidence |
+| 38 | Performance, Scalability, and Reliability | Local Phase 38 baseline complete; hosted staging/load evidence still pending for launch | Carry hosted staging load and real-provider smoke evidence into Phase 39 sign-off |
+| 39 | Launch Readiness and Operational Handoff | In progress; launch record created, current decision no-go pending external evidence | Attach hosted staging load tests, real-provider smoke tests, backup/PITR confirmation, monitoring/alerting confirmation, rollback rehearsal, and owner approvals |
 
 ---
 
@@ -76,7 +76,7 @@ The summary below is the working truth table. The detailed generated checklist s
 
 ---
 
-## Phase 38 Evidence - 2026-05-18
+## Phase 38 Evidence - 2026-05-20
 
 | Check | Result | Notes |
 |-------|--------|-------|
@@ -94,8 +94,31 @@ The summary below is the working truth table. The detailed generated checklist s
 | Production page-load baseline | Pass | login 1076ms, dashboard 698ms, clients 631ms, client.detail 646ms, project.detail 681ms with 100 keywords, analytics 671ms, billing 661ms, settings 734ms, mobile.dashboard 618ms, and 0 browser runtime errors. |
 | `pnpm run recovery:baseline` | Pass | Starts disposable source and restore PostgreSQL databases, applies migrations to source, seeds representative tenant/project data, creates a custom-format dump, restores into a clean database, and verifies source/restored counts plus checksums. |
 | Backup/restore baseline | Pass | Dump completed in 803ms, restore completed in 2876ms, and restored tenants=1, users=2, clients=1, projects=1, keywords=120, aiTasks=60, reports=2 with matching source/restored fingerprints. |
+| `pnpm run perf:tenant-size` | Pass | Starts disposable Postgres, applies migrations, builds and starts API, seeds a larger tenant, and measures dashboard, list, export, and backlog endpoints against the larger dataset. |
+| Larger tenant-size baseline | Pass | Seeded 25 clients, 100 projects, 9950 keywords, 1000 AI tasks, and 20 reports in 3368ms; p95s were dashboard 225ms, clients 81ms, projects 62ms, keywords 507ms for 5000 target-project keywords, keyword CSV export 251ms, project JSON export 378ms, and AI tasks 104ms. |
+| AI provider timeout configurability | Fixed | OpenAI-compatible provider calls now honor `OPENAI_TIMEOUT_MS` and `OPENAI_BASE_URL`, allowing production tuning and deterministic local failure-mode tests. |
+| `pnpm run perf:slow-provider` | Pass | Starts disposable Postgres, applies migrations, builds and starts API, runs a deliberately delayed local OpenAI-compatible endpoint, triggers auto-clustering, and verifies fast mock fallback. |
+| Slow-provider fallback baseline | Pass | The fake OpenAI-compatible endpoint delayed for 1500ms, API timeout was configured to 200ms, and auto-clustering fell back to mock in 257ms while creating 1 cluster and recording attempted provider `openai`. |
 | `docs/BACKUP_RESTORE.md` | Added | Documents local recovery proof plus production backup requirements for managed backups, point-in-time recovery, restore drills, access control, and sensitive restored data handling. |
-| `docs/PERFORMANCE_BASELINE.md` | Added | Documents sequential budgets, report/export budgets, queue backlog budgets, concurrent budgets, degraded billing and database-outage coverage, production page-load budgets, recovery baseline, latest local numbers, and remaining Phase 38 limitations. |
+| `docs/PERFORMANCE_BASELINE.md` | Added | Documents sequential budgets, report/export budgets, queue backlog budgets, tenant-size budgets, slow-provider budgets, concurrent budgets, degraded billing and database-outage coverage, production page-load budgets, recovery baseline, latest local numbers, and remaining Phase 38 limitations. |
+
+---
+
+## Phase 39 Evidence - 2026-05-22
+
+| Check | Result | Notes |
+|-------|--------|-------|
+| `docs/LAUNCH_READINESS.md` | Added | Canonical Phase 39 sign-off record created with current no-go decision, required hosted staging load-test evidence, real-provider smoke-test evidence, production handoff checklist, and known blockers. |
+| Hosted staging load-test evidence | Pending | Required before launch. Must use a hosted production-like staging deployment and record staging URL, dataset size, runner/tool, concurrency, duration, p95 latency, error rate, operator, and result. |
+| `pnpm run staging:smoke-load` | Added | Hosted staging smoke/load runner accepts `STAGING_BASE_URL`, seeds or reuses a staging test account, exercises critical browser/API paths, runs concurrent API checks, and writes Markdown/JSON launch evidence under `artifacts/staging-launch/`. |
+| Real-provider smoke-test evidence | Pending | Required before launch. Run `pnpm run test:live:services` with live/staging credentials; set `LIVE_KEYWORD_PROVIDER_CHECKS=true` when keyword-provider quota spend is approved. |
+| Local credential availability check | Complete | `LIVE_SERVICES_OPTIONAL=1 LIVE_KEYWORD_PROVIDER_CHECKS=true pnpm run test:live:services` ran on 2026-05-22; all 7 live checks skipped because OpenAI, Stripe, SMTP, Ahrefs, Semrush, and DataForSEO credentials are not present in this local environment. |
+| Production backup/PITR confirmation | Pending | Local logical backup/restore proof exists, but managed hosted backup policy, retention, and point-in-time recovery must be confirmed before launch. |
+| Monitoring/alerting confirmation | Pending | API, database, jobs/queue, providers, billing/webhooks, latency, and error-rate monitoring must be live before launch. |
+| Rollback rehearsal | Pending | Required in staging before final go decision. |
+| `docs/RELEASE.md` | Updated | Release gate now links to Phase 39 launch readiness and states local preflight alone is not launch approval. |
+| `docs/ENV.md` | Updated | Documents `OPENAI_BASE_URL` and `OPENAI_TIMEOUT_MS` for provider timeout/fallback configuration. |
+| Current go/no-go | No-go | Launch blocked until the pending external evidence and owner approvals are attached. |
 
 ---
 

@@ -6,6 +6,10 @@ The page-load baseline is also repeatable: `pnpm run perf:pages` starts a dispos
 
 The backup/restore baseline is repeatable through `pnpm run recovery:baseline`; it creates a custom-format PostgreSQL dump from a seeded disposable source database, restores into a fresh disposable database, and compares source/restored counts plus checksums.
 
+The tenant-size baseline is repeatable through `pnpm run perf:tenant-size`; it seeds a larger single tenant and measures the dashboard, list, export, and backlog endpoints against the larger dataset.
+
+The slow-provider baseline is repeatable through `pnpm run perf:slow-provider`; it runs the API against a deliberately delayed OpenAI-compatible endpoint and verifies fast fallback behavior.
+
 ## Budgets
 
 | Check | Budget |
@@ -32,6 +36,28 @@ The backup/restore baseline is repeatable through `pnpm run recovery:baseline`; 
 | `GET /api/ai-tasks`, 30 requests at concurrency 5 | p95 <= 900ms, 0 failures |
 | Degraded billing health check | `GET /api/healthz/detailed` returns 503 with database ok and billing `missing-config` |
 | Database outage health check | Stopping the disposable database makes `GET /api/healthz/detailed` return 503 with database `error` |
+
+## Tenant-Size Budgets
+
+| Check | Budget |
+|-------|--------|
+| Large tenant seed | 25 clients, 100 projects, 9950 keywords, 1000 AI tasks, and 20 reports in <= 15000ms |
+| `GET /api/tenant/dashboard` | p95 <= 800ms with large tenant counts verified |
+| `GET /api/clients` | p95 <= 500ms with 25 clients |
+| `GET /api/projects?clientId=:id` | p95 <= 500ms with 4 projects for the target client |
+| `GET /api/projects/:id/keywords` | p95 <= 1500ms with 5000 target-project keywords |
+| `GET /api/projects/:id/export/keywords.csv` | p95 <= 2500ms with 5000 target-project keywords |
+| `GET /api/projects/:id/export/project.json` | p95 <= 3000ms with 5000 target-project keywords and 20 reports |
+| `GET /api/ai-tasks` | p95 <= 1500ms with 1000 AI tasks |
+
+## Slow-Provider Budgets
+
+| Check | Budget |
+|-------|--------|
+| Slow OpenAI-compatible endpoint | Delays for 1500ms |
+| API provider timeout | Configurable through `OPENAI_TIMEOUT_MS`; test uses 200ms |
+| Auto-clustering fallback | Completes in <= 2500ms and creates mock clusters |
+| AI task metadata | Records that OpenAI was attempted before fallback |
 
 ## Recovery Budgets
 
@@ -86,6 +112,33 @@ Recorded: 2026-05-18
 | Degraded billing health check | 503 in 10ms; database ok, billing missing config |
 | Database outage health check | 503 in 10ms; database error |
 
+## Latest Tenant-Size Baseline
+
+Recorded: 2026-05-19
+
+| Check | Result |
+|-------|--------|
+| Large tenant seed | 25 clients, 100 projects, 9950 keywords, 1000 AI tasks, and 20 reports in 3368ms |
+| `GET /api/tenant/dashboard` | p50 47ms, p95 225ms, max 225ms |
+| `GET /api/clients` | p50 27ms, p95 81ms, max 81ms |
+| `GET /api/projects?clientId=:id` | p50 23ms, p95 62ms, max 62ms |
+| `GET /api/projects/:id/keywords` | p50 208ms, p95 507ms, max 507ms |
+| `GET /api/projects/:id/export/keywords.csv` | p50 188ms, p95 251ms, max 251ms |
+| `GET /api/projects/:id/export/project.json` | p50 285ms, p95 378ms, max 378ms |
+| `GET /api/ai-tasks` | p50 60ms, p95 104ms, max 104ms |
+
+## Latest Slow-Provider Baseline
+
+Recorded: 2026-05-20
+
+| Check | Result |
+|-------|--------|
+| Slow OpenAI-compatible endpoint | Delayed for 1500ms |
+| API provider timeout | 200ms |
+| Auto-clustering fallback | Completed in 257ms |
+| Mock clusters created | 1 |
+| AI task metadata | Recorded attempted provider as `openai` |
+
 ## Latest Page-Load Baseline
 
 Recorded: 2026-05-16
@@ -125,7 +178,9 @@ Recorded: 2026-05-18
 
 - This is a local baseline, not a hosted staging or production load test.
 - The current runner measures local sequential request latency plus small concurrent read/export/backlog baselines. It is a release guard for obvious regressions, not a substitute for hosted load testing.
+- The tenant-size runner measures a larger local tenant with 25 clients, 100 projects, 9950 keywords, 1000 AI tasks, and 20 reports. It is a dataset-size guard, not a hosted load or multi-tenant capacity test.
+- The slow-provider runner proves AI clustering falls back quickly when an OpenAI-compatible provider is slower than the configured timeout.
 - The page-load runner measures a production frontend build served by a local same-origin harness. It catches blank screens, slow first-visible screen loads, and browser runtime errors on key authenticated pages.
 - The recovery runner proves logical PostgreSQL backup/restore in a non-production environment. Production still needs managed backup policy, retention, access controls, and point-in-time recovery configuration.
-- The degraded health checks cover missing billing configuration and database outage behavior. Future reliability work should add slow external provider behavior.
-- Future Phase 38 work should add larger tenant-size and slow-provider baselines.
+- The degraded health checks cover missing billing configuration and database outage behavior.
+- Phase 38 local baseline coverage now includes the currently planned API, page-load, queue, recovery, tenant-size, and slow-provider proof points. Hosted staging load tests and real provider credentials remain separate launch-readiness work.

@@ -1,0 +1,164 @@
+# Launch Readiness
+
+Phase 39 is the final launch-readiness and operational handoff phase. This document is the canonical sign-off record.
+
+## Current Decision
+
+**Status:** No-go for production launch until hosted staging and real-provider evidence are attached.
+
+Local Phase 38 baselines are complete, but launch sign-off requires proof from a hosted staging deployment using production-like configuration.
+
+## Required Sign-Off Evidence
+
+| Evidence | Status | Required Before Launch |
+| --- | --- | --- |
+| Local release gates | Pending latest full run | Yes |
+| Local API/performance baselines | Passed in Phase 38 | Yes |
+| Local page-load baseline | Passed in Phase 38 | Yes |
+| Local backup/restore proof | Passed in Phase 38 | Yes |
+| Hosted staging health/preflight | Pending staging environment | Yes |
+| Hosted staging load test | Pending staging environment | Yes |
+| Real-provider smoke tests | Pending live credentials | Yes |
+| Billing smoke test | Pending Stripe test/live staging config | Yes if billing is enabled |
+| Backup/PITR configured in hosted database | Pending infrastructure confirmation | Yes |
+| Monitoring/alerting live | Pending infrastructure confirmation | Yes |
+| Rollback rehearsal | Pending staging deployment | Yes |
+| Legal/privacy/retention approval | Pending owner approval | Yes |
+
+## Local Evidence Already Available
+
+| Check | Command | Evidence Location |
+| --- | --- | --- |
+| API latency, export/report, queue, degraded health | `pnpm run perf:baseline` | `docs/PERFORMANCE_BASELINE.md` |
+| Production page-load baseline | `pnpm run perf:pages` | `docs/PERFORMANCE_BASELINE.md` |
+| Large tenant-size baseline | `pnpm run perf:tenant-size` | `docs/PERFORMANCE_BASELINE.md` |
+| Slow-provider fallback | `pnpm run perf:slow-provider` | `docs/PERFORMANCE_BASELINE.md` |
+| Backup/restore proof | `pnpm run recovery:baseline` | `docs/BACKUP_RESTORE.md` |
+| Release preflight | `pnpm run deploy:preflight` | `docs/RELEASE.md` |
+| Live service diagnostics | `pnpm run test:live:services` | This document after credentials are available |
+
+## Hosted Staging Load-Test Evidence
+
+Attach the result here before launch.
+
+Required staging conditions:
+
+- Staging runs a production build, not a dev server.
+- Staging uses a production-like PostgreSQL instance.
+- Migrations have been applied through the release path.
+- `PREFLIGHT_HEALTH_URL` points at `/api/healthz/detailed`.
+- Billing, AI, email, and keyword providers are configured according to the launch scope.
+
+Minimum hosted load-test coverage:
+
+- Authenticated dashboard reads.
+- Client and project list/detail reads.
+- Keyword list reads for a large project.
+- Report generation and export paths.
+- AI task/backlog reads.
+- Health/readiness under dependency degradation where the staging setup supports it.
+
+Run the staging smoke/load runner:
+
+```powershell
+$env:STAGING_BASE_URL = "https://staging.example.com"
+$env:STAGING_OPERATOR = "operator-name"
+pnpm run staging:smoke-load
+```
+
+Useful options:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `STAGING_BASE_URL` | Required | Hosted staging app URL. |
+| `STAGING_OPERATOR` | Current OS user | Person running the launch evidence check. |
+| `STAGING_TEST_EMAIL` / `STAGING_TEST_PASSWORD` | Auto-generated account | Existing staging account to reuse. If omitted, the runner registers a new staging workspace. |
+| `STAGING_KEYWORD_COUNT` | `250` | Number of keywords seeded into the staging project. |
+| `STAGING_LOAD_CONCURRENCY` | `5` | Concurrent API workers per measured endpoint. |
+| `STAGING_LOAD_REQUESTS` | `25` | Requests per measured endpoint. |
+| `STAGING_API_P95_BUDGET_MS` | `1500` | p95 budget for hosted API load checks. |
+| `STAGING_PAGE_BUDGET_MS` | `5000` | visible-page budget for hosted browser smoke checks. |
+| `STAGING_EVIDENCE_DIR` | `artifacts/staging-launch` | Evidence output directory. |
+
+The runner writes:
+
+- `artifacts/staging-launch/staging-smoke-load-evidence.md`
+- `artifacts/staging-launch/staging-smoke-load-evidence.json`
+
+Required result record:
+
+| Field | Value |
+| --- | --- |
+| Staging URL | Pending |
+| Test date | Pending |
+| Dataset size | Pending |
+| Tool/runner | Pending |
+| Peak virtual users / concurrency | Pending |
+| Duration | Pending |
+| p95 latency summary | Pending |
+| Error rate | Pending |
+| Operator | Pending |
+| Result | Pending |
+
+## Real-Provider Smoke Evidence
+
+Run with staging credentials available:
+
+```powershell
+$env:LIVE_SERVICES_OPTIONAL = "0"
+$env:LIVE_KEYWORD_PROVIDER_CHECKS = "true"
+pnpm run test:live:services
+```
+
+Required provider evidence:
+
+| Provider | Required When | Status | Evidence |
+| --- | --- | --- | --- |
+| OpenAI | AI clustering/briefs enabled | Pending | Pending |
+| Stripe API | Billing enabled | Pending | Pending |
+| Stripe webhook secret/config | Billing enabled | Pending | Pending |
+| SMTP | Email enabled | Pending | Pending |
+| Ahrefs | Ahrefs import enabled | Pending | Pending |
+| Semrush | Semrush import enabled | Pending | Pending |
+| DataForSEO | DataForSEO import enabled | Pending | Pending |
+
+Latest local credential availability check: 2026-05-22.
+
+| Check | Result |
+| --- | --- |
+| Command | `LIVE_SERVICES_OPTIONAL=1 LIVE_KEYWORD_PROVIDER_CHECKS=true pnpm run test:live:services` |
+| OpenAI | Skipped, missing `OPENAI_API_KEY` |
+| Stripe billing config | Skipped, missing Stripe secrets/prices |
+| Stripe API | Skipped, missing `STRIPE_SECRET_KEY` |
+| SMTP | Skipped, missing `SMTP_HOST` |
+| Ahrefs | Skipped, missing `AHREFS_API_KEY` |
+| Semrush | Skipped, missing `SEMRUSH_API_KEY` |
+| DataForSEO | Skipped, missing `DATAFORSEO_LOGIN` and `DATAFORSEO_PASSWORD` |
+| Launch impact | Real-provider smoke evidence remains pending |
+
+## Production Handoff Checklist
+
+| Area | Status | Notes |
+| --- | --- | --- |
+| Deployment owner identified | Pending | Name owner before launch. |
+| Incident owner identified | Pending | Name escalation owner before launch. |
+| Rollback procedure rehearsed | Pending | Rehearse in staging. |
+| Database backups enabled | Pending | Confirm managed backup policy and retention. |
+| Point-in-time recovery enabled | Pending | Required where provider supports it. |
+| Monitoring dashboards live | Pending | API, database, queue/jobs, providers, billing. |
+| Alerting live | Pending | Health, error rate, latency, database, billing/webhooks. |
+| Secrets stored in managed secret store | Pending | No `.env` files on production hosts. |
+| Legal/privacy/retention approved | Pending | Confirm policy owner approval. |
+
+## Go/No-Go
+
+Current decision: **No-go**.
+
+Known blockers:
+
+- Hosted staging load-test evidence is not attached.
+- Real-provider smoke-test evidence is not attached.
+- Production backup/PITR and monitoring/alerting are not confirmed.
+- Rollback rehearsal is not recorded.
+
+Launch can move to go only after each required evidence row above has a dated result and owner.

@@ -7,6 +7,19 @@ function getProvider(): AiProvider {
   return "mock";
 }
 
+function getOpenAiTimeoutMs(): number {
+  const raw = process.env.OPENAI_TIMEOUT_MS;
+  if (!raw) return 30000;
+
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 30000;
+}
+
+function getOpenAiUrl(pathname: string): string {
+  const base = process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1";
+  return new URL(pathname.replace(/^\//, ""), `${base.replace(/\/+$/, "")}/`).toString();
+}
+
 export interface ClusterKeyword {
   phrase: string;
   id: number;
@@ -37,7 +50,7 @@ Keywords: ${JSON.stringify(keywords.map((k) => ({ id: k.id, phrase: k.phrase }))
 Return ONLY valid JSON, no explanation.`;
 
   try {
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    const resp = await fetch(getOpenAiUrl("/chat/completions"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -49,7 +62,7 @@ Return ONLY valid JSON, no explanation.`;
         temperature: 0.3,
         response_format: { type: "json_object" },
       }),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(getOpenAiTimeoutMs()),
     });
 
     if (!resp.ok) {
@@ -135,7 +148,7 @@ Return valid JSON matching this shape:
 Include 4-6 sections. Be specific and actionable.`;
 
   try {
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    const resp = await fetch(getOpenAiUrl("/chat/completions"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -147,7 +160,7 @@ Include 4-6 sections. Be specific and actionable.`;
         temperature: 0.4,
         response_format: { type: "json_object" },
       }),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(getOpenAiTimeoutMs()),
     });
 
     if (!resp.ok) {

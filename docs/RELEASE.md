@@ -29,6 +29,8 @@ corepack pnpm run deploy:preflight
 
 The preflight checks required production environment variables, applies pending database migrations, and runs live-service diagnostics when real provider credentials are configured.
 
+Phase 39 launch sign-off is tracked in [`docs/LAUNCH_READINESS.md`](./LAUNCH_READINESS.md). Do not treat local preflight as launch approval by itself; hosted staging load-test evidence and real-provider smoke-test evidence must be attached there.
+
 After the new app version is running, check the deployed health endpoint:
 
 ```powershell

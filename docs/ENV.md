@@ -32,6 +32,8 @@ All feature flags default to `false`. Set to `true` to enable.
 | --- | --- | --- |
 | `OPENAI_API_KEY` | `FEATURE_AI_CLUSTERING=true` | OpenAI API key |
 | `OPENAI_MODEL` | Optional | OpenAI model. Defaults to `gpt-4o-mini`. |
+| `OPENAI_BASE_URL` | Optional | OpenAI-compatible API base URL. Defaults to `https://api.openai.com/v1`. |
+| `OPENAI_TIMEOUT_MS` | Optional | OpenAI-compatible request timeout in milliseconds. Defaults to `30000`. |
 | `ANTHROPIC_API_KEY` | Future Anthropic support | Anthropic API key |
 
 ## Stripe
