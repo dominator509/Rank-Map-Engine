@@ -5,6 +5,8 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { pool } from "@workspace/db";
 import router from "./routes/index.js";
 import { stripeWebhookHandler } from "./routes/billing.js";
@@ -139,5 +141,16 @@ app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
 
 app.use("/api", router);
+
+const staticAssetsDir =
+  process.env.STATIC_ASSETS_DIR ?? path.resolve(process.cwd(), "artifacts/rankmap/dist/public");
+const staticIndexPath = path.join(staticAssetsDir, "index.html");
+
+if (existsSync(staticIndexPath)) {
+  app.use(express.static(staticAssetsDir, { index: false }));
+  app.get(/^(?!\/api(?:\/|$)).*/, (_req, res) => {
+    res.sendFile(staticIndexPath);
+  });
+}
 
 export default app;

@@ -11,6 +11,7 @@ Copy `.env.example` to `.env` for local development. Never commit `.env`.
 | `APP_URL` | Yes | Public app URL used for billing redirects and release checks | `https://app.example.com` |
 | `DATABASE_URL` | Yes | PostgreSQL connection string | `postgresql://user:pass@host:5432/rankmap` |
 | `SESSION_SECRET` | Yes | Session signing secret, at least 32 random characters | `generated-random-secret` |
+| `STATIC_ASSETS_DIR` | Optional | Absolute path to the built React assets when the API server serves the frontend | `/opt/render/project/src/artifacts/rankmap/dist/public` |
 
 ## Feature Flags
 
@@ -75,6 +76,12 @@ All feature flags default to `false`. Set to `true` to enable.
 | `PREFLIGHT_SKIP_LIVE_SERVICES` | Optional | Set `true` to skip live provider diagnostics |
 | `PREFLIGHT_ALLOW_NON_PRODUCTION` | Optional | Set `true` for staging/dry-run checks outside `NODE_ENV=production` |
 | `PREFLIGHT_ALLOW_INSECURE_APP_URL` | Optional | Set `true` for non-HTTPS private staging URLs |
+
+## Render Staging
+
+The repository root `render.yaml` defines a single Render web service for staging. It expects `APP_URL` and `DATABASE_URL` to be entered as Render secrets during Blueprint setup, generates `SESSION_SECRET`, builds the React app with `BASE_PATH=/`, and serves the built frontend through the API server.
+
+See [`docs/STAGING_SETUP.md`](./STAGING_SETUP.md) for the full mostly-free Neon + Render + Cloudflare staging path.
 
 ## Notes
 

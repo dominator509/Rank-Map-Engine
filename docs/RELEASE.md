@@ -31,6 +31,8 @@ The preflight checks required production environment variables, applies pending 
 
 Phase 39 launch sign-off is tracked in [`docs/LAUNCH_READINESS.md`](./LAUNCH_READINESS.md). Do not treat local preflight as launch approval by itself; hosted staging load-test evidence and real-provider smoke-test evidence must be attached there.
 
+For the mostly-free staging practice environment, follow [`docs/STAGING_SETUP.md`](./STAGING_SETUP.md). The root `render.yaml` is the canonical Render Blueprint for that staging service.
+
 After the new app version is running, check the deployed health endpoint:
 
 ```powershell

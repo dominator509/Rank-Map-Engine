@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: rank-map-engine-staging
+    runtime: node
+    plan: free
+    buildCommand: corepack enable && corepack pnpm install --frozen-lockfile && PORT=3000 BASE_PATH=/ corepack pnpm run build
+    preDeployCommand: corepack pnpm run db:migrate
+    startCommand: corepack pnpm --filter @workspace/api-server run start
+    healthCheckPath: /api/healthz
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: STATIC_ASSETS_DIR
+        value: /opt/render/project/src/artifacts/rankmap/dist/public
+      - key: FEATURE_AI_CLUSTERING
+        value: "false"
+      - key: FEATURE_BILLING
+        value: "false"
+      - key: FEATURE_STRIPE_BILLING
+        value: "false"
+      - key: FEATURE_AHREFS_IMPORT
+        value: "false"
+      - key: FEATURE_SEMRUSH_IMPORT
+        value: "false"
+      - key: FEATURE_SEORX_INTEGRATION
+        value: "false"
+      - key: FEATURE_WHITE_LABEL
+        value: "false"
