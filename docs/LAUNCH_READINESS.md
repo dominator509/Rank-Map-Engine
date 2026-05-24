@@ -4,9 +4,9 @@ Phase 39 is the final launch-readiness and operational handoff phase. This docum
 
 ## Current Decision
 
-**Status:** No-go for production launch until hosted staging and real-provider evidence are attached.
+**Status:** No-go for production launch until real-provider smoke tests pass and operational sign-off evidence is attached.
 
-Local Phase 38 baselines are complete, but launch sign-off requires proof from a hosted staging deployment using production-like configuration.
+Local Phase 38 baselines are complete, and hosted Render staging is live with passing smoke/load evidence. Launch sign-off still requires successful real-provider smoke evidence, hosted backup/PITR confirmation, monitoring/alerting confirmation, rollback rehearsal, and owner approvals.
 
 ## Required Sign-Off Evidence
 
@@ -16,9 +16,9 @@ Local Phase 38 baselines are complete, but launch sign-off requires proof from a
 | Local API/performance baselines | Passed in Phase 38 | Yes |
 | Local page-load baseline | Passed in Phase 38 | Yes |
 | Local backup/restore proof | Passed in Phase 38 | Yes |
-| Hosted staging health/preflight | Pending staging environment | Yes |
-| Hosted staging load test | Pending staging environment | Yes |
-| Real-provider smoke tests | Pending live credentials | Yes |
+| Hosted staging health/preflight | Passed on Render staging | Yes |
+| Hosted staging load test | Passed on Render staging | Yes |
+| Real-provider smoke tests | Failed: OpenAI quota exceeded; other provider credentials missing | Yes |
 | Billing smoke test | Pending Stripe test/live staging config | Yes if billing is enabled |
 | Backup/PITR configured in hosted database | Pending infrastructure confirmation | Yes |
 | Monitoring/alerting live | Pending infrastructure confirmation | Yes |
@@ -85,20 +85,20 @@ The runner writes:
 - `artifacts/staging-launch/staging-smoke-load-evidence.md`
 - `artifacts/staging-launch/staging-smoke-load-evidence.json`
 
-Required result record:
+Latest hosted staging result:
 
 | Field | Value |
 | --- | --- |
-| Staging URL | Pending |
-| Test date | Pending |
-| Dataset size | Pending |
-| Tool/runner | Pending |
-| Peak virtual users / concurrency | Pending |
-| Duration | Pending |
-| p95 latency summary | Pending |
-| Error rate | Pending |
-| Operator | Pending |
-| Result | Pending |
+| Staging URL | `https://rank-map-engine.onrender.com` |
+| Test date | `2026-05-23T16:19:25.294Z` |
+| Dataset size | 250 keywords, 1 client, 1 project, 1 report, 1 AI task |
+| Tool/runner | `pnpm run staging:smoke-load` |
+| Peak virtual users / concurrency | 5 |
+| Duration | 48916ms |
+| p95 latency summary | healthz 960ms, dashboard 684ms, clients 264ms, projects 267ms, keywords 729ms, keyword-export 309ms, project-export 843ms, ai-tasks 280ms |
+| Error rate | 0.00% |
+| Operator | domin |
+| Result | PASS |
 
 ## Real-Provider Smoke Evidence
 
@@ -136,6 +136,21 @@ Latest local credential availability check: 2026-05-22.
 | DataForSEO | Skipped, missing `DATAFORSEO_LOGIN` and `DATAFORSEO_PASSWORD` |
 | Launch impact | Real-provider smoke evidence remains pending |
 
+Latest hosted real-provider smoke check: 2026-05-24.
+
+| Check | Result |
+| --- | --- |
+| Staging URL | `https://rank-map-engine.onrender.com` |
+| OpenAI | Failed, API returned quota exceeded (`HTTP 429`) |
+| Stripe billing config | Skipped, missing Stripe secrets/prices |
+| Stripe API | Skipped, missing `STRIPE_SECRET_KEY` |
+| SMTP | Skipped, missing `SMTP_HOST` |
+| Ahrefs | Skipped, missing `AHREFS_API_KEY` |
+| Semrush | Skipped, missing `SEMRUSH_API_KEY` |
+| DataForSEO | Skipped, missing `DATAFORSEO_LOGIN` and `DATAFORSEO_PASSWORD` |
+| Hosted health | Passed, `/api/healthz/detailed` returned `ok` |
+| Launch impact | Real-provider smoke evidence is blocked by OpenAI quota and missing provider credentials |
+
 ## Production Handoff Checklist
 
 | Area | Status | Notes |
@@ -156,8 +171,7 @@ Current decision: **No-go**.
 
 Known blockers:
 
-- Hosted staging load-test evidence is not attached.
-- Real-provider smoke-test evidence is not attached.
+- Real-provider smoke-test evidence has not passed.
 - Production backup/PITR and monitoring/alerting are not confirmed.
 - Rollback rehearsal is not recorded.
 
