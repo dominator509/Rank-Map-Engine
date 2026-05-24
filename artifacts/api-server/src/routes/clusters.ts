@@ -115,10 +115,15 @@ router.post(
     const aiResults = await clusterKeywordsWithAI(
       keywords.map((k) => ({ id: k.id, phrase: k.phrase })),
     );
+    const allowedKeywordIds = new Set(keywords.map((k) => k.id));
 
     const clusters: Array<typeof keywordClustersTable.$inferSelect> = [];
     for (const group of aiResults) {
-      if (group.keywordIds.length === 0) continue;
+      const keywordIds = Array.from(
+        new Set(group.keywordIds.filter((id) => allowedKeywordIds.has(id))),
+      );
+      if (keywordIds.length === 0) continue;
+
       const [cluster] = await db
         .insert(keywordClustersTable)
         .values({
@@ -133,7 +138,13 @@ router.post(
       await db
         .update(keywordsTable)
         .set({ clusterId: cluster.id })
-        .where(inArray(keywordsTable.id, group.keywordIds));
+        .where(
+          and(
+            inArray(keywordsTable.id, keywordIds),
+            eq(keywordsTable.projectId, projectId),
+            eq(keywordsTable.tenantId, tenantId),
+          ),
+        );
 
       clusters.push(cluster);
     }
@@ -198,7 +209,16 @@ router.get("/projects/:projectId/clusters/:id", requireAuth, async (req, res): P
     return;
   }
 
-  const keywords = await db.select().from(keywordsTable).where(eq(keywordsTable.clusterId, id));
+  const keywords = await db
+    .select()
+    .from(keywordsTable)
+    .where(
+      and(
+        eq(keywordsTable.clusterId, id),
+        eq(keywordsTable.projectId, projectId),
+        eq(keywordsTable.tenantId, tenantId),
+      ),
+    );
 
   res.json({ ...cluster, keywords });
 });
@@ -264,7 +284,16 @@ router.delete(
       return;
     }
 
-    await db.update(keywordsTable).set({ clusterId: null }).where(eq(keywordsTable.clusterId, id));
+    await db
+      .update(keywordsTable)
+      .set({ clusterId: null })
+      .where(
+        and(
+          eq(keywordsTable.clusterId, id),
+          eq(keywordsTable.projectId, projectId),
+          eq(keywordsTable.tenantId, tenantId),
+        ),
+      );
 
     await db
       .delete(keywordClustersTable)

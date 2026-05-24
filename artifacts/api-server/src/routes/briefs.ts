@@ -23,6 +23,21 @@ async function assertProjectAccess(projectId: number, tenantId: number) {
   return !!p;
 }
 
+async function assertClusterAccess(clusterId: number, projectId: number, tenantId: number) {
+  const [cluster] = await db
+    .select({ id: keywordClustersTable.id })
+    .from(keywordClustersTable)
+    .where(
+      and(
+        eq(keywordClustersTable.id, clusterId),
+        eq(keywordClustersTable.projectId, projectId),
+        eq(keywordClustersTable.tenantId, tenantId),
+      ),
+    )
+    .limit(1);
+  return !!cluster;
+}
+
 router.get("/projects/:projectId/briefs", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
   const projectId = parseInt(req.params.projectId as string, 10);
@@ -68,6 +83,14 @@ router.post(
 
     if (!(await assertProjectAccess(projectId, tenantId))) {
       res.status(404).json({ error: "Project not found" });
+      return;
+    }
+
+    if (
+      parsed.data.clusterId !== undefined &&
+      !(await assertClusterAccess(parsed.data.clusterId, projectId, tenantId))
+    ) {
+      res.status(400).json({ error: "Invalid clusterId" });
       return;
     }
 
@@ -225,14 +248,26 @@ router.post(
       const [cluster] = await db
         .select({ label: keywordClustersTable.label })
         .from(keywordClustersTable)
-        .where(eq(keywordClustersTable.id, brief.clusterId))
+        .where(
+          and(
+            eq(keywordClustersTable.id, brief.clusterId),
+            eq(keywordClustersTable.projectId, projectId),
+            eq(keywordClustersTable.tenantId, tenantId),
+          ),
+        )
         .limit(1);
       if (cluster) clusterLabel = cluster.label;
 
       const kws = await db
         .select({ phrase: keywordsTable.phrase })
         .from(keywordsTable)
-        .where(eq(keywordsTable.clusterId, brief.clusterId))
+        .where(
+          and(
+            eq(keywordsTable.clusterId, brief.clusterId),
+            eq(keywordsTable.projectId, projectId),
+            eq(keywordsTable.tenantId, tenantId),
+          ),
+        )
         .limit(20);
       clusterKeywords = kws.map((k) => k.phrase);
     }
@@ -242,7 +277,13 @@ router.post(
     const [updated] = await db
       .update(contentBriefsTable)
       .set({ outline: generated, targetWordCount: generated.targetWordCount, status: "draft" })
-      .where(eq(contentBriefsTable.id, id))
+      .where(
+        and(
+          eq(contentBriefsTable.id, id),
+          eq(contentBriefsTable.projectId, projectId),
+          eq(contentBriefsTable.tenantId, tenantId),
+        ),
+      )
       .returning();
 
     const taskId = await enqueueAiTask({

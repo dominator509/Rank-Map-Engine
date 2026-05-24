@@ -1,6 +1,12 @@
 import { Router } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, keywordsTable, projectsTable, projectScoreSettingsTable } from "@workspace/db";
+import {
+  db,
+  keywordClustersTable,
+  keywordsTable,
+  projectsTable,
+  projectScoreSettingsTable,
+} from "@workspace/db";
 import { CreateKeywordBody, ImportKeywordsBody, UpdateKeywordBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 import { computeScore, defaultSettings } from "../lib/scoring.js";
@@ -14,6 +20,25 @@ async function assertProjectAccess(projectId: number, tenantId: number): Promise
     .where(and(eq(projectsTable.id, projectId), eq(projectsTable.tenantId, tenantId)))
     .limit(1);
   return !!p;
+}
+
+async function assertClusterAccess(
+  clusterId: number,
+  projectId: number,
+  tenantId: number,
+): Promise<boolean> {
+  const [cluster] = await db
+    .select({ id: keywordClustersTable.id })
+    .from(keywordClustersTable)
+    .where(
+      and(
+        eq(keywordClustersTable.id, clusterId),
+        eq(keywordClustersTable.projectId, projectId),
+        eq(keywordClustersTable.tenantId, tenantId),
+      ),
+    )
+    .limit(1);
+  return !!cluster;
 }
 
 async function getScoreSettings(projectId: number) {
@@ -232,6 +257,14 @@ router.patch(
     }
 
     const d = parsed.data;
+    if (
+      d.clusterId !== undefined &&
+      !(await assertClusterAccess(d.clusterId, projectId, tenantId))
+    ) {
+      res.status(400).json({ error: "Invalid clusterId" });
+      return;
+    }
+
     const merged = {
       searchVolume: d.searchVolume ?? existing.searchVolume,
       cpc: d.cpc ?? existing.cpc,
@@ -247,7 +280,13 @@ router.patch(
     const [updated] = await db
       .update(keywordsTable)
       .set({ ...merged, rawScore, finalScore })
-      .where(eq(keywordsTable.id, id))
+      .where(
+        and(
+          eq(keywordsTable.id, id),
+          eq(keywordsTable.projectId, projectId),
+          eq(keywordsTable.tenantId, tenantId),
+        ),
+      )
       .returning();
 
     res.json(updated);

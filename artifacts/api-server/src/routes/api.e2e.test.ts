@@ -1,4 +1,4 @@
-import type { Server } from "node:http";
+import { createServer, type Server } from "node:http";
 import { createHmac } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -154,7 +154,7 @@ describeApiE2e("API end-to-end workflows", () => {
     }
 
     baseUrl = `http://127.0.0.1:${address.port}`;
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (server) {
@@ -491,5 +491,203 @@ describeApiE2e("API end-to-end workflows", () => {
     expect(registeredB.status).toBe(201);
     expect((await tenantB.get(`/api/clients/${clientId}`)).status).toBe(404);
     expect((await tenantB.get(`/api/projects/${projectId}`)).status).toBe(404);
+  }, 30000);
+
+  it("keeps AI-returned and client-supplied cluster ids scoped to the caller tenant", async () => {
+    const stamp = Date.now();
+    const tenantA = new ApiAgent(baseUrl);
+    expect(
+      (
+        await tenantA.post("/api/auth/register", {
+          email: `cluster-tenant-a-${stamp}@example.com`,
+          password: "CorrectHorseBatteryStaple!42",
+          fullName: "Cluster Tenant A Admin",
+          tenantName: `Cluster Tenant A ${stamp}`,
+        })
+      ).status,
+    ).toBe(201);
+
+    const tenantB = new ApiAgent(baseUrl);
+    expect(
+      (
+        await tenantB.post("/api/auth/register", {
+          email: `cluster-tenant-b-${stamp}@example.com`,
+          password: "CorrectHorseBatteryStaple!42",
+          fullName: "Cluster Tenant B Admin",
+          tenantName: `Cluster Tenant B ${stamp}`,
+        })
+      ).status,
+    ).toBe(201);
+
+    const clientA = expectRecord(
+      (
+        await tenantA.post("/api/clients", {
+          name: "Cluster Client A",
+          domain: "cluster-a.example",
+          industry: "SaaS",
+        })
+      ).body,
+    );
+    const projectA = expectRecord(
+      (
+        await tenantA.post("/api/projects", {
+          clientId: idFrom(clientA),
+          name: "Cluster Project A",
+          targetDomain: "cluster-a.example",
+          locale: "en-US",
+        })
+      ).body,
+    );
+    const projectAId = idFrom(projectA);
+
+    const clientB = expectRecord(
+      (
+        await tenantB.post("/api/clients", {
+          name: "Cluster Client B",
+          domain: "cluster-b.example",
+          industry: "SaaS",
+        })
+      ).body,
+    );
+    const projectB = expectRecord(
+      (
+        await tenantB.post("/api/projects", {
+          clientId: idFrom(clientB),
+          name: "Cluster Project B",
+          targetDomain: "cluster-b.example",
+          locale: "en-US",
+        })
+      ).body,
+    );
+    const projectBId = idFrom(projectB);
+
+    const attackerKeyword = expectRecord(
+      (
+        await tenantA.post(`/api/projects/${projectAId}/keywords`, {
+          phrase: "attacker owned cluster keyword",
+          searchVolume: 100,
+          cpc: 1.1,
+          kd: 11,
+          intent: "informational",
+        })
+      ).body,
+    );
+    const attackerKeywordId = idFrom(attackerKeyword);
+
+    const victimKeyword = expectRecord(
+      (
+        await tenantB.post(`/api/projects/${projectBId}/keywords`, {
+          phrase: "victim private keyword",
+          searchVolume: 200,
+          cpc: 2.2,
+          kd: 22,
+          intent: "commercial",
+        })
+      ).body,
+    );
+    const victimKeywordId = idFrom(victimKeyword);
+
+    const victimCluster = expectRecord(
+      (
+        await tenantB.post(`/api/projects/${projectBId}/clusters`, {
+          label: "Victim Private Cluster",
+          clusterType: "cluster",
+        })
+      ).body,
+    );
+    const victimClusterId = idFrom(victimCluster);
+
+    const rejectedKeywordPatch = await tenantA.patch(
+      `/api/projects/${projectAId}/keywords/${attackerKeywordId}`,
+      { clusterId: victimClusterId },
+    );
+    expect(rejectedKeywordPatch.status).toBe(400);
+
+    const rejectedBrief = await tenantA.post(`/api/projects/${projectAId}/briefs`, {
+      clusterId: victimClusterId,
+      title: "Should Not Bind Cross-Tenant Cluster",
+      targetWordCount: 1200,
+    });
+    expect(rejectedBrief.status).toBe(400);
+
+    const originalOpenAiKey = process.env.OPENAI_API_KEY;
+    const originalOpenAiBaseUrl = process.env.OPENAI_BASE_URL;
+    let fakeOpenAiStarted = false;
+    const fakeOpenAi = createServer((_req, res) => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  clusters: [
+                    {
+                      label: "Injected Cross Tenant Group",
+                      keywordIds: [attackerKeywordId, victimKeywordId],
+                    },
+                  ],
+                }),
+              },
+            },
+          ],
+        }),
+      );
+    });
+
+    try {
+      const fakeOpenAiBaseUrl = await new Promise<string>((resolve, reject) => {
+        fakeOpenAi.once("error", reject);
+        fakeOpenAi.listen(0, "127.0.0.1", () => {
+          fakeOpenAiStarted = true;
+          fakeOpenAi.off("error", reject);
+          const address = fakeOpenAi.address();
+          if (!address || typeof address === "string") {
+            reject(new Error("Fake OpenAI server did not expose a TCP port."));
+            return;
+          }
+          resolve(`http://127.0.0.1:${address.port}/v1`);
+        });
+      });
+
+      process.env.OPENAI_API_KEY = "test-openai-key";
+      process.env.OPENAI_BASE_URL = fakeOpenAiBaseUrl;
+
+      const autoCluster = await tenantA.post(`/api/projects/${projectAId}/clusters/auto`);
+      expect(autoCluster.status).toBe(201);
+      const createdClusters = expectArray(expectRecord(autoCluster.body).clusters);
+      expect(createdClusters).toHaveLength(1);
+      const createdClusterId = idFrom(createdClusters[0]);
+
+      const attackerCluster = await tenantA.get(
+        `/api/projects/${projectAId}/clusters/${createdClusterId}`,
+      );
+      expect(attackerCluster.status).toBe(200);
+      const attackerClusterKeywords = expectArray(expectRecord(attackerCluster.body).keywords);
+      expect(attackerClusterKeywords.map((keyword) => idFrom(keyword))).toEqual([
+        attackerKeywordId,
+      ]);
+      expect(attackerClusterKeywords.some((keyword) => idFrom(keyword) === victimKeywordId)).toBe(
+        false,
+      );
+
+      const victimKeywordAfter = await tenantB.get(
+        `/api/projects/${projectBId}/keywords/${victimKeywordId}`,
+      );
+      expect(victimKeywordAfter.status).toBe(200);
+      expect(expectRecord(victimKeywordAfter.body).clusterId).toBeNull();
+    } finally {
+      if (originalOpenAiKey === undefined) delete process.env.OPENAI_API_KEY;
+      else process.env.OPENAI_API_KEY = originalOpenAiKey;
+
+      if (originalOpenAiBaseUrl === undefined) delete process.env.OPENAI_BASE_URL;
+      else process.env.OPENAI_BASE_URL = originalOpenAiBaseUrl;
+
+      if (fakeOpenAiStarted) {
+        await new Promise<void>((resolve, reject) => {
+          fakeOpenAi.close((err) => (err ? reject(err) : resolve()));
+        });
+      }
+    }
   }, 30000);
 });
