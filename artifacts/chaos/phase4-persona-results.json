@@ -1,0 +1,38 @@
+{
+  "phase": "phase4-persona-derailment",
+  "executedAt": "2026-05-25T11:46:00.552Z",
+  "scenarios": [
+    {
+      "name": "approve-nonexistent-cluster-before-project-init",
+      "status": 404,
+      "body": {
+        "error": "Cluster not found"
+      }
+    },
+    {
+      "name": "create-brief-before-project-and-cluster",
+      "status": 404,
+      "body": {
+        "error": "Project not found"
+      }
+    },
+    {
+      "name": "api-key-reuse-after-session-logout",
+      "beforeLogoutStatus": 200,
+      "afterLogoutStatus": 200
+    },
+    {
+      "name": "revoked-api-key-replay",
+      "status": 401,
+      "body": {
+        "error": "Unauthorized"
+      }
+    },
+    {
+      "name": "repeated-step3-submit-without-step1-step2",
+      "statusCounts": {
+        "401": 3
+      }
+    }
+  ]
+}
