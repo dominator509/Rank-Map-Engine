@@ -1,0 +1,97 @@
+{
+  "phase": "phase2-mutation",
+  "executedAt": "2026-05-25T11:40:18.933Z",
+  "cases": [
+    {
+      "name": "invalid-integration-credential-types",
+      "path": "/api/integrations",
+      "method": "POST",
+      "body": {
+        "error": "credentials object is required"
+      },
+      "expect": "4xx",
+      "durationMs": 73,
+      "status": 400,
+      "outcome": "graceful-reject"
+    },
+    {
+      "name": "deeply-nested-tenant-patch",
+      "path": "/api/tenant",
+      "method": "PATCH",
+      "body": {
+        "truncated": true,
+        "preview": "{\"id\":1,\"name\":\"Chaos Tenant\",\"plan\":\"solo\",\"seatsUsed\":1,\"seatsMax\":1,\"whiteLabelConfig\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":{\"nested\":...<truncated>",
+        "length": 15727
+      },
+      "expect": "4xx-or-5xx",
+      "durationMs": 56,
+      "status": 200,
+      "outcome": "unexpected-success"
+    },
+    {
+      "name": "massive-integer-project-create",
+      "path": "/api/projects",
+      "method": "POST",
+      "body": {
+        "raw": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Error: Failed query: select &quot;id&quot; from &quot;clients&quot; where (&quot;clients&quot;.&quot;id&quot; = $1 and &quot;clients&quot;.&quot;tenant_id&quot; = $2) limit $3<br>params: 9007199254740991,1,1<br> &nbsp; &nbsp;at NodePgPreparedQuery.queryWithCache (C:\\dev\\Rank-Map-Engine\\node_modules\\.pnpm\\drizzle-orm@0.45.2_@types+pg@8.18.0_pg@8.20.0\\node_modules\\src\\pg-core\\session.ts:73:11)<br> &nbsp; &nbsp;at process.processTicksAndRejections (node:internal/process/task_queues:104:5)<br> &nbsp; &nbsp;at async &lt;anonymous&gt; (C:\\dev\\Rank-Map-Engine\\node_modules\\.pnpm\\drizzle-orm@0.45.2_@types+pg@8.18.0_pg@8.20.0\\node_modules\\src\\node-postgres\\session.ts:154:19)<br> &nbsp; &nbsp;at async &lt;anonymous&gt; (C:\\dev\\Rank-Map-Engine\\artifacts\\api-server\\src\\routes\\projects.ts:41:22)</pre>\n</body>\n</html>\n"
+      },
+      "expect": "4xx",
+      "durationMs": 204,
+      "status": 500,
+      "outcome": "server-error"
+    },
+    {
+      "name": "keywords-import-malformed-array",
+      "path": "/api/projects/1/keywords/import",
+      "method": "POST",
+      "body": {
+        "error": "Invalid input",
+        "details": [
+          {
+            "code": "invalid_type",
+            "expected": "array",
+            "received": "object",
+            "path": [
+              "keywords"
+            ],
+            "message": "Expected array, received object"
+          }
+        ]
+      },
+      "expect": "4xx",
+      "durationMs": 39,
+      "status": 400,
+      "outcome": "graceful-reject"
+    },
+    {
+      "name": "api-key-create-null-name",
+      "path": "/api/api-keys",
+      "method": "POST",
+      "body": {
+        "error": "name is required"
+      },
+      "expect": "4xx",
+      "durationMs": 19,
+      "status": 400,
+      "outcome": "graceful-reject"
+    },
+    {
+      "name": "team-invite-special-char-flood",
+      "path": "/api/team/invite",
+      "method": "POST",
+      "body": {
+        "raw": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Error: Failed query: select &quot;id&quot; from &quot;users&quot; where (&quot;users&quot;.&quot;email&quot; = $1 and &quot;users&quot;.&quot;tenant_id&quot; = $2) limit $3<br>params: bad\u0000mail+1779709224681@example.com,1,1<br> &nbsp; &nbsp;at NodePgPreparedQuery.queryWithCache (C:\\dev\\Rank-Map-Engine\\node_modules\\.pnpm\\drizzle-orm@0.45.2_@types+pg@8.18.0_pg@8.20.0\\node_modules\\src\\pg-core\\session.ts:73:11)<br> &nbsp; &nbsp;at process.processTicksAndRejections (node:internal/process/task_queues:104:5)<br> &nbsp; &nbsp;at async &lt;anonymous&gt; (C:\\dev\\Rank-Map-Engine\\node_modules\\.pnpm\\drizzle-orm@0.45.2_@types+pg@8.18.0_pg@8.20.0\\node_modules\\src\\node-postgres\\session.ts:154:19)<br> &nbsp; &nbsp;at async &lt;anonymous&gt; (C:\\dev\\Rank-Map-Engine\\artifacts\\api-server\\src\\routes\\team.ts:145:28)</pre>\n</body>\n</html>\n"
+      },
+      "expect": "4xx-or-5xx",
+      "durationMs": 92,
+      "status": 500,
+      "outcome": "server-error"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "gracefulRejects": 3,
+    "serverErrors": 2,
+    "unexpectedSuccesses": 1
+  }
+}
