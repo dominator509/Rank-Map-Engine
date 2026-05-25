@@ -37,6 +37,10 @@ router.post(
 
     const { tenantId } = req.session.user!;
     const { clientId, ...rest } = parsed.data;
+    if (!Number.isInteger(clientId) || clientId < 1 || clientId > 2_147_483_647) {
+      res.status(400).json({ error: "Invalid clientId" });
+      return;
+    }
 
     const [client] = await db
       .select({ id: clientsTable.id })

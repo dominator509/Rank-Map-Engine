@@ -7,6 +7,15 @@ import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 
 const router = Router();
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function hasControlChars(value: string): boolean {
+  for (let i = 0; i < value.length; i += 1) {
+    const code = value.charCodeAt(i);
+    if (code <= 31 || code === 127) return true;
+  }
+  return false;
+}
 
 function buildInviteUrl(token: string): string {
   const baseUrl = process.env.APP_URL;
@@ -132,7 +141,7 @@ router.post(
     const { tenantId, id: invitedBy } = req.session.user!;
     const { email, role = "agency_user" } = req.body as { email?: string; role?: string };
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email || hasControlChars(email) || !EMAIL_PATTERN.test(email)) {
       res.status(400).json({ error: "Valid email required" });
       return;
     }

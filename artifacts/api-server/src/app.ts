@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type ErrorRequestHandler, type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
@@ -141,6 +141,18 @@ app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
 
 app.use("/api", router);
+
+const apiErrorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  logger.error(
+    { err, method: req.method, path: req.path },
+    "Unhandled API route error",
+  );
+
+  if (res.headersSent) return;
+  res.status(500).json({ error: "Internal server error" });
+};
+
+app.use("/api", apiErrorHandler);
 
 const staticAssetsDir =
   process.env.STATIC_ASSETS_DIR ?? path.resolve(process.cwd(), "artifacts/rankmap/dist/public");

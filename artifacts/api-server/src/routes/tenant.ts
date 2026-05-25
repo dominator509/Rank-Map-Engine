@@ -14,6 +14,20 @@ import { UpdateMyTenantBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
+const WHITE_LABEL_MAX_DEPTH = 20;
+const WHITE_LABEL_MAX_JSON_LENGTH = 10_000;
+
+function withinWhiteLabelLimits(value: unknown, depth = 0): boolean {
+  if (value === null) return true;
+  if (typeof value !== "object") return true;
+  if (depth >= WHITE_LABEL_MAX_DEPTH) return false;
+  if (Array.isArray(value)) {
+    return value.every((item) => withinWhiteLabelLimits(item, depth + 1));
+  }
+  return Object.values(value as Record<string, unknown>).every((child) =>
+    withinWhiteLabelLimits(child, depth + 1),
+  );
+}
 
 router.get("/tenant", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
@@ -47,8 +61,18 @@ router.patch(
     const updates: Record<string, unknown> = {};
 
     if (parsed.data.name !== undefined) updates.name = parsed.data.name;
-    if (parsed.data.whiteLabelConfig !== undefined)
+    if (parsed.data.whiteLabelConfig !== undefined) {
+      const serialized = JSON.stringify(parsed.data.whiteLabelConfig);
+      if (serialized.length > WHITE_LABEL_MAX_JSON_LENGTH) {
+        res.status(400).json({ error: "whiteLabelConfig payload too large" });
+        return;
+      }
+      if (!withinWhiteLabelLimits(parsed.data.whiteLabelConfig)) {
+        res.status(400).json({ error: "whiteLabelConfig nesting depth exceeds limit" });
+        return;
+      }
       updates.whiteLabelConfig = parsed.data.whiteLabelConfig;
+    }
 
     const [updated] = await db
       .update(tenantsTable)

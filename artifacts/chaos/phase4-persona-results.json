@@ -1,6 +1,6 @@
 {
   "phase": "phase4-persona-derailment",
-  "executedAt": "2026-05-25T11:46:00.552Z",
+  "executedAt": "2026-05-25T11:55:54.437Z",
   "scenarios": [
     {
       "name": "approve-nonexistent-cluster-before-project-init",
