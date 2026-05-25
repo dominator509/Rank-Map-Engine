@@ -56,7 +56,7 @@ async function waitForPostgres(containerName) {
   throw new Error("postgres readiness timeout");
 }
 
-async function waitForHttp(url) {
+async function waitForHttp(url, getLogs) {
   for (let i = 0; i < 45; i += 1) {
     try {
       const res = await fetch(`${url}/api/healthz`);
@@ -64,7 +64,7 @@ async function waitForHttp(url) {
     } catch {}
     await delay(500);
   }
-  throw new Error("api readiness timeout");
+  throw new Error(`api readiness timeout\n${getLogs()}`);
 }
 
 export async function startSystem() {
@@ -83,7 +83,9 @@ export async function startSystem() {
   ]);
   await waitForPostgres(containerName);
 
-  await run("corepack", ["pnpm", "--filter", "@workspace/db", "run", "migrate"], { env: { DATABASE_URL } });
+  await run("cmd.exe", ["/d", "/s", "/c", "corepack pnpm --filter @workspace/db run migrate"], {
+    env: { DATABASE_URL },
+  });
 
   const server = spawn("node", ["artifacts/api-server/dist/index.mjs"], {
     cwd: ROOT,
@@ -96,9 +98,12 @@ export async function startSystem() {
     },
     stdio: "pipe",
   });
+  let serverLogs = "";
+  server.stdout?.on("data", (chunk) => (serverLogs += chunk.toString()));
+  server.stderr?.on("data", (chunk) => (serverLogs += chunk.toString()));
 
   const baseUrl = `http://127.0.0.1:${apiPort}`;
-  await waitForHttp(baseUrl);
+  await waitForHttp(baseUrl, () => serverLogs.slice(-4000));
 
   return {
     baseUrl,

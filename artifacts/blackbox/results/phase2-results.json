@@ -1,0 +1,250 @@
+{
+  "phase": 2,
+  "baseUrl": "http://127.0.0.1:53384",
+  "results": [
+    {
+      "name": "register-valid",
+      "status": 201,
+      "body": {
+        "user": {
+          "id": 1,
+          "tenantId": 1,
+          "email": "bb1779711323004@example.com",
+          "fullName": "Black Box",
+          "role": "agency_admin",
+          "avatarUrl": null,
+          "lastLoginAt": null,
+          "createdAt": "2026-05-25T12:15:24.537Z",
+          "updatedAt": "2026-05-25T12:15:24.537Z"
+        },
+        "tenant": {
+          "id": 1,
+          "name": "QA Tenant",
+          "plan": "solo",
+          "seatsUsed": 1,
+          "seatsMax": 1,
+          "whiteLabelConfig": null,
+          "stripeCustomerId": null,
+          "stripeSubscriptionId": null,
+          "stripeSubscriptionStatus": null,
+          "stripeCurrentPeriodEnd": null,
+          "stripeCancelAtPeriodEnd": false,
+          "createdAt": "2026-05-25T12:15:24.396Z",
+          "updatedAt": "2026-05-25T12:15:24.396Z"
+        }
+      },
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "connection": "keep-alive",
+        "content-length": "553",
+        "content-security-policy": "default-src 'self';script-src 'self' 'unsafe-inline';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;img-src 'self' data: https:;connect-src 'self' https://api.openai.com https://api.stripe.com;font-src 'self' data: https://fonts.gstatic.com;object-src 'none';frame-src 'none';upgrade-insecure-requests;base-uri 'self';form-action 'self';frame-ancestors 'self';script-src-attr 'none'",
+        "content-type": "application/json; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "date": "Mon, 25 May 2026 12:15:24 GMT",
+        "etag": "W/\"229-VLrcfv+7FnRQOmmvbUHEJ+zOZnQ\"",
+        "keep-alive": "timeout=5",
+        "origin-agent-cluster": "?1",
+        "ratelimit-limit": "20",
+        "ratelimit-policy": "20;w=900",
+        "ratelimit-remaining": "19",
+        "ratelimit-reset": "900",
+        "referrer-policy": "no-referrer",
+        "set-cookie": "connect.sid=s%3AbL5MOLku0MgXfGYNxH_KMFuhjGKj3_1-.sHW%2F4IZhSJgNm8s1TdYnKqCimMKXKKAK4lU1ip2AOuE; Path=/; Expires=Mon, 01 Jun 2026 12:15:24 GMT; HttpOnly; SameSite=Lax",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "vary": "Origin",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-download-options": "noopen",
+        "x-frame-options": "SAMEORIGIN",
+        "x-permitted-cross-domain-policies": "none",
+        "x-xss-protection": "0"
+      }
+    },
+    {
+      "name": "register-missing-required",
+      "status": 400,
+      "body": {
+        "error": "Invalid input",
+        "details": [
+          {
+            "code": "invalid_type",
+            "expected": "string",
+            "received": "undefined",
+            "path": [
+              "password"
+            ],
+            "message": "Required"
+          },
+          {
+            "code": "invalid_type",
+            "expected": "string",
+            "received": "undefined",
+            "path": [
+              "fullName"
+            ],
+            "message": "Required"
+          },
+          {
+            "code": "invalid_type",
+            "expected": "string",
+            "received": "undefined",
+            "path": [
+              "tenantName"
+            ],
+            "message": "Required"
+          }
+        ]
+      },
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "connection": "keep-alive",
+        "content-length": "363",
+        "content-security-policy": "default-src 'self';script-src 'self' 'unsafe-inline';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;img-src 'self' data: https:;connect-src 'self' https://api.openai.com https://api.stripe.com;font-src 'self' data: https://fonts.gstatic.com;object-src 'none';frame-src 'none';upgrade-insecure-requests;base-uri 'self';form-action 'self';frame-ancestors 'self';script-src-attr 'none'",
+        "content-type": "application/json; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "date": "Mon, 25 May 2026 12:15:24 GMT",
+        "etag": "W/\"16b-XjP+YlTzzEnYdJLxMIRRIumw9hU\"",
+        "keep-alive": "timeout=5",
+        "origin-agent-cluster": "?1",
+        "ratelimit-limit": "20",
+        "ratelimit-policy": "20;w=900",
+        "ratelimit-remaining": "18",
+        "ratelimit-reset": "899",
+        "referrer-policy": "no-referrer",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "vary": "Origin",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-download-options": "noopen",
+        "x-frame-options": "SAMEORIGIN",
+        "x-permitted-cross-domain-policies": "none",
+        "x-xss-protection": "0"
+      }
+    },
+    {
+      "name": "create-client-valid",
+      "status": 201,
+      "body": {
+        "id": 1,
+        "tenantId": 1,
+        "name": "Client Boundary",
+        "domain": "example.com",
+        "industry": "tech",
+        "logoUrl": null,
+        "isActive": true,
+        "createdAt": "2026-05-25T12:15:25.199Z",
+        "updatedAt": "2026-05-25T12:15:25.199Z"
+      },
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "connection": "keep-alive",
+        "content-length": "196",
+        "content-security-policy": "default-src 'self';script-src 'self' 'unsafe-inline';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;img-src 'self' data: https:;connect-src 'self' https://api.openai.com https://api.stripe.com;font-src 'self' data: https://fonts.gstatic.com;object-src 'none';frame-src 'none';upgrade-insecure-requests;base-uri 'self';form-action 'self';frame-ancestors 'self';script-src-attr 'none'",
+        "content-type": "application/json; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "date": "Mon, 25 May 2026 12:15:24 GMT",
+        "etag": "W/\"c4-FBbFJKuTtGbBnYn042nwyD/yuEI\"",
+        "keep-alive": "timeout=5",
+        "origin-agent-cluster": "?1",
+        "ratelimit-limit": "500",
+        "ratelimit-policy": "500;w=900",
+        "ratelimit-remaining": "496",
+        "ratelimit-reset": "899",
+        "referrer-policy": "no-referrer",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "vary": "Origin",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-download-options": "noopen",
+        "x-frame-options": "SAMEORIGIN",
+        "x-permitted-cross-domain-policies": "none",
+        "x-xss-protection": "0"
+      }
+    },
+    {
+      "name": "create-client-empty-name",
+      "status": 201,
+      "body": {
+        "id": 2,
+        "tenantId": 1,
+        "name": "",
+        "domain": null,
+        "industry": null,
+        "logoUrl": null,
+        "isActive": true,
+        "createdAt": "2026-05-25T12:15:25.562Z",
+        "updatedAt": "2026-05-25T12:15:25.562Z"
+      },
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "connection": "keep-alive",
+        "content-length": "170",
+        "content-security-policy": "default-src 'self';script-src 'self' 'unsafe-inline';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;img-src 'self' data: https:;connect-src 'self' https://api.openai.com https://api.stripe.com;font-src 'self' data: https://fonts.gstatic.com;object-src 'none';frame-src 'none';upgrade-insecure-requests;base-uri 'self';form-action 'self';frame-ancestors 'self';script-src-attr 'none'",
+        "content-type": "application/json; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "date": "Mon, 25 May 2026 12:15:25 GMT",
+        "etag": "W/\"aa-dh00BdmoXkJKscLu8+geL8jHnXg\"",
+        "keep-alive": "timeout=5",
+        "origin-agent-cluster": "?1",
+        "ratelimit-limit": "500",
+        "ratelimit-policy": "500;w=900",
+        "ratelimit-remaining": "495",
+        "ratelimit-reset": "898",
+        "referrer-policy": "no-referrer",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "vary": "Origin",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-download-options": "noopen",
+        "x-frame-options": "SAMEORIGIN",
+        "x-permitted-cross-domain-policies": "none",
+        "x-xss-protection": "0"
+      }
+    },
+    {
+      "name": "create-client-large-name",
+      "status": 201,
+      "body": {
+        "id": 3,
+        "tenantId": 1,
+        "name": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "domain": null,
+        "industry": null,
+        "logoUrl": null,
+        "isActive": true,
+        "createdAt": "2026-05-25T12:15:25.891Z",
+        "updatedAt": "2026-05-25T12:15:25.891Z"
+      },
+      "headers": {
+        "access-control-allow-credentials": "true",
+        "connection": "keep-alive",
+        "content-length": "1194",
+        "content-security-policy": "default-src 'self';script-src 'self' 'unsafe-inline';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;img-src 'self' data: https:;connect-src 'self' https://api.openai.com https://api.stripe.com;font-src 'self' data: https://fonts.gstatic.com;object-src 'none';frame-src 'none';upgrade-insecure-requests;base-uri 'self';form-action 'self';frame-ancestors 'self';script-src-attr 'none'",
+        "content-type": "application/json; charset=utf-8",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "date": "Mon, 25 May 2026 12:15:25 GMT",
+        "etag": "W/\"4aa-zEgVveY98nUhRKfAD9o/3pgg+sA\"",
+        "keep-alive": "timeout=5",
+        "origin-agent-cluster": "?1",
+        "ratelimit-limit": "500",
+        "ratelimit-policy": "500;w=900",
+        "ratelimit-remaining": "494",
+        "ratelimit-reset": "898",
+        "referrer-policy": "no-referrer",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "vary": "Origin",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-download-options": "noopen",
+        "x-frame-options": "SAMEORIGIN",
+        "x-permitted-cross-domain-policies": "none",
+        "x-xss-protection": "0"
+      }
+    }
+  ]
+}
