@@ -68,3 +68,40 @@
 - Cluster ownership and keyword linkage must remain tenant-safe under concurrent task execution.
 - Stateless route behavior must remain deterministic under parallel request load.
 
+## Phase 2: Unit and Component Verification (Core Logic)
+
+### Added deterministic unit suites
+- `artifacts/api-server/src/lib/scoring.test.ts`
+- `artifacts/api-server/src/lib/api-key-scopes.test.ts`
+- `artifacts/api-server/src/lib/integration-credentials.test.ts`
+- `artifacts/api-server/src/lib/keyword-adapters.test.ts`
+- `artifacts/api-server/src/lib/ai-provider.test.ts`
+
+### Scope of verification
+- Scoring logic:
+  - Nullish values, extreme numeric bounds, unknown intents, freshness decay behavior.
+- API key scopes:
+  - Scope normalization, malformed scope rejection, read/write permission boundaries.
+- Integration credential crypto:
+  - Envelope detection, normalize/reject malformed values, encrypt/decrypt round trips, legacy plaintext compatibility.
+- Provider adapters:
+  - Deterministic fallback behavior when env creds are missing or provider calls fail.
+  - Parsing behavior for provider payload formats.
+- AI provider orchestration:
+  - Provider selection by env, JSON parse/filter behavior, fallback-to-mock guarantees.
+
+### Execution status
+- Command:
+  - `pnpm exec vitest run artifacts/api-server/src/lib/scoring.test.ts artifacts/api-server/src/lib/integration-credentials.test.ts artifacts/api-server/src/lib/keyword-adapters.test.ts artifacts/api-server/src/lib/ai-provider.test.ts artifacts/api-server/src/lib/api-key-scopes.test.ts --coverage --coverage.all=false`
+- Result:
+  - 5 test files passed, 20 tests passed.
+
+### Coverage snapshot (Phase 2 run)
+- `scoring.ts`: 100% statements, 91.66% branches.
+- `api-key-scopes.ts`: 93.54% statements, 68.75% branches.
+- `integration-credentials.ts`: 93.9% statements, 86.66% branches.
+- `keyword-adapters.ts`: 80.43% statements, 48.64% branches.
+- `ai-provider.ts`: 94.28% statements, 72.72% branches.
+
+### Tooling note
+- Running coverage with default `all=true` currently fails due a `vitest`/`minimatch` runtime issue (`brace_expansion is not a function`). The deterministic workaround for CI is `--coverage.all=false`.
