@@ -10,12 +10,13 @@ function stripeSignature(payload: string, secret: string, timestamp: number): st
   return `t=${timestamp},v1=${signature}`;
 }
 
-describe("whitebox phase 3 - route branch coverage", () => {
-  let server: Server;
+describe.sequential("whitebox phase 3 - route branch coverage", () => {
+  let server: Server | undefined;
   let baseUrl = "";
   const originalEnv = { ...process.env };
 
-  beforeAll(async () => {
+  beforeAll(
+    async () => {
     process.env.NODE_ENV = "test";
     process.env.SESSION_SECRET = "whitebox-session-secret-with-at-least-32-characters";
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_whitebox";
@@ -34,13 +35,17 @@ describe("whitebox phase 3 - route branch coverage", () => {
       throw new Error("Test server did not expose a TCP port.");
     }
     baseUrl = `http://127.0.0.1:${address.port}`;
-  });
+    },
+    30000,
+  );
 
   afterAll(async () => {
     process.env = originalEnv;
-    await new Promise<void>((resolve, reject) => {
-      server.close((err) => (err ? reject(err) : resolve()));
-    });
+    if (server) {
+      await new Promise<void>((resolve, reject) => {
+        server!.close((err) => (err ? reject(err) : resolve()));
+      });
+    }
   });
 
   it("returns ok detailed health when token matches and dependencies are healthy", async () => {
