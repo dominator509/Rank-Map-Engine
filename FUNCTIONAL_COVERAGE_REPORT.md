@@ -137,3 +137,29 @@
 ### Observed failure mode during orchestration (non-app code)
 - Running `api.e2e.test.ts` and `api.boundary.e2e.test.ts` in the same Vitest invocation produced a setup race around `ensureSessionTable()` in test bootstrap (`duplicate key value violates unique constraint "pg_type_typname_nsp_index"`). 
 - This is a test-harness concurrency issue in startup orchestration, not an application runtime contract failure.
+
+## Phase 4: High-Concurrency and End-to-End Workflow Validation
+
+### Added suite
+- `artifacts/api-server/src/routes/api.concurrency.e2e.test.ts`
+
+### High-throughput checks implemented
+- Parallel authenticated read load:
+  - 25 concurrent `GET /api/tenant/dashboard` requests via API key.
+  - Asserts all responses are `200`.
+  - Verifies API-key `last_used_at` persisted.
+- Parallel write load:
+  - 15 concurrent `POST /api/projects` requests under one tenant/client.
+  - Asserts all responses are `201`.
+  - Verifies final persisted project count matches request count exactly.
+
+### End-state verification against BEHAVIORAL_CONTRACT_MAP
+- Confirms tenant-scoped integrity under concurrency.
+- Confirms auth state mutation (`last_used_at`) under read throughput.
+- Confirms deterministic final DB cardinality after concurrent writes.
+
+### Execution status
+- Command:
+  - `pnpm exec vitest run artifacts/api-server/src/routes/api.concurrency.e2e.test.ts` (with `RUN_API_E2E=1`, ephemeral Postgres, migrated schema).
+- Result:
+  - 1/1 concurrency E2E test passed.
