@@ -4,6 +4,12 @@ import { db, integrationCredentialsTable } from "@workspace/db";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 import { audit } from "../lib/audit.js";
 import { fetchKeywordsFromProvider, type AdapterProvider } from "../lib/keyword-adapters.js";
+import { logger } from "../lib/logger.js";
+import {
+  decryptIntegrationCredentials,
+  encryptIntegrationCredentials,
+  normalizeIntegrationCredentials,
+} from "../lib/integration-credentials.js";
 
 const router = Router();
 
@@ -40,10 +46,13 @@ router.post(
       return;
     }
 
-    if (!credentials || typeof credentials !== "object") {
+    const normalizedCredentials = normalizeIntegrationCredentials(credentials);
+    if (!normalizedCredentials) {
       res.status(400).json({ error: "credentials object is required" });
       return;
     }
+
+    const encryptedCredentials = encryptIntegrationCredentials(normalizedCredentials);
 
     const [existing] = await db
       .select({ id: integrationCredentialsTable.id })
@@ -60,7 +69,7 @@ router.post(
     if (existing) {
       [result] = await db
         .update(integrationCredentialsTable)
-        .set({ credentials, isActive: "true" })
+        .set({ credentials: encryptedCredentials, isActive: "true" })
         .where(eq(integrationCredentialsTable.id, existing.id))
         .returning({
           id: integrationCredentialsTable.id,
@@ -70,7 +79,7 @@ router.post(
     } else {
       [result] = await db
         .insert(integrationCredentialsTable)
-        .values({ tenantId, provider, credentials })
+        .values({ tenantId, provider, credentials: encryptedCredentials })
         .returning({
           id: integrationCredentialsTable.id,
           provider: integrationCredentialsTable.provider,
@@ -146,7 +155,20 @@ router.post("/integrations/:provider/search", requireAuth, async (req, res): Pro
     )
     .limit(1);
 
-  const credentials = (cred?.credentials ?? {}) as Record<string, string>;
+  let credentials: Record<string, string>;
+  try {
+    credentials = decryptIntegrationCredentials(cred?.credentials);
+  } catch (err) {
+    logger.error(
+      { err, tenantId, provider },
+      "Failed to decrypt integration credentials for keyword search",
+    );
+    res.status(500).json({
+      error: "Stored integration credentials could not be read. Reconfigure this integration.",
+    });
+    return;
+  }
+
   const keywords = await fetchKeywordsFromProvider(
     provider as AdapterProvider,
     query.trim(),
