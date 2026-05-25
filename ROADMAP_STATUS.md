@@ -284,7 +284,7 @@ The summary below is the working truth table. The detailed generated checklist s
 - [x] `GET /api/integrations` — List connected integrations
 - [x] `POST /api/integrations` — Save integration credentials (upsert)
 - [x] `DELETE /api/integrations/:provider` — Remove integration
-- [x] Credentials stored in `integration_credentials` table (JSONB, tenant-scoped)
+- [x] Credentials stored in `integration_credentials` table (AES-256-GCM encrypted JSONB, tenant-scoped)
 
 ---
 

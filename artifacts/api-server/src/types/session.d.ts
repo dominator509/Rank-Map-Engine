@@ -8,6 +8,7 @@ declare module "express-session" {
       email: string;
       fullName: string;
       role: string;
+      apiKeyScopes?: string[];
     };
   }
 }

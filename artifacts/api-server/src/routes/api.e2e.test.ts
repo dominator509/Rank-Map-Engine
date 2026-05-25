@@ -184,6 +184,10 @@ describeApiE2e("API end-to-end workflows", () => {
     const authMe = await tenantA.get("/api/auth/me");
     expect(authMe.status).toBe(200);
 
+    expect((await unauthenticated.get("/api/healthz")).status).toBe(200);
+    expect((await unauthenticated.get("/api/healthz/detailed")).status).toBe(401);
+    expect((await tenantA.get("/api/healthz/detailed")).status).toBe(403);
+
     const tenantAlias = await tenantA.get("/api/tenants/me");
     expect(tenantAlias.status).toBe(200);
     const tenantRecord = expectRecord(tenantAlias.body);
@@ -200,6 +204,66 @@ describeApiE2e("API end-to-end workflows", () => {
       ).body,
     );
     const clientId = idFrom(client);
+
+    const integrationCredentials = { apiKey: `semrush-secret-${stamp}` };
+    const integration = await tenantA.post("/api/integrations", {
+      provider: "semrush",
+      credentials: integrationCredentials,
+    });
+    expect(integration.status).toBe(201);
+    expect(expectRecord(integration.body).credentials).toBeUndefined();
+
+    const { apiKeysTable, db, integrationCredentialsTable } = await import("@workspace/db");
+    const { and, eq } = await import("drizzle-orm");
+    const { migratePlaintextIntegrationCredentials } =
+      await import("../lib/integration-credential-migration");
+    const { decryptIntegrationCredentials, isEncryptedIntegrationCredentials } =
+      await import("../lib/integration-credentials");
+    const [storedIntegration] = await db
+      .select({ credentials: integrationCredentialsTable.credentials })
+      .from(integrationCredentialsTable)
+      .where(
+        and(
+          eq(integrationCredentialsTable.tenantId, tenantId),
+          eq(integrationCredentialsTable.provider, "semrush"),
+        ),
+      )
+      .limit(1);
+    expect(storedIntegration).toBeTruthy();
+    expect(JSON.stringify(storedIntegration.credentials)).not.toContain(
+      integrationCredentials.apiKey,
+    );
+    expect(isEncryptedIntegrationCredentials(storedIntegration.credentials)).toBe(true);
+    expect(decryptIntegrationCredentials(storedIntegration.credentials)).toEqual(
+      integrationCredentials,
+    );
+
+    const legacyCredentials = { apiKey: `legacy-secret-${stamp}` };
+    const [legacyIntegration] = await db
+      .insert(integrationCredentialsTable)
+      .values({
+        tenantId,
+        provider: "legacy-provider",
+        credentials: legacyCredentials,
+      })
+      .returning({ id: integrationCredentialsTable.id });
+    expect(legacyIntegration).toBeTruthy();
+
+    const migrationResult = await migratePlaintextIntegrationCredentials();
+    expect(migrationResult.migrated).toBeGreaterThanOrEqual(1);
+
+    const [migratedLegacyIntegration] = await db
+      .select({ credentials: integrationCredentialsTable.credentials })
+      .from(integrationCredentialsTable)
+      .where(eq(integrationCredentialsTable.id, legacyIntegration.id))
+      .limit(1);
+    expect(JSON.stringify(migratedLegacyIntegration.credentials)).not.toContain(
+      legacyCredentials.apiKey,
+    );
+    expect(isEncryptedIntegrationCredentials(migratedLegacyIntegration.credentials)).toBe(true);
+    expect(decryptIntegrationCredentials(migratedLegacyIntegration.credentials)).toEqual(
+      legacyCredentials,
+    );
 
     const project = expectRecord(
       (
@@ -473,8 +537,44 @@ describeApiE2e("API end-to-end workflows", () => {
     expect(apiKeyDashboard.status).toBe(200);
     expect(expectRecord(apiKeyDashboard.body).projectCount).toBe(1);
 
+    const readOnlyApiKeyResponse = await tenantA.post("/api/api-keys", {
+      name: "E2E Read-Only API Key",
+      scopes: ["read"],
+    });
+    expect(readOnlyApiKeyResponse.status).toBe(201);
+    const readOnlyApiKeyBody = expectRecord(readOnlyApiKeyResponse.body);
+    expect(readOnlyApiKeyBody.scopes).toEqual(["read"]);
+    const readOnlyApiKey = readOnlyApiKeyBody.key;
+    expect(typeof readOnlyApiKey).toBe("string");
+    const readOnlyApiKeyAgent = new ApiAgent(baseUrl, {
+      authorization: `Bearer ${readOnlyApiKey as string}`,
+    });
+    expect((await readOnlyApiKeyAgent.get("/api/tenant/dashboard")).status).toBe(200);
+    expect(
+      (
+        await readOnlyApiKeyAgent.post("/api/clients", {
+          name: "Should Not Create",
+          domain: "readonly.example",
+          industry: "SaaS",
+        })
+      ).status,
+    ).toBe(403);
+
+    const invalidScopeKey = await tenantA.post("/api/api-keys", {
+      name: "Invalid Scope API Key",
+      scopes: ["admin"],
+    });
+    expect(invalidScopeKey.status).toBe(400);
+
+    await db
+      .update(apiKeysTable)
+      .set({ scopes: ["admin"] })
+      .where(eq(apiKeysTable.id, idFrom(apiKeyBody)));
+    expect((await apiKeyAgent.get("/api/tenant/dashboard")).status).toBe(401);
+
     const revokeKey = await tenantA.delete(`/api/api-keys/${idFrom(apiKeyBody)}`);
     expect(revokeKey.status).toBe(204);
+    expect((await tenantA.delete(`/api/api-keys/${idFrom(readOnlyApiKeyBody)}`)).status).toBe(204);
     expect((await apiKeyAgent.get("/api/tenant/dashboard")).status).toBe(401);
 
     const readAllNotifications = await tenantA.patch("/api/notifications/read-all");

@@ -46,7 +46,7 @@ Required staging conditions:
 - Staging runs a production build, not a dev server.
 - Staging uses a production-like PostgreSQL instance.
 - Migrations have been applied through the release path.
-- `PREFLIGHT_HEALTH_URL` points at `/api/healthz/detailed`.
+- `PREFLIGHT_HEALTH_URL` points at `/api/healthz/detailed` and `HEALTH_CHECK_TOKEN` is set for detailed health evidence.
 - Billing, AI, email, and keyword providers are configured according to the launch scope.
 
 Minimum hosted load-test coverage:

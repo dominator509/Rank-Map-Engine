@@ -17,6 +17,10 @@ services:
         sync: false
       - key: SESSION_SECRET
         generateValue: true
+      - key: INTEGRATION_CREDENTIALS_KEY
+        generateValue: true
+      - key: HEALTH_CHECK_TOKEN
+        generateValue: true
       - key: STATIC_ASSETS_DIR
         value: /opt/render/project/src/artifacts/rankmap/dist/public
       - key: FEATURE_AI_CLUSTERING

@@ -10,6 +10,8 @@ export interface KeywordData {
 
 export type AdapterProvider = "ahrefs" | "semrush" | "dataforseo" | "manual" | "csv";
 
+const truthyPattern = /^(1|true|yes)$/i;
+
 export async function fetchKeywordsFromProvider(
   provider: AdapterProvider,
   query: string,
@@ -73,6 +75,11 @@ async function fetchFromSEMrush(
   const apiKey = credentials.apiKey ?? process.env.SEMRUSH_API_KEY;
   if (!apiKey) {
     logger.warn("SEMRUSH_API_KEY not set, returning mock data");
+    return mockKeywordData(query, "semrush");
+  }
+
+  if (!truthyPattern.test(process.env.ALLOW_SEMRUSH_QUERY_AUTH ?? "")) {
+    logger.warn("SEMrush query-string API key auth is disabled, returning mock data");
     return mockKeywordData(query, "semrush");
   }
 

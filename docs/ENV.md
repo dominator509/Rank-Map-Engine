@@ -11,6 +11,8 @@ Copy `.env.example` to `.env` for local development. Never commit `.env`.
 | `APP_URL` | Yes | Public app URL used for billing redirects and release checks | `https://app.example.com` |
 | `DATABASE_URL` | Yes | PostgreSQL connection string | `postgresql://user:pass@host:5432/rankmap` |
 | `SESSION_SECRET` | Yes | Session signing secret, at least 32 random characters | `generated-random-secret` |
+| `INTEGRATION_CREDENTIALS_KEY` | Production | Dedicated encryption key for stored integration credentials. Falls back to `SESSION_SECRET` only outside the release gate. | 32-byte random base64 or hex |
+| `HEALTH_CHECK_TOKEN` | Production | Bearer token for `/api/healthz/detailed`, staging smoke/load, and preflight detailed health checks | `generated-random-token` |
 | `STATIC_ASSETS_DIR` | Optional | Absolute path to the built React assets when the API server serves the frontend | `/opt/render/project/src/artifacts/rankmap/dist/public` |
 
 ## Feature Flags
@@ -54,6 +56,7 @@ All feature flags default to `false`. Set to `true` to enable.
 | --- | --- | --- |
 | `AHREFS_API_KEY` | `FEATURE_AHREFS_IMPORT=true` | Ahrefs API key |
 | `SEMRUSH_API_KEY` | `FEATURE_SEMRUSH_IMPORT=true` | Semrush API key |
+| `ALLOW_SEMRUSH_QUERY_AUTH` | `FEATURE_SEMRUSH_IMPORT=true` | Set `true` only when explicitly accepting Semrush's query-string API key requirement |
 | `DATAFORSEO_LOGIN` | DataForSEO import enabled | DataForSEO account login |
 | `DATAFORSEO_PASSWORD` | DataForSEO import enabled | DataForSEO account password |
 
@@ -71,7 +74,7 @@ All feature flags default to `false`. Set to `true` to enable.
 
 | Variable | Required When | Description |
 | --- | --- | --- |
-| `PREFLIGHT_HEALTH_URL` | Optional after deploy | URL for `/api/healthz/detailed` health verification |
+| `PREFLIGHT_HEALTH_URL` | Optional after deploy | URL for `/api/healthz/detailed` health verification. Sends `HEALTH_CHECK_TOKEN` as a bearer token when set. |
 | `PREFLIGHT_SKIP_MIGRATIONS` | Optional | Set `true` to skip migration application |
 | `PREFLIGHT_SKIP_LIVE_SERVICES` | Optional | Set `true` to skip live provider diagnostics |
 | `PREFLIGHT_ALLOW_NON_PRODUCTION` | Optional | Set `true` for staging/dry-run checks outside `NODE_ENV=production` |
@@ -79,7 +82,7 @@ All feature flags default to `false`. Set to `true` to enable.
 
 ## Render Staging
 
-The repository root `render.yaml` defines a single Render web service for staging. It expects `APP_URL` and `DATABASE_URL` to be entered as Render secrets during Blueprint setup, generates `SESSION_SECRET`, builds the React app with `BASE_PATH=/`, and serves the built frontend through the API server.
+The repository root `render.yaml` defines a single Render web service for staging. It expects `APP_URL` and `DATABASE_URL` to be entered as Render secrets during Blueprint setup, generates `SESSION_SECRET`, `INTEGRATION_CREDENTIALS_KEY`, and `HEALTH_CHECK_TOKEN`, builds the React app with `BASE_PATH=/`, and serves the built frontend through the API server.
 
 See [`docs/STAGING_SETUP.md`](./STAGING_SETUP.md) for the full mostly-free Neon + Render + Cloudflare staging path.
 

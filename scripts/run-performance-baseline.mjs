@@ -12,6 +12,7 @@ const apiUrl = `http://127.0.0.1:${apiPort}`;
 const degradedApiUrl = `http://127.0.0.1:${degradedApiPort}`;
 const managedProcesses = [];
 const reportTypes = ["project_summary", "topical_authority", "content_pipeline"];
+const healthCheckToken = "performance-baseline-health-token";
 
 const budgets = [
   { name: "healthz", method: "GET", path: "/api/healthz", samples: 20, p95BudgetMs: 75 },
@@ -384,6 +385,9 @@ async function rawRequest(baseUrl, path, options = {}) {
   if (options.body !== undefined && !headers.has("content-type")) {
     headers.set("content-type", "application/json");
   }
+  if (path === "/api/healthz/detailed" && !headers.has("authorization")) {
+    headers.set("authorization", `Bearer ${healthCheckToken}`);
+  }
 
   const started = performance.now();
   const response = await fetch(`${baseUrl}${path}`, {
@@ -602,6 +606,7 @@ async function checkDegradedHealth() {
       FEATURE_STRIPE_BILLING: "true",
       NODE_ENV: "test",
       PORT: degradedApiPort,
+      HEALTH_CHECK_TOKEN: healthCheckToken,
       SESSION_SECRET: "performance-degraded-session-secret-with-at-least-32-characters",
     },
   );
@@ -745,6 +750,7 @@ try {
       FEATURE_STRIPE_BILLING: "false",
       NODE_ENV: "test",
       PORT: apiPort,
+      HEALTH_CHECK_TOKEN: healthCheckToken,
       SESSION_SECRET: "performance-baseline-session-secret-with-at-least-32-characters",
     },
   );

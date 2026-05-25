@@ -11,6 +11,7 @@ const outputDir = path.resolve(
 );
 
 const baseUrl = normalizeBaseUrl(requiredEnv("STAGING_BASE_URL"));
+const healthCheckToken = requiredEnv("HEALTH_CHECK_TOKEN");
 const operator = process.env.STAGING_OPERATOR?.trim() || process.env.USERNAME || "unknown";
 const keywordCount = readPositiveInt("STAGING_KEYWORD_COUNT", 250);
 const concurrency = readPositiveInt("STAGING_LOAD_CONCURRENCY", 5);
@@ -84,6 +85,9 @@ async function request(pathname, options = {}) {
   const headers = new Headers(options.headers);
   if (options.body !== undefined && !headers.has("content-type")) {
     headers.set("content-type", "application/json");
+  }
+  if (pathname === "/api/healthz/detailed" && !headers.has("authorization")) {
+    headers.set("authorization", `Bearer ${healthCheckToken}`);
   }
   if (state.cookie) headers.set("cookie", state.cookie);
 

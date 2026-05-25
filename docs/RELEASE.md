@@ -22,6 +22,7 @@ Run this before starting a production release:
 $env:NODE_ENV="production"
 $env:DATABASE_URL="postgresql://..."
 $env:SESSION_SECRET="..."
+$env:INTEGRATION_CREDENTIALS_KEY="..."
 $env:PORT="3000"
 $env:APP_URL="https://app.example.com"
 corepack pnpm run deploy:preflight
@@ -37,6 +38,7 @@ After the new app version is running, check the deployed health endpoint:
 
 ```powershell
 $env:PREFLIGHT_HEALTH_URL="https://app.example.com/api/healthz/detailed"
+$env:HEALTH_CHECK_TOKEN="..."
 corepack pnpm run deploy:preflight
 ```
 
@@ -45,6 +47,7 @@ corepack pnpm run deploy:preflight
 - `PREFLIGHT_SKIP_MIGRATIONS=true` skips `db:migrate`.
 - `PREFLIGHT_SKIP_LIVE_SERVICES=true` skips live provider checks.
 - `PREFLIGHT_HEALTH_URL=https://.../api/healthz/detailed` verifies the deployed app is healthy.
+- `HEALTH_CHECK_TOKEN=...` authenticates the detailed deployed health check.
 - `PREFLIGHT_ALLOW_NON_PRODUCTION=true` allows a dry run outside `NODE_ENV=production`.
 - `PREFLIGHT_ALLOW_INSECURE_APP_URL=true` allows non-HTTPS app URLs for private staging.
 
@@ -55,6 +58,8 @@ Always required:
 - `NODE_ENV=production`
 - `DATABASE_URL`
 - `SESSION_SECRET`
+- `INTEGRATION_CREDENTIALS_KEY`
+- `HEALTH_CHECK_TOKEN`
 - `PORT`
 - `APP_URL` or `PUBLIC_APP_URL`
 

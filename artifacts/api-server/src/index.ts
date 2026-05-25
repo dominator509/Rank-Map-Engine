@@ -1,4 +1,5 @@
 import app from "./app";
+import { migratePlaintextIntegrationCredentials } from "./lib/integration-credential-migration";
 import { logger } from "./lib/logger";
 import { ensureSessionTable } from "./lib/session-table";
 
@@ -15,6 +16,12 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 ensureSessionTable()
+  .then(async () => {
+    const credentialMigration = await migratePlaintextIntegrationCredentials();
+    if (credentialMigration.migrated > 0 || credentialMigration.skipped > 0) {
+      logger.info(credentialMigration, "Checked integration credential encryption state");
+    }
+  })
   .then(() => {
     app.listen(port, (err) => {
       if (err) {
@@ -25,6 +32,6 @@ ensureSessionTable()
     });
   })
   .catch((err) => {
-    logger.error({ err }, "Failed to ensure session table");
+    logger.error({ err }, "Failed to prepare API server startup");
     process.exit(1);
   });

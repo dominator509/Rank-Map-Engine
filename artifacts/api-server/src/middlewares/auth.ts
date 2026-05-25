@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { apiKeysTable, db, usersTable } from "@workspace/db";
+import { apiKeyScopesAllowMethod, normalizeApiKeyScopes } from "../lib/api-key-scopes.js";
 
 type AuthenticatedUser = NonNullable<Request["session"]["user"]>;
 
@@ -27,6 +28,7 @@ async function authenticateApiKey(req: Request): Promise<boolean> {
     .select({
       apiKeyId: apiKeysTable.id,
       keyHash: apiKeysTable.keyHash,
+      scopes: apiKeysTable.scopes,
       expiresAt: apiKeysTable.expiresAt,
       userId: usersTable.id,
       tenantId: usersTable.tenantId,
@@ -46,12 +48,18 @@ async function authenticateApiKey(req: Request): Promise<boolean> {
       return false;
     }
 
+    const apiKeyScopes = normalizeApiKeyScopes(candidate.scopes, { allowEmpty: true });
+    if (apiKeyScopes === null) {
+      return false;
+    }
+
     setRequestScopedSessionUser(req, {
       id: candidate.userId,
       tenantId: candidate.tenantId,
       email: candidate.email,
       fullName: candidate.fullName,
       role: candidate.role,
+      apiKeyScopes,
     });
 
     await db
@@ -65,6 +73,16 @@ async function authenticateApiKey(req: Request): Promise<boolean> {
   return false;
 }
 
+function enforceApiKeyScope(req: Request, res: Response): boolean {
+  const scopes = req.session.user?.apiKeyScopes;
+  if (apiKeyScopesAllowMethod(scopes, req.method)) {
+    return true;
+  }
+
+  res.status(403).json({ error: "API key scope does not allow this request" });
+  return false;
+}
+
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   if (!req.session.user) {
     const authenticated = await authenticateApiKey(req);
@@ -73,6 +91,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       return;
     }
   }
+  if (!enforceApiKeyScope(req, res)) return;
   next();
 }
 
@@ -85,6 +104,7 @@ export function requireRole(roles: string[]) {
         return;
       }
     }
+    if (!enforceApiKeyScope(req, res)) return;
     const user = req.session.user;
     if (!user || !roles.includes(user.role)) {
       res.status(403).json({ error: "Forbidden" });

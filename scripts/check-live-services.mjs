@@ -94,20 +94,27 @@ await checkKeywordProvider("Ahrefs keyword import", ["AHREFS_API_KEY"], async ()
   });
 });
 
-await checkKeywordProvider("SEMrush keyword import", ["SEMRUSH_API_KEY"], async () => {
-  const url = new URL("https://api.semrush.com/");
-  url.searchParams.set("type", "phrase_related");
-  url.searchParams.set("key", requiredEnv("SEMRUSH_API_KEY"));
-  url.searchParams.set("phrase", process.env.LIVE_KEYWORD_QUERY || "seo software");
-  url.searchParams.set("database", "us");
-  url.searchParams.set("export_columns", "Ph,Nq,Cp,Kd");
-  url.searchParams.set("display_limit", "10");
+if (!truthyPattern.test(process.env.ALLOW_SEMRUSH_QUERY_AUTH ?? "")) {
+  skipped += 1;
+  console.log(
+    "SKIP SEMrush keyword import: Semrush requires query-string API key auth; set ALLOW_SEMRUSH_QUERY_AUTH=true to opt in.",
+  );
+} else {
+  await checkKeywordProvider("SEMrush keyword import", ["SEMRUSH_API_KEY"], async () => {
+    const url = new URL("https://api.semrush.com/");
+    url.searchParams.set("type", "phrase_related");
+    url.searchParams.set("key", requiredEnv("SEMRUSH_API_KEY"));
+    url.searchParams.set("phrase", process.env.LIVE_KEYWORD_QUERY || "seo software");
+    url.searchParams.set("database", "us");
+    url.searchParams.set("export_columns", "Ph,Nq,Cp,Kd");
+    url.searchParams.set("display_limit", "10");
 
-  const text = await fetchText("SEMrush", url.toString());
-  if (/^ERROR/i.test(text.trim())) {
-    throw new Error(text.trim().slice(0, 250));
-  }
-});
+    const text = await fetchText("SEMrush", url.toString());
+    if (/^ERROR/i.test(text.trim())) {
+      throw new Error(text.trim().slice(0, 250));
+    }
+  });
+}
 
 await checkKeywordProvider(
   "DataForSEO keyword import",

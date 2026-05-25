@@ -1,6 +1,6 @@
 # Performance Baseline
 
-This document records the local Phase 38 baseline for core API paths, queue/backlog behavior, and page-load behavior. The API baseline is intentionally repeatable: `pnpm run perf:baseline` starts a disposable PostgreSQL database, applies migrations, starts the API server, seeds a tenant/client/project with 100 keywords, seeds a 500-task AI backlog, measures core endpoints, verifies report generation and export paths, checks selected concurrent read/export/backlog paths, checks degraded health scenarios, and removes the test containers/processes afterward.
+This document records the local Phase 38 baseline for core API paths, queue/backlog behavior, and page-load behavior. The API baseline is intentionally repeatable: `pnpm run perf:baseline` starts a disposable PostgreSQL database, applies migrations, starts the API server with a disposable `HEALTH_CHECK_TOKEN`, seeds a tenant/client/project with 100 keywords, seeds a 500-task AI backlog, measures core endpoints, verifies report generation and export paths, checks selected concurrent read/export/backlog paths, checks authenticated degraded health scenarios, and removes the test containers/processes afterward.
 
 The page-load baseline is also repeatable: `pnpm run perf:pages` starts a disposable PostgreSQL database, builds the API, builds the production frontend bundle, serves that built frontend through a same-origin local harness, seeds an authenticated workspace, and measures key screens in Chromium.
 

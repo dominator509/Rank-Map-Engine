@@ -1,8 +1,11 @@
+import { createHash, timingSafeEqual } from "node:crypto";
+import type { NextFunction, Request, Response } from "express";
 import { Router, type IRouter } from "express";
 import { HealthCheckResponse } from "@workspace/api-zod";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
+import { requireAuth } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
 
@@ -11,7 +14,41 @@ router.get("/healthz", (_req, res) => {
   res.json(data);
 });
 
-router.get("/healthz/detailed", async (_req, res) => {
+function timingSafeTokenEqual(actual: string, expected: string): boolean {
+  const actualHash = createHash("sha256").update(actual).digest();
+  const expectedHash = createHash("sha256").update(expected).digest();
+  return timingSafeEqual(actualHash, expectedHash);
+}
+
+function healthTokenMatches(req: Request): boolean {
+  const expected = process.env.HEALTH_CHECK_TOKEN?.trim();
+  if (!expected) return false;
+
+  const bearer = req.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
+  const actual = req.get("x-health-check-token") ?? bearer;
+  return actual ? timingSafeTokenEqual(actual, expected) : false;
+}
+
+async function requireDetailedHealthAccess(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  if (healthTokenMatches(req)) {
+    next();
+    return;
+  }
+
+  await requireAuth(req, res, () => {
+    if (req.session.user?.role !== "super_admin") {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    next();
+  });
+}
+
+router.get("/healthz/detailed", requireDetailedHealthAccess, async (_req, res) => {
   const start = Date.now();
   let dbOk = false;
   let dbLatencyMs = 0;

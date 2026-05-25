@@ -16,7 +16,7 @@ Contact: security@rankmap.io *(placeholder — update before launch)*
 - `.env` is in `.gitignore` and must never be committed.
 - `.env.example` contains only fake placeholder values (e.g., `your-secret-here`).
 - ESLint is configured to flag patterns that look like hardcoded secrets.
-- All production secrets are managed via Replit's secret store.
+- All production secrets are managed via the hosting provider's secret store.
 
 ### Authentication & Sessions
 
@@ -56,7 +56,9 @@ Contact: security@rankmap.io *(placeholder — update before launch)*
 
 - Real integration adapters (Ahrefs, Semrush, Stripe) are feature-flagged.
 - Mock adapters are always available and require no credentials.
-- Integration credentials encrypted in `IntegrationCredential.encrypted_api_key`.
+- Integration credentials are encrypted with AES-256-GCM before being stored in the `integration_credentials.credentials` JSONB column.
+- Legacy plaintext integration credential rows are re-encrypted on API server startup.
+- Semrush live API calls are disabled by default because Semrush requires the API key as a request parameter; set `ALLOW_SEMRUSH_QUERY_AUTH=true` only after explicitly accepting that provider constraint.
 
 ### Dependency Security
 
@@ -70,11 +72,13 @@ Contact: security@rankmap.io *(placeholder — update before launch)*
 - `pino` used throughout — structured JSON logs in production.
 - `console.log` in server code flagged by ESLint (`no-console` rule).
 
-### Deployment (Replit)
+### Deployment
 
-- Production environment variables set in Replit secret store.
+- Production environment variables set in the hosting provider's secret store.
 - `NODE_ENV=production` in production deployments.
-- Health endpoint (`/api/healthz`) does not expose internal details.
+- `INTEGRATION_CREDENTIALS_KEY` and `HEALTH_CHECK_TOKEN` are required by release preflight.
+- Public health endpoint (`/api/healthz`) does not expose internal details.
+- Detailed health endpoint (`/api/healthz/detailed`) requires `HEALTH_CHECK_TOKEN` or a `super_admin` session.
 
 ---
 

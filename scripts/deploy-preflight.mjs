@@ -44,6 +44,8 @@ function validateProductionEnv() {
 
   requireEnv("DATABASE_URL");
   requireEnv("SESSION_SECRET");
+  requireEnv("INTEGRATION_CREDENTIALS_KEY");
+  requireEnv("HEALTH_CHECK_TOKEN");
   requireEnv("PORT");
   requireEnv("APP_URL", { alternate: "PUBLIC_APP_URL" });
 
@@ -55,6 +57,16 @@ function validateProductionEnv() {
   const sessionSecret = envValue("SESSION_SECRET");
   if (sessionSecret && sessionSecret.length < 32) {
     errors.push("SESSION_SECRET must be at least 32 characters.");
+  }
+
+  const integrationCredentialsKey = envValue("INTEGRATION_CREDENTIALS_KEY");
+  if (integrationCredentialsKey && integrationCredentialsKey.length < 32) {
+    errors.push("INTEGRATION_CREDENTIALS_KEY must be at least 32 characters.");
+  }
+
+  const healthCheckToken = envValue("HEALTH_CHECK_TOKEN");
+  if (healthCheckToken && healthCheckToken.length < 32) {
+    errors.push("HEALTH_CHECK_TOKEN must be at least 32 characters.");
   }
 
   const appUrl = envValue("APP_URL") ?? envValue("PUBLIC_APP_URL");
@@ -87,6 +99,11 @@ function validateProductionEnv() {
 
   if (isTruthy("FEATURE_SEMRUSH_IMPORT")) {
     requireEnv("SEMRUSH_API_KEY");
+    if (!isTruthy("ALLOW_SEMRUSH_QUERY_AUTH")) {
+      errors.push(
+        "FEATURE_SEMRUSH_IMPORT requires ALLOW_SEMRUSH_QUERY_AUTH=true because Semrush authenticates with a request parameter.",
+      );
+    }
   }
 
   if (envValue("DATAFORSEO_LOGIN") || envValue("DATAFORSEO_PASSWORD")) {
@@ -148,11 +165,16 @@ async function maybeCheckHealthEndpoint() {
 
   console.log(`Checking deployed health endpoint: ${redactUrl(healthUrl)}`);
   let lastError = "";
+  const headers = { accept: "application/json" };
+  const healthToken = envValue("HEALTH_CHECK_TOKEN");
+  if (healthToken) {
+    headers.authorization = `Bearer ${healthToken}`;
+  }
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
       const response = await fetch(healthUrl, {
-        headers: { accept: "application/json" },
+        headers,
         signal: AbortSignal.timeout(10000),
       });
       const body = await response.json();

@@ -65,7 +65,7 @@ RankMap is an AI-powered SEO keyword research, content strategy, topical authori
 - Team invites: 7-day expiry token stored in `user_invitations`, seat limit enforced before creation
 - Security: `helmet` (secure headers) + `express-rate-limit` (500/15min global, 20/15min auth routes)
 - Keyword adapters: Ahrefs, SEMrush, DataForSEO each have real API calls with mock fallback
-- Integration credentials stored as JSONB in `integration_credentials` table (never logged/exposed in API)
+- Integration credentials stored as encrypted JSONB in `integration_credentials` table (never logged/exposed in API)
 
 ## New Backend Files (Phases 11–18)
 

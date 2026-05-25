@@ -3,6 +3,7 @@ import { eq, and, isNull } from "drizzle-orm";
 import { db, apiKeysTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/auth.js";
 import { audit } from "../lib/audit.js";
+import { normalizeApiKeyScopes } from "../lib/api-key-scopes.js";
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 
@@ -28,11 +29,7 @@ router.get("/api-keys", requireAuth, async (req, res): Promise<void> => {
 
 router.post("/api-keys", requireAuth, async (req, res): Promise<void> => {
   const { tenantId, id: userId } = req.session.user!;
-  const {
-    name,
-    scopes = [],
-    expiresInDays,
-  } = req.body as {
+  const { name, scopes, expiresInDays } = req.body as {
     name?: string;
     scopes?: string[];
     expiresInDays?: number;
@@ -40,6 +37,12 @@ router.post("/api-keys", requireAuth, async (req, res): Promise<void> => {
 
   if (!name || name.trim().length === 0) {
     res.status(400).json({ error: "name is required" });
+    return;
+  }
+
+  const normalizedScopes = normalizeApiKeyScopes(scopes, { defaultWhenUndefined: true });
+  if (!normalizedScopes) {
+    res.status(400).json({ error: "scopes must include read, write, or both" });
     return;
   }
 
@@ -59,7 +62,7 @@ router.post("/api-keys", requireAuth, async (req, res): Promise<void> => {
       name: name.trim(),
       keyHash,
       keyPrefix,
-      scopes: scopes as string[],
+      scopes: normalizedScopes,
       expiresAt: expiresAt ?? undefined,
     })
     .returning({
