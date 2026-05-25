@@ -105,3 +105,35 @@
 
 ### Tooling note
 - Running coverage with default `all=true` currently fails due a `vitest`/`minimatch` runtime issue (`brace_expansion is not a function`). The deterministic workaround for CI is `--coverage.all=false`.
+
+## Phase 3: Integration and Boundary Validation
+
+### Added suite
+- `artifacts/api-server/src/routes/api.boundary.e2e.test.ts`
+
+### Boundary and handoff checks implemented
+- Payload schema mismatch handling:
+  - Rejects integration payloads with non-string credential fields.
+  - Rejects missing search query payloads.
+- API boundary validation:
+  - Rejects unsupported provider search routes.
+  - Verifies degraded fallback behavior when upstream provider fetch fails.
+- Module intersection behavior:
+  - Route -> auth/session -> DB insert/query -> adapter invocation chain verified in one deterministic flow.
+
+### Deterministic fixtures/factories used
+- Runtime-generated tenant/user fixture via `/api/auth/register`.
+- Deterministic integration payloads for provider and malformed variants.
+- Controlled upstream failure injection by URL-aware `fetch` stub:
+  - Allows in-process app HTTP requests.
+  - Rejects outbound third-party URL calls.
+
+### Execution status
+- Command:
+  - `pnpm exec vitest run artifacts/api-server/src/routes/api.boundary.e2e.test.ts` (with `RUN_API_E2E=1`, ephemeral Postgres, migrated schema).
+- Result:
+  - 1/1 integration boundary test passed.
+
+### Observed failure mode during orchestration (non-app code)
+- Running `api.e2e.test.ts` and `api.boundary.e2e.test.ts` in the same Vitest invocation produced a setup race around `ensureSessionTable()` in test bootstrap (`duplicate key value violates unique constraint "pg_type_typname_nsp_index"`). 
+- This is a test-harness concurrency issue in startup orchestration, not an application runtime contract failure.
