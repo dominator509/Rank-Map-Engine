@@ -1,4 +1,4 @@
-import { createServer, type Server } from "node:http";
+import { type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 const describeBoundaryE2e = process.env.RUN_API_E2E === "1" ? describe : describe.skip;
@@ -116,7 +116,7 @@ describeBoundaryE2e("API boundary validation", () => {
     const nativeFetch = globalThis.fetch;
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
         const url = typeof input === "string" ? input : input.toString();
         if (url.startsWith(baseUrl)) {
           return nativeFetch(input, init);

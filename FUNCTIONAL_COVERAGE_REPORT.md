@@ -163,3 +163,31 @@
   - `pnpm exec vitest run artifacts/api-server/src/routes/api.concurrency.e2e.test.ts` (with `RUN_API_E2E=1`, ephemeral Postgres, migrated schema).
 - Result:
   - 1/1 concurrency E2E test passed.
+
+## Phase 5: Final Verification and Repository-Wide Results
+
+### End-to-end verification commands executed
+- `pnpm run typecheck` -> passed.
+- `pnpm run lint` -> passed.
+- `pnpm run test` -> passed.
+- `pnpm run test:e2e:api` -> passed.
+- `pnpm exec vitest run artifacts/api-server/src/routes/api.boundary.e2e.test.ts` (with ephemeral Postgres + `RUN_API_E2E=1`) -> passed.
+- `pnpm exec vitest run artifacts/api-server/src/routes/api.concurrency.e2e.test.ts` (with ephemeral Postgres + `RUN_API_E2E=1`) -> passed.
+- Phase-2 targeted coverage run with deterministic workaround:
+  - `pnpm exec vitest run ... --coverage --coverage.all=false` -> passed.
+
+### Existing failure points detected by rigorous constraints
+- No functional application-code regression failures were detected in executed suites.
+- One reproducible test-orchestration issue was detected when combining multiple E2E files in a single Vitest invocation:
+  - `ensureSessionTable()` setup race can trigger a Postgres duplicate type/index creation error.
+  - Classification: test harness/bootstrap concurrency issue, not business-logic failure.
+
+### Missing coverage and recommended next additions
+- Remaining branch gaps are concentrated in:
+  - `keyword-adapters.ts` alternate provider error and parsing branches.
+  - `ai-provider.ts` additional malformed payload and timeout permutations.
+  - `api-key-scopes.ts` non-critical normalization branch permutations.
+- Additional repository modules still needing dedicated suites for full-stack confidence:
+  - `billing.ts` webhook edge permutations under concurrency.
+  - `gdpr.ts` privacy-export/deletion negative-path validation.
+  - `webhook-emitter.ts` retry/backoff and downstream-failure behavior.
