@@ -1,6 +1,5 @@
 import ts from "typescript";
 import { mkdir, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
 
 const ROOT = process.cwd();
 const TARGET_GLOBS = [
@@ -9,7 +8,6 @@ const TARGET_GLOBS = [
 ];
 
 function collectFiles() {
-  const patterns = TARGET_GLOBS.map((p) => resolve(ROOT, p.replace(/\*\*\/\*/g, "")));
   const all = ts.sys.readDirectory(ROOT, [".ts"], undefined, TARGET_GLOBS);
   return all.filter((f) => !f.endsWith(".d.ts") && !f.endsWith(".test.ts"));
 }
@@ -23,24 +21,6 @@ function functionName(node) {
     if (ts.isPropertyAssignment(parent) && ts.isIdentifier(parent.name)) return parent.name.text;
   }
   return "<anonymous>";
-}
-
-function countConditionOps(expr) {
-  let count = 0;
-  function walk(node) {
-    if (ts.isBinaryExpression(node)) {
-      if (
-        node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
-        node.operatorToken.kind === ts.SyntaxKind.BarBarToken
-      ) {
-        count += 1;
-      }
-    }
-    if (ts.isConditionalExpression(node)) count += 1;
-    ts.forEachChild(node, walk);
-  }
-  if (expr) walk(expr);
-  return count;
 }
 
 function complexityForFunction(body) {

@@ -12,22 +12,11 @@ import {
 } from "@workspace/db";
 import { UpdateMyTenantBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
+import { withinWhiteLabelLimits } from "../lib/input-guards.js";
 
 const router = Router();
 const WHITE_LABEL_MAX_DEPTH = 20;
 const WHITE_LABEL_MAX_JSON_LENGTH = 10_000;
-
-function withinWhiteLabelLimits(value: unknown, depth = 0): boolean {
-  if (value === null) return true;
-  if (typeof value !== "object") return true;
-  if (depth >= WHITE_LABEL_MAX_DEPTH) return false;
-  if (Array.isArray(value)) {
-    return value.every((item) => withinWhiteLabelLimits(item, depth + 1));
-  }
-  return Object.values(value as Record<string, unknown>).every((child) =>
-    withinWhiteLabelLimits(child, depth + 1),
-  );
-}
 
 router.get("/tenant", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
@@ -67,7 +56,7 @@ router.patch(
         res.status(400).json({ error: "whiteLabelConfig payload too large" });
         return;
       }
-      if (!withinWhiteLabelLimits(parsed.data.whiteLabelConfig)) {
+      if (!withinWhiteLabelLimits(parsed.data.whiteLabelConfig, WHITE_LABEL_MAX_DEPTH)) {
         res.status(400).json({ error: "whiteLabelConfig nesting depth exceeds limit" });
         return;
       }

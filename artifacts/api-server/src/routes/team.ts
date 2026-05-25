@@ -3,19 +3,12 @@ import { eq, and } from "drizzle-orm";
 import { db, usersTable, userInvitationsTable, tenantsTable } from "@workspace/db";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 import { audit } from "../lib/audit.js";
+import { hasControlChars } from "../lib/input-guards.js";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 
 const router = Router();
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function hasControlChars(value: string): boolean {
-  for (let i = 0; i < value.length; i += 1) {
-    const code = value.charCodeAt(i);
-    if (code <= 31 || code === 127) return true;
-  }
-  return false;
-}
 
 function buildInviteUrl(token: string): string {
   const baseUrl = process.env.APP_URL;
