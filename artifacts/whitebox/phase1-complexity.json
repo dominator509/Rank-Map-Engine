@@ -1,0 +1,157 @@
+{
+  "generatedAt": "2026-05-25T12:01:31.294Z",
+  "filesAnalyzed": 68,
+  "functionCount": 371,
+  "topFunctions": [
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/health.ts",
+      "line": 51,
+      "name": "<anonymous>",
+      "complexity": 13
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/briefs.ts",
+      "line": 140,
+      "name": "<anonymous>",
+      "complexity": 10
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/billing.ts",
+      "line": 375,
+      "name": "verifyStripeSignature",
+      "complexity": 9
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/clients.ts",
+      "line": 66,
+      "name": "<anonymous>",
+      "complexity": 9
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/keywords.ts",
+      "line": 226,
+      "name": "<anonymous>",
+      "complexity": 9
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/projects.ts",
+      "line": 255,
+      "name": "<anonymous>",
+      "complexity": 9
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/projects.ts",
+      "line": 360,
+      "name": "<anonymous>",
+      "complexity": 9
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/team.ts",
+      "line": 140,
+      "name": "<anonymous>",
+      "complexity": 9
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/api-key-scopes.ts",
+      "line": 9,
+      "name": "normalizeApiKeyScopes",
+      "complexity": 8
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/keyword-adapters.ts",
+      "line": 71,
+      "name": "fetchFromSEMrush",
+      "complexity": 8
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/middlewares/auth.ts",
+      "line": 18,
+      "name": "authenticateApiKey",
+      "complexity": 8
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/billing.ts",
+      "line": 439,
+      "name": "stripeWebhookHandler",
+      "complexity": 8
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/clusters.ts",
+      "line": 91,
+      "name": "<anonymous>",
+      "complexity": 8
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/clusters.ts",
+      "line": 230,
+      "name": "<anonymous>",
+      "complexity": 8
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/projects.ts",
+      "line": 94,
+      "name": "<anonymous>",
+      "complexity": 8
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/team.ts",
+      "line": 257,
+      "name": "<anonymous>",
+      "complexity": 8
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/webhook-emitter.ts",
+      "line": 31,
+      "name": "emitWebhookEvent",
+      "complexity": 7
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/billing.ts",
+      "line": 223,
+      "name": "findTenantForStripeObject",
+      "complexity": 7
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/billing.ts",
+      "line": 534,
+      "name": "<anonymous>",
+      "complexity": 7
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/export.ts",
+      "line": 25,
+      "name": "toCSV",
+      "complexity": 7
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/reports.ts",
+      "line": 51,
+      "name": "<anonymous>",
+      "complexity": 7
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/topic-map.ts",
+      "line": 17,
+      "name": "<anonymous>",
+      "complexity": 7
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/webhooks.ts",
+      "line": 91,
+      "name": "<anonymous>",
+      "complexity": 7
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/integration-credentials.ts",
+      "line": 17,
+      "name": "isCredentialEnvelope",
+      "complexity": 6
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/middlewares/auth.ts",
+      "line": 98,
+      "name": "requireRole",
+      "complexity": 6
+    }
+  ]
+}
