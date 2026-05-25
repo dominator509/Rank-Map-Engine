@@ -1,0 +1,32 @@
+{
+  "phase": "phase3-concurrency",
+  "executedAt": "2026-05-25T11:43:06.667Z",
+  "checks": [
+    {
+      "name": "parallel-project-creation",
+      "total": 30,
+      "statusCounts": {
+        "201": 30
+      }
+    },
+    {
+      "name": "duplicate-invite-race",
+      "total": 12,
+      "statusCounts": {
+        "402": 12
+      }
+    },
+    {
+      "name": "client-abort-mid-request",
+      "total": 10,
+      "aborted": 10,
+      "responded": 0
+    },
+    {
+      "name": "post-race-db-state",
+      "projectRows": 30,
+      "invitationRows": 0,
+      "uniqueInvitationEmails": 0
+    }
+  ]
+}
