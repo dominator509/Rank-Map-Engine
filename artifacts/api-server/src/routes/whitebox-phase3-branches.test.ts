@@ -18,6 +18,8 @@ describe.sequential("whitebox phase 3 - route branch coverage", () => {
   beforeAll(
     async () => {
     process.env.NODE_ENV = "test";
+    process.env.DATABASE_URL =
+      process.env.DATABASE_URL ?? "postgres://invalid:invalid@127.0.0.1:1/invalid";
     process.env.SESSION_SECRET = "whitebox-session-secret-with-at-least-32-characters";
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_whitebox";
     process.env.HEALTH_CHECK_TOKEN = "health-token";
