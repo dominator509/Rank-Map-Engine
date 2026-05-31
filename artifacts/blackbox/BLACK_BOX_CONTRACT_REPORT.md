@@ -9,4 +9,4 @@
 - None observed in exercised paths.
 
 ## Leakage Check
-- Critical: 1 leakage indicators detected.
+- No stack trace/schema leakage patterns observed in tested negative paths.

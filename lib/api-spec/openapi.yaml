@@ -1178,6 +1178,7 @@ components:
       properties:
         status:
           type: string
+          enum: [ok]
       required:
         - status
 

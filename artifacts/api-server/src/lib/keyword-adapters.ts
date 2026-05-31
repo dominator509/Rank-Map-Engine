@@ -12,6 +12,10 @@ export type AdapterProvider = "ahrefs" | "semrush" | "dataforseo" | "manual" | "
 
 const truthyPattern = /^(1|true|yes)$/i;
 
+function isFeatureEnabled(name: string): boolean {
+  return truthyPattern.test(process.env[name] ?? "");
+}
+
 export async function fetchKeywordsFromProvider(
   provider: AdapterProvider,
   query: string,
@@ -34,8 +38,8 @@ async function fetchFromAhrefs(
   credentials: Record<string, string>,
 ): Promise<KeywordData[]> {
   const apiKey = credentials.apiKey ?? process.env.AHREFS_API_KEY;
-  if (!apiKey) {
-    logger.warn("AHREFS_API_KEY not set, returning mock data");
+  if (!isFeatureEnabled("FEATURE_AHREFS_IMPORT") || !apiKey) {
+    logger.warn("Ahrefs import disabled or AHREFS_API_KEY not set, returning mock data");
     return mockKeywordData(query, "ahrefs");
   }
 
@@ -73,8 +77,8 @@ async function fetchFromSEMrush(
   credentials: Record<string, string>,
 ): Promise<KeywordData[]> {
   const apiKey = credentials.apiKey ?? process.env.SEMRUSH_API_KEY;
-  if (!apiKey) {
-    logger.warn("SEMRUSH_API_KEY not set, returning mock data");
+  if (!isFeatureEnabled("FEATURE_SEMRUSH_IMPORT") || !apiKey) {
+    logger.warn("Semrush import disabled or SEMRUSH_API_KEY not set, returning mock data");
     return mockKeywordData(query, "semrush");
   }
 
@@ -122,8 +126,8 @@ async function fetchFromDataForSEO(
   const login = credentials.login ?? process.env.DATAFORSEO_LOGIN;
   const password = credentials.password ?? process.env.DATAFORSEO_PASSWORD;
 
-  if (!login || !password) {
-    logger.warn("DataForSEO credentials not set, returning mock data");
+  if (!isFeatureEnabled("FEATURE_DATAFORSEO_IMPORT") || !login || !password) {
+    logger.warn("DataForSEO import disabled or credentials not set, returning mock data");
     return mockKeywordData(query, "dataforseo");
   }
 

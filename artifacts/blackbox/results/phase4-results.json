@@ -1,6 +1,6 @@
 {
   "phase": 4,
-  "baseUrl": "http://127.0.0.1:54666",
+  "baseUrl": "http://127.0.0.1:61714",
   "checks": [
     {
       "status": 401,
@@ -10,7 +10,9 @@
     },
     {
       "status": 400,
-      "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>SyntaxError: Expected property name or &#39;}&#39; in JSON at position 1 (line 1 column 2)<br> &nbsp; &nbsp;at JSON.parse (&lt;anonymous&gt;)<br> &nbsp; &nbsp;at parse3 (file:///C:/dev/Rank-Map-Engine/artifacts/api-server/dist/index.mjs:15767:23)<br> &nbsp; &nbsp;at file:///C:/dev/Rank-Map-Engine/artifacts/api-server/dist/index.mjs:15681:22<br> &nbsp; &nbsp;at AsyncResource.runInAsyncScope (node:async_hooks:228:14)<br> &nbsp; &nbsp;at invokeCallback (file:///C:/dev/Rank-Map-Engine/artifacts/api-server/dist/index.mjs:5525:20)<br> &nbsp; &nbsp;at done (file:///C:/dev/Rank-Map-Engine/artifacts/api-server/dist/index.mjs:5518:11)<br> &nbsp; &nbsp;at IncomingMessage.onEnd (file:///C:/dev/Rank-Map-Engine/artifacts/api-server/dist/index.mjs:5565:11)<br> &nbsp; &nbsp;at IncomingMessage.emit (node:events:508:28)<br> &nbsp; &nbsp;at endReadableNT (node:internal/streams/readable:1729:12)<br> &nbsp; &nbsp;at process.processTicksAndRejections (node:internal/process/task_queues:90:21)</pre>\n</body>\n</html>\n"
+      "body": {
+        "error": "Invalid JSON payload"
+      }
     },
     {
       "status": 400,
@@ -34,10 +36,5 @@
       }
     }
   ],
-  "leakageFindings": [
-    {
-      "status": 400,
-      "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>SyntaxError: Expected property name or &#39;}&#39; in JSON at position 1 (line 1 column 2)<br> &nbsp; &nbsp;at JSON.parse (&lt;anonymous&gt;)<br> &nbsp; &nbsp;at parse3 (file:///C:/dev/Rank-Map-Engine/artifacts/api-server/dist/index.mjs:15767:23)<br> &nbsp; &nbsp;at file:///C:/dev/Rank-Map-Engine/artifacts/api-server/dist/index.mjs:15681:22<br> &nbsp; &nbsp;at AsyncResource.runInAsyncScope (node:async_hooks:228:14)<br> &nbsp; &nbsp;at invokeCallback (file:///C:/dev/Rank-Map-Engine/artifacts/api-server/dist/index.mjs:5525:20)<br> &nbsp; &nbsp;at done (file:///C:/dev/Rank-Map-Engine/artifacts/api-server/dist/index.mjs:5518:11)<br> &nbsp; &nbsp;at IncomingMessage.onEnd (file:///C:/dev/Rank-Map-Engine/artifacts/api-server/dist/index.mjs:5565:11)<br> &nbsp; &nbsp;at IncomingMessage.emit (node:events:508:28)<br> &nbsp; &nbsp;at endReadableNT (node:internal/streams/readable:1729:12)<br> &nbsp; &nbsp;at process.processTicksAndRejections (node:internal/process/task_queues:90:21)</pre>\n</body>\n</html>\n"
-    }
-  ]
+  "leakageFindings": []
 }

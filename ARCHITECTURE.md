@@ -38,7 +38,7 @@ rankmap/
 ├── AI Orchestration      — Task registry, provider registry, mock adapter
 ├── Content Strategy      — Clustering, topic maps, roadmaps, briefs
 ├── Reporting             — Exportable PDF/CSV reports, client dashboards
-├── Integrations          — Ahrefs, Semrush, SEORx adapter registry
+├── Integrations          — Ahrefs, Semrush, DataForSEO adapter registry
 ├── Licensing             — Stripe plans, seat limits, feature flags
 └── Admin                 — Platform-level ops, audit log
 ```
@@ -107,8 +107,8 @@ created_by (FK), approved_by (FK nullable), created_at, updated_at
 
 ### IntegrationCredential
 ```
-id, tenant_id (FK), provider (enum), encrypted_api_key,
-scopes (text[]), last_synced_at, is_active, created_at, updated_at
+id, tenant_id (FK), provider (enum), credentials (encrypted JSON envelope),
+is_active, created_at, updated_at
 ```
 
 ---
@@ -127,7 +127,7 @@ final_score = weighted_sum(
 )
 ```
 
-- Formula is centralized in `lib/scoring/keyword-score.ts`
+- Formula is centralized in `artifacts/api-server/src/lib/scoring.ts`
 - Configurable weights stored in project settings
 - Score is recomputed on any field update
 
@@ -171,7 +171,7 @@ interface DataSourceAdapter {
 }
 ```
 
-Adapters: `ahrefs`, `semrush`, `csv-upload`, `manual`, `seorx` (planned)
+Adapters: `ahrefs`, `semrush`, `dataforseo`, `csv-upload`, `manual`
 
 ---
 
@@ -197,7 +197,7 @@ Adapters: `ahrefs`, `semrush`, `csv-upload`, `manual`, `seorx` (planned)
 - **Tenant isolation**: Every DB query includes `tenant_id` filter via RLS or app-layer guard
 - **RBAC**: Role checked at route middleware layer, not in handlers
 - **No cross-tenant data leakage**: enforced in service layer
-- **Secrets**: All API keys encrypted at rest (`IntegrationCredential.encrypted_api_key`)
+- **Secrets**: All API keys encrypted at rest (`IntegrationCredential.credentials`)
 - **No hardcoded secrets**: enforced via ESLint rule + pre-commit hook
 - **Feature flags**: Real integrations gate-flagged (`FEATURE_*` env vars), mock adapters always available
 
@@ -261,10 +261,10 @@ FEATURE_AI_CLUSTERING=false       # Real AI clustering (mock by default)
 FEATURE_STRIPE_BILLING=false      # Real Stripe (manual plan assignment by default)
 FEATURE_AHREFS_IMPORT=false       # Real Ahrefs adapter
 FEATURE_SEMRUSH_IMPORT=false      # Real Semrush adapter
-FEATURE_SEORX_INTEGRATION=false   # SEORx (future phase)
+FEATURE_DATAFORSEO_IMPORT=false   # Real DataForSEO adapter
 FEATURE_WHITE_LABEL=false         # White-label (Phase 6+)
 ```
 
 ---
 
-*Last updated: Phase 0 initialization.*
+*Last updated: 2026-05-27 - repo reconciliation against implemented architecture.*

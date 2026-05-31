@@ -8,11 +8,24 @@
 
 **Status:** The false generated "all 39 phases complete" claim has been retired. Phases 11-39 now follow the canonical roadmap in `BUILD_ROADMAP.md`; implementation status must be proven phase by phase.
 
-**Last audited:** 2026-05-22
+**Last audited:** 2026-05-27
 
 **Current production-readiness focus:** collect hosted staging load-test evidence, real-provider smoke-test evidence, operational handoff approvals, and final go/no-go sign-off.
 
 The summary below is the working truth table. The detailed generated checklist sections later in this file are retained as historical implementation notes only; do not treat their "complete" headings as launch sign-off until they are reconciled against the canonical acceptance criteria.
+
+---
+
+## Reconciliation Evidence - 2026-05-27
+
+| Area | Result | Notes |
+|------|--------|-------|
+| Documentation drift | Fixed | README and architecture status now point at Phase 39 launch-readiness reconciliation instead of Phase 0 initialization. |
+| Integration flags | Fixed | Ahrefs, Semrush, and DataForSEO live calls now require explicit feature flags; mock fallback remains default when disabled or unconfigured. |
+| Deprecated SEORx placeholder | Fixed | Architecture and environment docs now identify DataForSEO as the canonical Phase 13 provider. |
+| Dead scaffold code | Removed | Unused Phase 0 home page and `scripts/src/hello.ts` scaffold were removed. |
+| Placeholder test | Fixed | Health test now validates the generated Zod health contract instead of trivially passing. |
+| OpenAPI/generated client drift | Logged | The generated client still covers the original core API plus billing, while later phase UI code uses `customFetch` for newer route families. Full OpenAPI expansion remains a release-gate task under Phase 36. |
 
 ---
 

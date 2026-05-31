@@ -26,7 +26,7 @@ All feature flags default to `false`. Set to `true` to enable.
 | `FEATURE_STRIPE_BILLING` | Enable Stripe billing |
 | `FEATURE_AHREFS_IMPORT` | Enable real Ahrefs adapter |
 | `FEATURE_SEMRUSH_IMPORT` | Enable real Semrush adapter |
-| `FEATURE_SEORX_INTEGRATION` | Enable SEORx adapter |
+| `FEATURE_DATAFORSEO_IMPORT` | Enable real DataForSEO adapter |
 | `FEATURE_WHITE_LABEL` | Enable white-label configuration |
 
 ## AI Providers
@@ -57,8 +57,8 @@ All feature flags default to `false`. Set to `true` to enable.
 | `AHREFS_API_KEY` | `FEATURE_AHREFS_IMPORT=true` | Ahrefs API key |
 | `SEMRUSH_API_KEY` | `FEATURE_SEMRUSH_IMPORT=true` | Semrush API key |
 | `ALLOW_SEMRUSH_QUERY_AUTH` | `FEATURE_SEMRUSH_IMPORT=true` | Set `true` only when explicitly accepting Semrush's query-string API key requirement |
-| `DATAFORSEO_LOGIN` | DataForSEO import enabled | DataForSEO account login |
-| `DATAFORSEO_PASSWORD` | DataForSEO import enabled | DataForSEO account password |
+| `DATAFORSEO_LOGIN` | `FEATURE_DATAFORSEO_IMPORT=true` | DataForSEO account login |
+| `DATAFORSEO_PASSWORD` | `FEATURE_DATAFORSEO_IMPORT=true` | DataForSEO account password |
 
 ## Email
 

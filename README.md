@@ -15,7 +15,11 @@ RankMap helps SEO agencies and solo practitioners:
 
 ## Project Status
 
-**Phase 0 — Repository Initialization** (current)
+**Phase 39 - Launch readiness reconciliation** (current)
+
+The product surface is substantially implemented, but launch readiness is still gated on the
+evidence tracked in `ROADMAP_STATUS.md`. Treat historical generated "complete" sections as notes,
+not as release sign-off.
 
 See [`ROADMAP_STATUS.md`](./ROADMAP_STATUS.md) for live phase tracking.  
 See [`BUILD_ROADMAP.md`](./BUILD_ROADMAP.md) for the full execution plan.  

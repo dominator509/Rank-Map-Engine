@@ -1,13 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import { HealthCheckResponse } from "@workspace/api-zod";
 
-describe("Phase 0 — Health Check Sanity", () => {
-  it("trivially passes — skeleton phase", () => {
-    expect(true).toBe(true);
+describe("health check contract", () => {
+  it("accepts the canonical liveness response shape", () => {
+    expect(HealthCheckResponse.parse({ status: "ok" })).toEqual({ status: "ok" });
   });
 
-  it("health response shape is correct", () => {
-    const response = { status: "ok" };
-    expect(response).toHaveProperty("status");
-    expect(response.status).toBe("ok");
+  it("rejects non-canonical liveness states", () => {
+    expect(() => HealthCheckResponse.parse({ status: "degraded" })).toThrow();
   });
 });

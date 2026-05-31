@@ -61,7 +61,9 @@ async function waitForHttp(url, getLogs) {
     try {
       const res = await fetch(`${url}/api/healthz`);
       if (res.ok) return;
-    } catch {}
+    } catch {
+      // Keep polling until the API starts accepting health checks.
+    }
     await delay(500);
   }
   throw new Error(`api readiness timeout\n${getLogs()}`);
@@ -134,7 +136,7 @@ export function summarizePaths(openapiText) {
   let auth = "session-cookie (inferred)";
 
   for (const line of lines) {
-    const p = /^\s{2}(\/[\w\-\/{}/]+):\s*$/.exec(line);
+    const p = /^\s{2}(\/[\w/{}-]+):\s*$/.exec(line);
     if (p) {
       currentPath = p[1];
       continue;

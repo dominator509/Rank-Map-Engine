@@ -26,6 +26,7 @@ describe("keyword-adapters", () => {
   });
 
   it("parses semrush csv response when query auth is enabled", async () => {
+    process.env.FEATURE_SEMRUSH_IMPORT = "true";
     process.env.ALLOW_SEMRUSH_QUERY_AUTH = "true";
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -41,6 +42,7 @@ describe("keyword-adapters", () => {
   });
 
   it("falls back when semrush query-string auth is disabled", async () => {
+    process.env.FEATURE_SEMRUSH_IMPORT = "true";
     process.env.ALLOW_SEMRUSH_QUERY_AUTH = "false";
     const result = await fetchKeywordsFromProvider("semrush", "seed", { apiKey: "sem_key" });
     expect(result.length).toBeGreaterThan(0);
@@ -48,6 +50,7 @@ describe("keyword-adapters", () => {
   });
 
   it("maps dataforseo response and falls back on fetch failure", async () => {
+    process.env.FEATURE_DATAFORSEO_IMPORT = "true";
     const okFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({

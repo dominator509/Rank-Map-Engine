@@ -143,6 +143,14 @@ app.use("/api/auth/register", authLimiter);
 app.use("/api", router);
 
 const apiErrorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  const parserType = (err as { type?: string })?.type;
+  const parserStatus = (err as { status?: number })?.status;
+  if (parserType === "entity.parse.failed" || parserStatus === 400) {
+    if (res.headersSent) return;
+    res.status(400).json({ error: "Invalid JSON payload" });
+    return;
+  }
+
   logger.error(
     { err, method: req.method, path: req.path },
     "Unhandled API route error",
