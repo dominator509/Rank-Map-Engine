@@ -6,25 +6,22 @@ describe("api parser error boundary", () => {
   let baseUrl = "";
   const originalEnv = { ...process.env };
 
-  beforeAll(
-    async () => {
-      process.env.NODE_ENV = "test";
-      process.env.DATABASE_URL =
-        process.env.DATABASE_URL ?? "postgres://invalid:invalid@127.0.0.1:1/invalid";
-      process.env.SESSION_SECRET = "parser-error-boundary-secret-at-least-32-characters";
+  beforeAll(async () => {
+    process.env.NODE_ENV = "test";
+    process.env.DATABASE_URL =
+      process.env.DATABASE_URL ?? "postgres://invalid:invalid@127.0.0.1:1/invalid";
+    process.env.SESSION_SECRET = "parser-error-boundary-secret-at-least-32-characters";
 
-      const { default: app } = await import("./app");
-      server = await new Promise<Server>((resolve, reject) => {
-        const listener = app.listen(0, () => resolve(listener));
-        listener.on("error", reject);
-      });
+    const { default: app } = await import("./app");
+    server = await new Promise<Server>((resolve, reject) => {
+      const listener = app.listen(0, () => resolve(listener));
+      listener.on("error", reject);
+    });
 
-      const address = server.address();
-      if (!address || typeof address === "string") throw new Error("Test server has no TCP port.");
-      baseUrl = `http://127.0.0.1:${address.port}`;
-    },
-    30000,
-  );
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("Test server has no TCP port.");
+    baseUrl = `http://127.0.0.1:${address.port}`;
+  }, 30000);
 
   afterAll(async () => {
     process.env = originalEnv;

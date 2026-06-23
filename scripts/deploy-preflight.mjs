@@ -93,6 +93,8 @@ function validateProductionEnv() {
     requireEnv("OPENAI_API_KEY");
   }
 
+  validateGeoAeoEnv();
+
   if (isTruthy("FEATURE_AHREFS_IMPORT")) {
     requireEnv("AHREFS_API_KEY");
   }
@@ -118,6 +120,32 @@ function validateProductionEnv() {
     if (!Number.isInteger(smtpPort) || smtpPort <= 0) {
       errors.push("SMTP_PORT must be a positive integer.");
     }
+  }
+}
+
+function validateGeoAeoEnv() {
+  if (!isTruthy("GEO_AEO_ENABLED")) {
+    return;
+  }
+
+  if (!isTruthy("MOCK_ANSWER_ENGINE_ENABLED") && !isTruthy("MANUAL_GEO_AEO_SNAPSHOTS_ENABLED")) {
+    errors.push("GEO_AEO_ENABLED requires mock or manual snapshot collection to remain enabled.");
+  }
+
+  if (!isTruthy("GOOGLE_AI_OVERVIEWS_MANUAL_ONLY")) {
+    errors.push("GOOGLE_AI_OVERVIEWS_MANUAL_ONLY must remain true; scraping is not supported.");
+  }
+
+  if (!isTruthy("CHATGPT_VISIBILITY_MANUAL_ONLY")) {
+    errors.push("CHATGPT_VISIBILITY_MANUAL_ONLY must remain true unless an approved provider path exists.");
+  }
+
+  if (isTruthy("PERPLEXITY_ENABLED") && !isTruthy("REAL_ANSWER_ENGINE_CALLS_ENABLED")) {
+    errors.push("PERPLEXITY_ENABLED requires REAL_ANSWER_ENGINE_CALLS_ENABLED=true.");
+  }
+
+  if (isTruthy("PERPLEXITY_ENABLED") && isTruthy("REAL_ANSWER_ENGINE_CALLS_ENABLED")) {
+    requireEnv("PERPLEXITY_API_KEY");
   }
 }
 

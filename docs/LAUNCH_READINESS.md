@@ -12,7 +12,7 @@ Local Phase 38 baselines are complete, and hosted Render staging is live with pa
 
 | Evidence | Status | Required Before Launch |
 | --- | --- | --- |
-| Local release gates | Pending latest full run | Yes |
+| Local release gates | Passed latest full run on 2026-06-01 | Yes |
 | Local API/performance baselines | Passed in Phase 38 | Yes |
 | Local page-load baseline | Passed in Phase 38 | Yes |
 | Local backup/restore proof | Passed in Phase 38 | Yes |
@@ -29,6 +29,7 @@ Local Phase 38 baselines are complete, and hosted Render staging is live with pa
 
 | Check | Command | Evidence Location |
 | --- | --- | --- |
+| Latest release gate sweep | `format:check`, `lint`, `security:secrets`, `api:route-drift:check`, `typecheck`, `test`, `test:e2e:api`, `build`, `audit --prod`, `git diff --check` | This document |
 | API latency, export/report, queue, degraded health | `pnpm run perf:baseline` | `docs/PERFORMANCE_BASELINE.md` |
 | Production page-load baseline | `pnpm run perf:pages` | `docs/PERFORMANCE_BASELINE.md` |
 | Large tenant-size baseline | `pnpm run perf:tenant-size` | `docs/PERFORMANCE_BASELINE.md` |
@@ -36,6 +37,21 @@ Local Phase 38 baselines are complete, and hosted Render staging is live with pa
 | Backup/restore proof | `pnpm run recovery:baseline` | `docs/BACKUP_RESTORE.md` |
 | Release preflight | `pnpm run deploy:preflight` | `docs/RELEASE.md` |
 | Live service diagnostics | `pnpm run test:live:services` | This document after credentials are available |
+
+Latest local release gate sweep: 2026-06-01.
+
+| Check | Result |
+| --- | --- |
+| `rtk corepack pnpm run format:check` | Pass |
+| `rtk corepack pnpm run lint` | Pass |
+| `rtk corepack pnpm run security:secrets` | Pass |
+| `rtk corepack pnpm run api:route-drift:check` | Pass, 0 undocumented and 0 stale operations |
+| `rtk corepack pnpm run typecheck` | Pass |
+| `rtk corepack pnpm run test` | Pass, 51 passed and 4 skipped |
+| `rtk corepack pnpm run test:e2e:api` | Pass, 2 passed |
+| `rtk corepack pnpm run build` | Pass |
+| `rtk corepack pnpm audit --prod` | Pass, no known vulnerabilities found |
+| `rtk git diff --check` | Pass |
 
 ## Hosted Staging Load-Test Evidence
 

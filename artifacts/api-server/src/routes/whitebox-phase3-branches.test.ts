@@ -15,8 +15,7 @@ describe.sequential("whitebox phase 3 - route branch coverage", () => {
   let baseUrl = "";
   const originalEnv = { ...process.env };
 
-  beforeAll(
-    async () => {
+  beforeAll(async () => {
     process.env.NODE_ENV = "test";
     process.env.DATABASE_URL =
       process.env.DATABASE_URL ?? "postgres://invalid:invalid@127.0.0.1:1/invalid";
@@ -37,9 +36,7 @@ describe.sequential("whitebox phase 3 - route branch coverage", () => {
       throw new Error("Test server did not expose a TCP port.");
     }
     baseUrl = `http://127.0.0.1:${address.port}`;
-    },
-    30000,
-  );
+  }, 30000);
 
   afterAll(async () => {
     process.env = originalEnv;

@@ -42,11 +42,17 @@ jobs:
           corepack pnpm --filter @workspace/api-spec run codegen
           git diff --exit-code -- lib/db/drizzle lib/api-client-react/src/generated lib/api-zod/src/generated
 
+      - name: API Route Drift
+        run: corepack pnpm run api:route-drift:check
+
       - name: Format
         run: corepack pnpm run format:check
 
       - name: Lint
         run: corepack pnpm run lint
+
+      - name: Security
+        run: corepack pnpm run security:check
 
       - name: Typecheck
         run: corepack pnpm run typecheck

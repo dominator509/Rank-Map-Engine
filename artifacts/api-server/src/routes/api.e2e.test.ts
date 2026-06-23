@@ -591,6 +591,18 @@ describeApiE2e("API end-to-end workflows", () => {
     expect(registeredB.status).toBe(201);
     expect((await tenantB.get(`/api/clients/${clientId}`)).status).toBe(404);
     expect((await tenantB.get(`/api/projects/${projectId}`)).status).toBe(404);
+    expect((await tenantB.get(`/api/clients/${clientId}/projects`)).status).toBe(404);
+    expect((await tenantB.get(`/api/clients/${clientId}/projects/${projectId}`)).status).toBe(404);
+    expect((await tenantB.get(`/api/projects/${projectId}/keywords`)).status).toBe(404);
+    expect((await tenantB.get(`/api/projects/${projectId}/clusters`)).status).toBe(404);
+    expect((await tenantB.get(`/api/projects/${projectId}/briefs`)).status).toBe(404);
+    expect((await tenantB.get(`/api/projects/${projectId}/reports`)).status).toBe(404);
+    expect((await tenantB.get(`/api/projects/${projectId}/calendar`)).status).toBe(404);
+    expect((await tenantB.get(`/api/projects/${projectId}/competitors`)).status).toBe(404);
+    expect((await tenantB.get(`/api/projects/${projectId}/rankings`)).status).toBe(404);
+    expect((await tenantB.get(`/api/projects/${projectId}/report-schedules`)).status).toBe(404);
+    expect((await tenantB.get(`/api/projects/${projectId}/export/keywords.csv`)).status).toBe(404);
+    expect((await tenantB.get(`/api/projects/${projectId}/export/project.json`)).status).toBe(404);
   }, 30000);
 
   it("keeps AI-returned and client-supplied cluster ids scoped to the caller tenant", async () => {

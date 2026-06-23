@@ -95,6 +95,13 @@ app.use(
 
 app.post(
   "/api/billing/webhook",
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 120,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many billing webhook attempts, please try again later." },
+  }),
   express.raw({ type: "application/json", limit: "2mb" }),
   stripeWebhookHandler,
 );
@@ -136,9 +143,66 @@ const authLimiter = rateLimit({
   message: { error: "Too many auth attempts, please try again later." },
 });
 
+const apiKeyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many API key management requests, please try again later." },
+});
+
+const webhookManagementLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many webhook management requests, please try again later." },
+});
+
+const exportLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 80,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many export requests, please try again later." },
+});
+
+const providerSearchLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 80,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many provider search requests, please try again later." },
+});
+
+const aiWorkflowLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 80,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many AI or ranking workflow requests, please try again later." },
+});
+
 app.use("/api", globalLimiter);
 app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
+app.use("/api/api-keys", apiKeyLimiter);
+app.use("/api/webhooks", webhookManagementLimiter);
+app.use("/api/integrations/:provider/search", providerSearchLimiter);
+app.use(
+  ["/api/projects/:projectId/export", "/api/gdpr/export", "/api/projects/:projectId/reports"],
+  exportLimiter,
+);
+app.use(
+  [
+    "/api/projects/:projectId/clusters/auto",
+    "/api/projects/:projectId/cluster-keywords",
+    "/api/projects/:projectId/briefs/:id/generate",
+    "/api/projects/:projectId/rankings/check",
+    "/api/projects/:projectId/rankings/check-all",
+  ],
+  aiWorkflowLimiter,
+);
 
 app.use("/api", router);
 
@@ -151,10 +215,7 @@ const apiErrorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     return;
   }
 
-  logger.error(
-    { err, method: req.method, path: req.path },
-    "Unhandled API route error",
-  );
+  logger.error({ err, method: req.method, path: req.path }, "Unhandled API route error");
 
   if (res.headersSent) return;
   res.status(500).json({ error: "Internal server error" });

@@ -850,3 +850,1206 @@ export const GetBillingUsageResponse = zod.object({
   projectsCount: zod.number(),
   projectsMax: zod.number(),
 });
+
+export const ListTeamMembersResponseItem = zod.object({
+  id: zod.number(),
+  email: zod.string(),
+  fullName: zod.string(),
+  role: zod.enum(["super_admin", "agency_admin", "agency_user", "client"]),
+  avatarUrl: zod.string().nullish(),
+  lastLoginAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListTeamMembersResponse = zod.array(ListTeamMembersResponseItem);
+
+export const UpdateTeamMemberRoleParams = zod.object({
+  userId: zod.coerce.number(),
+});
+
+export const UpdateTeamMemberRoleBody = zod.object({
+  role: zod.enum(["agency_admin", "agency_user", "client"]),
+});
+
+export const UpdateTeamMemberRoleResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  email: zod.string(),
+  fullName: zod.string(),
+  role: zod.enum(["super_admin", "agency_admin", "agency_user", "client"]),
+  avatarUrl: zod.string().nullish(),
+  lastLoginAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const RemoveTeamMemberParams = zod.object({
+  userId: zod.coerce.number(),
+});
+
+export const InviteTeamMemberBody = zod.object({
+  email: zod.string(),
+  role: zod.enum(["agency_admin", "agency_user", "client"]).optional(),
+});
+
+export const ListTeamInvitationsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  email: zod.string(),
+  role: zod.string(),
+  token: zod.string(),
+  invitedBy: zod.number(),
+  expiresAt: zod.string(),
+  acceptedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListTeamInvitationsResponse = zod.array(ListTeamInvitationsResponseItem);
+
+export const DeleteTeamInvitationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AcceptTeamInvitationBody = zod.object({
+  token: zod.string(),
+  fullName: zod.string(),
+  password: zod.string(),
+});
+
+export const AcceptTeamInvitationResponse = zod.object({
+  user: zod.object({
+    id: zod.number(),
+    email: zod.string(),
+    fullName: zod.string(),
+    role: zod.string(),
+  }),
+});
+
+export const ListIntegrationsResponseItem = zod.object({
+  id: zod.number(),
+  provider: zod.enum(["ahrefs", "semrush", "dataforseo", "google_search_console"]),
+  isActive: zod.string(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+export const ListIntegrationsResponse = zod.array(ListIntegrationsResponseItem);
+
+export const ConfigureIntegrationBody = zod.object({
+  provider: zod.enum(["ahrefs", "semrush", "dataforseo", "google_search_console"]),
+  credentials: zod.record(zod.string(), zod.string()),
+});
+
+export const ConfigureIntegrationResponse = zod.object({
+  id: zod.number(),
+  provider: zod.enum(["ahrefs", "semrush", "dataforseo", "google_search_console"]),
+  isActive: zod.string(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+
+export const DeleteIntegrationParams = zod.object({
+  provider: zod.enum(["ahrefs", "semrush", "dataforseo", "google_search_console"]),
+});
+
+export const SearchIntegrationKeywordsParams = zod.object({
+  provider: zod.enum(["ahrefs", "semrush", "dataforseo"]),
+});
+
+export const SearchIntegrationKeywordsBody = zod.object({
+  query: zod.string(),
+});
+
+export const SearchIntegrationKeywordsResponseItem = zod.object({
+  phrase: zod.string(),
+  searchVolume: zod.number().optional(),
+  cpc: zod.number().optional(),
+  kd: zod.number().optional(),
+  intent: zod.string().optional(),
+  source: zod.string().optional(),
+});
+export const SearchIntegrationKeywordsResponse = zod.array(SearchIntegrationKeywordsResponseItem);
+
+export const ListApiKeysResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  keyPrefix: zod.string(),
+  scopes: zod.array(zod.enum(["read", "write"])),
+  lastUsedAt: zod.string().nullish(),
+  expiresAt: zod.string().nullish(),
+  revokedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListApiKeysResponse = zod.array(ListApiKeysResponseItem);
+
+export const CreateApiKeyBody = zod.object({
+  name: zod.string(),
+  scopes: zod.array(zod.enum(["read", "write"])).optional(),
+  expiresInDays: zod.number().optional(),
+});
+
+export const RevokeApiKeyParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListWebhooksResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  url: zod.string(),
+  events: zod.array(
+    zod.enum([
+      "keyword.imported",
+      "cluster.created",
+      "cluster.approved",
+      "cluster.rejected",
+      "brief.created",
+      "brief.approved",
+      "report.generated",
+      "project.created",
+      "ai_task.completed",
+    ]),
+  ),
+  secret: zod.null().optional(),
+  isActive: zod.boolean(),
+  description: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListWebhooksResponse = zod.array(ListWebhooksResponseItem);
+
+export const CreateWebhookBody = zod.object({
+  url: zod.string(),
+  events: zod
+    .array(
+      zod.enum([
+        "keyword.imported",
+        "cluster.created",
+        "cluster.approved",
+        "cluster.rejected",
+        "brief.created",
+        "brief.approved",
+        "report.generated",
+        "project.created",
+        "ai_task.completed",
+      ]),
+    )
+    .optional(),
+  description: zod.string().optional(),
+});
+
+export const UpdateWebhookParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateWebhookBody = zod.object({
+  url: zod.string().optional(),
+  events: zod
+    .array(
+      zod.enum([
+        "keyword.imported",
+        "cluster.created",
+        "cluster.approved",
+        "cluster.rejected",
+        "brief.created",
+        "brief.approved",
+        "report.generated",
+        "project.created",
+        "ai_task.completed",
+      ]),
+    )
+    .optional(),
+  isActive: zod.boolean().optional(),
+  description: zod.string().optional(),
+});
+
+export const UpdateWebhookResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  url: zod.string(),
+  events: zod.array(
+    zod.enum([
+      "keyword.imported",
+      "cluster.created",
+      "cluster.approved",
+      "cluster.rejected",
+      "brief.created",
+      "brief.approved",
+      "report.generated",
+      "project.created",
+      "ai_task.completed",
+    ]),
+  ),
+  secret: zod.null().optional(),
+  isActive: zod.boolean(),
+  description: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const DeleteWebhookParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const TestWebhookParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const TestWebhookResponse = zod.object({
+  message: zod.string(),
+});
+
+export const ListWebhookDeliveriesParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const listWebhookDeliveriesQueryLimitMax = 100;
+
+export const ListWebhookDeliveriesQueryParams = zod.object({
+  limit: zod.coerce.number().max(listWebhookDeliveriesQueryLimitMax).optional(),
+});
+
+export const ListWebhookDeliveriesResponseItem = zod.object({
+  id: zod.number(),
+  endpointId: zod.number(),
+  tenantId: zod.number(),
+  event: zod.enum([
+    "keyword.imported",
+    "cluster.created",
+    "cluster.approved",
+    "cluster.rejected",
+    "brief.created",
+    "brief.approved",
+    "report.generated",
+    "project.created",
+    "ai_task.completed",
+  ]),
+  payload: zod.object({}).passthrough(),
+  status: zod.string(),
+  statusCode: zod.number().nullish(),
+  responseBody: zod.string().nullish(),
+  attempts: zod.number(),
+  lastAttemptAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListWebhookDeliveriesResponse = zod.array(ListWebhookDeliveriesResponseItem);
+
+export const ListWebhookEventsResponseItem = zod.enum([
+  "keyword.imported",
+  "cluster.created",
+  "cluster.approved",
+  "cluster.rejected",
+  "brief.created",
+  "brief.approved",
+  "report.generated",
+  "project.created",
+  "ai_task.completed",
+]);
+export const ListWebhookEventsResponse = zod.array(ListWebhookEventsResponseItem);
+
+export const ListNotificationsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  userId: zod.number(),
+  type: zod.string(),
+  title: zod.string(),
+  body: zod.string().nullish(),
+  link: zod.string().nullish(),
+  readAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListNotificationsResponse = zod.array(ListNotificationsResponseItem);
+
+export const GetUnreadNotificationCountResponse = zod.object({
+  count: zod.number(),
+});
+
+export const MarkAllNotificationsReadResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const MarkNotificationReadParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const MarkNotificationReadResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const DeleteNotificationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteNotificationResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const GetDetailedHealthHeader = zod.object({
+  "x-health-check-token": zod.string().optional(),
+  authorization: zod.string().optional(),
+});
+
+export const GetDetailedHealthResponse = zod.object({
+  status: zod.enum(["ok", "degraded"]),
+  timestamp: zod.string(),
+  uptimeSeconds: zod.number(),
+  responseTimeMs: zod.number(),
+  services: zod.object({
+    database: zod.object({
+      status: zod.enum(["ok", "error"]),
+      latencyMs: zod.number(),
+    }),
+    ai: zod.object({
+      status: zod.enum(["configured", "mock-fallback"]),
+    }),
+    smtp: zod.object({
+      status: zod.enum(["configured", "mock-fallback"]),
+    }),
+    billing: zod.object({
+      status: zod.enum(["configured", "missing-config", "disabled"]),
+      missing: zod.array(zod.string()),
+    }),
+  }),
+  memory: zod.object({
+    heapUsedMB: zod.number(),
+    heapTotalMB: zod.number(),
+    rssMB: zod.number(),
+  }),
+  version: zod.string(),
+});
+
+export const GetTenantResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  plan: zod.enum(["solo", "agency", "enterprise"]),
+  seatsUsed: zod.number(),
+  seatsMax: zod.number(),
+  whiteLabelConfig: zod.object({}).passthrough().nullish(),
+  stripeCustomerId: zod.string().nullish(),
+  stripeSubscriptionId: zod.string().nullish(),
+  stripeSubscriptionStatus: zod.string().nullish(),
+  stripeCurrentPeriodEnd: zod.string().nullish(),
+  stripeCancelAtPeriodEnd: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const UpdateTenantBody = zod.object({
+  name: zod.string().optional(),
+  whiteLabelConfig: zod.object({}).passthrough().optional(),
+});
+
+export const UpdateTenantResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  plan: zod.enum(["solo", "agency", "enterprise"]),
+  seatsUsed: zod.number(),
+  seatsMax: zod.number(),
+  whiteLabelConfig: zod.object({}).passthrough().nullish(),
+  stripeCustomerId: zod.string().nullish(),
+  stripeSubscriptionId: zod.string().nullish(),
+  stripeSubscriptionStatus: zod.string().nullish(),
+  stripeCurrentPeriodEnd: zod.string().nullish(),
+  stripeCancelAtPeriodEnd: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const GetTenantDashboardResponse = zod.object({
+  clientCount: zod.number(),
+  projectCount: zod.number(),
+  keywordCount: zod.number(),
+  clusterCount: zod.number(),
+  briefCount: zod.number(),
+  pendingApprovals: zod.number(),
+  aiTasksThisMonth: zod.number(),
+});
+
+export const ListClientProjectsParams = zod.object({
+  clientId: zod.coerce.number(),
+});
+
+export const ListClientProjectsResponseItem = zod.object({
+  id: zod.number(),
+  clientId: zod.number(),
+  tenantId: zod.number(),
+  name: zod.string(),
+  targetDomain: zod.string().nullish(),
+  locale: zod.string(),
+  status: zod.enum(["active", "paused", "archived"]),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListClientProjectsResponse = zod.array(ListClientProjectsResponseItem);
+
+export const CreateClientProjectParams = zod.object({
+  clientId: zod.coerce.number(),
+});
+
+export const CreateClientProjectBody = zod.object({
+  clientId: zod.number(),
+  name: zod.string(),
+  targetDomain: zod.string().optional(),
+  locale: zod.string().optional(),
+});
+
+export const GetClientProjectParams = zod.object({
+  clientId: zod.coerce.number(),
+  id: zod.coerce.number(),
+});
+
+export const GetClientProjectResponse = zod.object({
+  id: zod.number(),
+  clientId: zod.number(),
+  tenantId: zod.number(),
+  name: zod.string(),
+  targetDomain: zod.string().nullish(),
+  locale: zod.string(),
+  status: zod.enum(["active", "paused", "archived"]),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const UpdateClientProjectParams = zod.object({
+  clientId: zod.coerce.number(),
+  id: zod.coerce.number(),
+});
+
+export const UpdateClientProjectBody = zod.object({
+  name: zod.string().optional(),
+  targetDomain: zod.string().optional(),
+  locale: zod.string().optional(),
+  status: zod.enum(["active", "paused", "archived"]).optional(),
+});
+
+export const UpdateClientProjectResponse = zod.object({
+  id: zod.number(),
+  clientId: zod.number(),
+  tenantId: zod.number(),
+  name: zod.string(),
+  targetDomain: zod.string().nullish(),
+  locale: zod.string(),
+  status: zod.enum(["active", "paused", "archived"]),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const DeleteClientProjectParams = zod.object({
+  clientId: zod.coerce.number(),
+  id: zod.coerce.number(),
+});
+
+export const GetAnalyticsOverviewResponse = zod.object({
+  totals: zod.object({
+    clients: zod.number(),
+    projects: zod.number(),
+    keywords: zod.number(),
+    clusters: zod.number(),
+    briefs: zod.number(),
+    reports: zod.number(),
+    aiTasksThisMonth: zod.number(),
+  }),
+  keywordsBySource: zod.array(
+    zod.object({
+      source: zod.string(),
+      c: zod.number(),
+    }),
+  ),
+  briefsByStatus: zod.array(
+    zod.object({
+      status: zod.string(),
+      c: zod.number(),
+    }),
+  ),
+  clustersByStatus: zod.array(
+    zod.object({
+      status: zod.string(),
+      c: zod.number(),
+    }),
+  ),
+});
+
+export const ListAnalyticsProjectsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  createdAt: zod.string(),
+  keywordCount: zod.number(),
+  clusterCount: zod.number(),
+  briefCount: zod.number(),
+});
+export const ListAnalyticsProjectsResponse = zod.array(ListAnalyticsProjectsResponseItem);
+
+export const GetAnalyticsVelocityResponseItem = zod.object({
+  day: zod.string(),
+  count: zod.number(),
+});
+export const GetAnalyticsVelocityResponse = zod.array(GetAnalyticsVelocityResponseItem);
+
+export const listAuditLogEntriesQueryLimitMax = 200;
+
+export const ListAuditLogEntriesQueryParams = zod.object({
+  limit: zod.coerce.number().max(listAuditLogEntriesQueryLimitMax).optional(),
+  offset: zod.coerce.number().optional(),
+  resourceType: zod.coerce.string().optional(),
+  action: zod.coerce.string().optional(),
+});
+
+export const ListAuditLogEntriesResponseItem = zod.object({
+  id: zod.number(),
+  action: zod.string(),
+  resourceType: zod.string(),
+  resourceId: zod.string().nullish(),
+  metadata: zod.object({}).passthrough().nullish(),
+  ipAddress: zod.string().nullish(),
+  createdAt: zod.string(),
+  userName: zod.string().nullish(),
+  userEmail: zod.string().nullish(),
+});
+export const ListAuditLogEntriesResponse = zod.array(ListAuditLogEntriesResponseItem);
+
+export const ListCommentsQueryParams = zod.object({
+  entityType: zod.enum(["cluster", "brief", "project", "keyword"]),
+  entityId: zod.coerce.number(),
+});
+
+export const ListCommentsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number().optional(),
+  userId: zod.number().optional(),
+  body: zod.string(),
+  entityType: zod.enum(["cluster", "brief", "project", "keyword"]),
+  entityId: zod.number(),
+  resolvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+  user: zod
+    .object({
+      id: zod.number().nullable(),
+      fullName: zod.string(),
+      avatarUrl: zod.string().nullish(),
+    })
+    .optional(),
+});
+export const ListCommentsResponse = zod.array(ListCommentsResponseItem);
+
+export const CreateCommentBody = zod.object({
+  entityType: zod.enum(["cluster", "brief", "project", "keyword"]),
+  entityId: zod.number(),
+  body: zod.string(),
+});
+
+export const ResolveCommentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ResolveCommentResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number().optional(),
+  userId: zod.number().optional(),
+  body: zod.string(),
+  entityType: zod.enum(["cluster", "brief", "project", "keyword"]),
+  entityId: zod.number(),
+  resolvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+  user: zod
+    .object({
+      id: zod.number().nullable(),
+      fullName: zod.string(),
+      avatarUrl: zod.string().nullish(),
+    })
+    .optional(),
+});
+
+export const DeleteCommentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteCommentResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const ListCustomFieldsQueryParams = zod.object({
+  entityType: zod.enum(["project", "keyword", "client"]).optional(),
+});
+
+export const ListCustomFieldsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  entityType: zod.enum(["project", "keyword", "client"]),
+  name: zod.string(),
+  slug: zod.string(),
+  fieldType: zod.enum(["text", "number", "select", "date", "boolean"]),
+  options: zod.array(zod.string()).nullish(),
+  isRequired: zod.boolean(),
+  createdAt: zod.string(),
+});
+export const ListCustomFieldsResponse = zod.array(ListCustomFieldsResponseItem);
+
+export const CreateCustomFieldBody = zod.object({
+  entityType: zod.enum(["project", "keyword", "client"]),
+  name: zod.string(),
+  slug: zod.string(),
+  fieldType: zod.enum(["text", "number", "select", "date", "boolean"]),
+  options: zod.array(zod.string()).optional(),
+  isRequired: zod.boolean().optional(),
+});
+
+export const DeleteCustomFieldParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteCustomFieldResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const ListCustomFieldValuesQueryParams = zod.object({
+  entityType: zod.enum(["project", "keyword", "client"]),
+  entityId: zod.coerce.number(),
+});
+
+export const ListCustomFieldValuesResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  fieldId: zod.number(),
+  entityType: zod.enum(["project", "keyword", "client"]),
+  entityId: zod.number(),
+  value: zod.unknown().optional(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListCustomFieldValuesResponse = zod.array(ListCustomFieldValuesResponseItem);
+
+export const UpsertCustomFieldValueBody = zod.object({
+  fieldId: zod.number(),
+  entityType: zod.enum(["project", "keyword", "client"]),
+  entityId: zod.number(),
+  value: zod.unknown().optional(),
+});
+
+export const UpsertCustomFieldValueResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  fieldId: zod.number(),
+  entityType: zod.enum(["project", "keyword", "client"]),
+  entityId: zod.number(),
+  value: zod.unknown().optional(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const ExportGdprDataResponse = zod.object({
+  exportedAt: zod.string(),
+  user: zod.object({}).passthrough().nullable(),
+  comments: zod.array(zod.object({}).passthrough()),
+  auditLogs: zod.array(zod.object({}).passthrough()),
+  notifications: zod.array(
+    zod.object({
+      id: zod.number(),
+      tenantId: zod.number(),
+      userId: zod.number(),
+      type: zod.string(),
+      title: zod.string(),
+      body: zod.string().nullish(),
+      link: zod.string().nullish(),
+      readAt: zod.string().nullish(),
+      createdAt: zod.string(),
+    }),
+  ),
+  keywords: zod.array(
+    zod.object({
+      id: zod.number(),
+      projectId: zod.number(),
+      tenantId: zod.number(),
+      phrase: zod.string(),
+      searchVolume: zod.number().nullish(),
+      cpc: zod.number().nullish(),
+      kd: zod.number().nullish(),
+      intent: zod.string().nullish(),
+      clusterId: zod.number().nullish(),
+      source: zod.enum(["manual", "csv", "ahrefs", "semrush"]),
+      isActive: zod.boolean(),
+      rawScore: zod.number().nullish(),
+      finalScore: zod.number().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  contentBriefs: zod.array(
+    zod.object({
+      id: zod.number(),
+      clusterId: zod.number().nullish(),
+      projectId: zod.number(),
+      tenantId: zod.number(),
+      title: zod.string(),
+      outline: zod.object({}).passthrough().nullish(),
+      targetWordCount: zod.number().nullish(),
+      status: zod.enum(["draft", "approved", "in_progress", "published"]),
+      assignedTo: zod.number().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+});
+
+export const DeleteCurrentUserGdprDataResponse = zod.object({
+  ok: zod.boolean(),
+  message: zod.string(),
+});
+
+export const ListProjectCalendarEntriesParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const ListProjectCalendarEntriesResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  projectId: zod.number(),
+  briefId: zod.number().nullish(),
+  title: zod.string(),
+  status: zod.enum(["planned", "in_progress", "review", "published"]),
+  dueDate: zod.string().nullish(),
+  publishedDate: zod.string().nullish(),
+  assignedTo: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListProjectCalendarEntriesResponse = zod.array(ListProjectCalendarEntriesResponseItem);
+
+export const CreateProjectCalendarEntryParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const CreateProjectCalendarEntryBody = zod.object({
+  title: zod.string(),
+  status: zod.enum(["planned", "in_progress", "review", "published"]).optional(),
+  dueDate: zod.string().nullish(),
+  publishedDate: zod.string().nullish(),
+  assignedTo: zod.number().nullish(),
+  briefId: zod.number().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateProjectCalendarEntryParams = zod.object({
+  projectId: zod.coerce.number(),
+  id: zod.coerce.number(),
+});
+
+export const UpdateProjectCalendarEntryBody = zod.object({
+  title: zod.string().optional(),
+  status: zod.enum(["planned", "in_progress", "review", "published"]).optional(),
+  dueDate: zod.string().nullish(),
+  publishedDate: zod.string().nullish(),
+  assignedTo: zod.number().nullish(),
+  briefId: zod.number().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateProjectCalendarEntryResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  projectId: zod.number(),
+  briefId: zod.number().nullish(),
+  title: zod.string(),
+  status: zod.enum(["planned", "in_progress", "review", "published"]),
+  dueDate: zod.string().nullish(),
+  publishedDate: zod.string().nullish(),
+  assignedTo: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const DeleteProjectCalendarEntryParams = zod.object({
+  projectId: zod.coerce.number(),
+  id: zod.coerce.number(),
+});
+
+export const DeleteProjectCalendarEntryResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const ListProjectCompetitorsParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const ListProjectCompetitorsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  projectId: zod.number(),
+  domain: zod.string(),
+  label: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListProjectCompetitorsResponse = zod.array(ListProjectCompetitorsResponseItem);
+
+export const CreateProjectCompetitorParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const CreateProjectCompetitorBody = zod.object({
+  domain: zod.string(),
+  label: zod.string().optional(),
+});
+
+export const DeleteProjectCompetitorParams = zod.object({
+  projectId: zod.coerce.number(),
+  id: zod.coerce.number(),
+});
+
+export const DeleteProjectCompetitorResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const GetKeywordGapParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const GetKeywordGapResponse = zod.object({
+  keywords: zod.array(
+    zod
+      .object({
+        id: zod.number(),
+        projectId: zod.number(),
+        tenantId: zod.number(),
+        phrase: zod.string(),
+        searchVolume: zod.number().nullish(),
+        cpc: zod.number().nullish(),
+        kd: zod.number().nullish(),
+        intent: zod.string().nullish(),
+        clusterId: zod.number().nullish(),
+        source: zod.enum(["manual", "csv", "ahrefs", "semrush"]),
+        isActive: zod.boolean(),
+        rawScore: zod.number().nullish(),
+        finalScore: zod.number().nullish(),
+        createdAt: zod.string(),
+        updatedAt: zod.string(),
+      })
+      .and(
+        zod.object({
+          competitorCoverage: zod.array(
+            zod.object({
+              domain: zod.string(),
+              ranking: zod.number().nullable(),
+            }),
+          ),
+        }),
+      ),
+  ),
+  competitors: zod.array(
+    zod.object({
+      id: zod.number(),
+      tenantId: zod.number(),
+      projectId: zod.number(),
+      domain: zod.string(),
+      label: zod.string().nullish(),
+      createdAt: zod.string(),
+    }),
+  ),
+});
+
+export const ExportProjectKeywordsCsvParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const ExportProjectJsonParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const ExportProjectJsonResponse = zod.object({
+  exportedAt: zod.string(),
+  version: zod.string(),
+  project: zod.object({
+    id: zod.number(),
+    clientId: zod.number(),
+    tenantId: zod.number(),
+    name: zod.string(),
+    targetDomain: zod.string().nullish(),
+    locale: zod.string(),
+    status: zod.enum(["active", "paused", "archived"]),
+    createdAt: zod.string(),
+    updatedAt: zod.string(),
+  }),
+  keywords: zod.array(
+    zod.object({
+      id: zod.number(),
+      projectId: zod.number(),
+      tenantId: zod.number(),
+      phrase: zod.string(),
+      searchVolume: zod.number().nullish(),
+      cpc: zod.number().nullish(),
+      kd: zod.number().nullish(),
+      intent: zod.string().nullish(),
+      clusterId: zod.number().nullish(),
+      source: zod.enum(["manual", "csv", "ahrefs", "semrush"]),
+      isActive: zod.boolean(),
+      rawScore: zod.number().nullish(),
+      finalScore: zod.number().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  clusters: zod.array(
+    zod.object({
+      id: zod.number(),
+      projectId: zod.number(),
+      tenantId: zod.number(),
+      label: zod.string(),
+      pillarTopic: zod.string().nullish(),
+      clusterType: zod.enum(["pillar", "cluster", "supporting"]),
+      status: zod.enum(["pending", "approved", "rejected"]),
+      keywordCount: zod.number(),
+      avgScore: zod.number().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  briefs: zod.array(
+    zod.object({
+      id: zod.number(),
+      clusterId: zod.number().nullish(),
+      projectId: zod.number(),
+      tenantId: zod.number(),
+      title: zod.string(),
+      outline: zod.object({}).passthrough().nullish(),
+      targetWordCount: zod.number().nullish(),
+      status: zod.enum(["draft", "approved", "in_progress", "published"]),
+      assignedTo: zod.number().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  reports: zod.array(
+    zod.object({
+      id: zod.number(),
+      projectId: zod.number(),
+      tenantId: zod.number(),
+      type: zod.enum(["project_summary", "topical_authority", "content_pipeline"]),
+      format: zod.enum(["pdf", "csv", "json"]),
+      generatedAt: zod.string().nullish(),
+      fileUrl: zod.string().nullish(),
+      data: zod.object({}).passthrough().nullish(),
+      createdAt: zod.string(),
+    }),
+  ),
+  scoreSettings: zod.object({}).passthrough().nullable(),
+});
+
+export const ListProjectRankingsParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const ListProjectRankingsResponseItem = zod.object({
+  id: zod.number(),
+  phrase: zod.string(),
+  searchVolume: zod.number().nullish(),
+  latestPosition: zod.number().nullable(),
+  latestUrl: zod.string().nullable(),
+  checkedAt: zod.string().nullable(),
+});
+export const ListProjectRankingsResponse = zod.array(ListProjectRankingsResponseItem);
+
+export const GetProjectRankingHistoryParams = zod.object({
+  projectId: zod.coerce.number(),
+  keywordId: zod.coerce.number(),
+});
+
+export const GetProjectRankingHistoryResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  keywordId: zod.number(),
+  position: zod.number().nullish(),
+  url: zod.string().nullish(),
+  checkedAt: zod.string(),
+});
+export const GetProjectRankingHistoryResponse = zod.array(GetProjectRankingHistoryResponseItem);
+
+export const CheckProjectRankingParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const CheckProjectRankingBody = zod.object({
+  keywordId: zod.number(),
+  position: zod.number().nullable(),
+  url: zod.string().nullish(),
+});
+
+export const CheckAllProjectRankingsParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const CheckAllProjectRankingsResponse = zod.object({
+  checked: zod.number(),
+});
+
+export const AutoClusterProjectKeywordsParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const ListReportSchedulesResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  projectId: zod.number(),
+  reportType: zod.enum(["project_summary", "topical_authority", "content_pipeline"]),
+  frequency: zod.enum(["daily", "weekly", "monthly"]),
+  recipientEmails: zod.array(zod.string()),
+  lastSentAt: zod.string().nullish(),
+  nextSendAt: zod.string().nullish(),
+  isActive: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListReportSchedulesResponse = zod.array(ListReportSchedulesResponseItem);
+
+export const CreateReportScheduleBody = zod.object({
+  projectId: zod.number(),
+  reportType: zod.enum(["project_summary", "topical_authority", "content_pipeline"]),
+  frequency: zod.enum(["daily", "weekly", "monthly"]),
+  recipientEmails: zod.array(zod.string()),
+  isActive: zod.boolean().optional(),
+});
+
+export const ListProjectReportSchedulesParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const ListProjectReportSchedulesResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  projectId: zod.number(),
+  reportType: zod.enum(["project_summary", "topical_authority", "content_pipeline"]),
+  frequency: zod.enum(["daily", "weekly", "monthly"]),
+  recipientEmails: zod.array(zod.string()),
+  lastSentAt: zod.string().nullish(),
+  nextSendAt: zod.string().nullish(),
+  isActive: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListProjectReportSchedulesResponse = zod.array(ListProjectReportSchedulesResponseItem);
+
+export const UpdateReportScheduleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateReportScheduleBody = zod.object({
+  projectId: zod.number().optional(),
+  reportType: zod.enum(["project_summary", "topical_authority", "content_pipeline"]).optional(),
+  frequency: zod.enum(["daily", "weekly", "monthly"]).optional(),
+  recipientEmails: zod.array(zod.string()).optional(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateReportScheduleResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  projectId: zod.number(),
+  reportType: zod.enum(["project_summary", "topical_authority", "content_pipeline"]),
+  frequency: zod.enum(["daily", "weekly", "monthly"]),
+  recipientEmails: zod.array(zod.string()),
+  lastSentAt: zod.string().nullish(),
+  nextSendAt: zod.string().nullish(),
+  isActive: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const DeleteReportScheduleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteReportScheduleResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const ListProjectTemplatesResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  config: zod.object({}).passthrough(),
+  createdBy: zod.number().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListProjectTemplatesResponse = zod.array(ListProjectTemplatesResponseItem);
+
+export const CreateProjectTemplateBody = zod.object({
+  name: zod.string(),
+  description: zod.string().optional(),
+  config: zod.object({}).passthrough().optional(),
+});
+
+export const UpdateProjectTemplateParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateProjectTemplateBody = zod.object({
+  name: zod.string().optional(),
+  description: zod.string().optional(),
+  config: zod.object({}).passthrough().optional(),
+});
+
+export const UpdateProjectTemplateResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  name: zod.string(),
+  description: zod.string().nullish(),
+  config: zod.object({}).passthrough(),
+  createdBy: zod.number().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const DeleteProjectTemplateParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteProjectTemplateResponse = zod.object({
+  ok: zod.boolean(),
+});
+
+export const SaveProjectAsTemplateParams = zod.object({
+  projectId: zod.coerce.number(),
+});
+
+export const SaveProjectAsTemplateBody = zod.object({
+  name: zod.string(),
+  description: zod.string().optional(),
+});
+
+export const GetUsageReportResponse = zod.object({
+  plan: zod.string(),
+  period: zod.object({
+    start: zod.string(),
+    end: zod.string(),
+  }),
+  usage: zod.object({
+    keywords: zod.object({
+      used: zod.number(),
+      limit: zod.number(),
+    }),
+    briefs: zod.object({
+      used: zod.number(),
+      limit: zod.number(),
+    }),
+    aiTasks: zod.object({
+      used: zod.number(),
+      limit: zod.number(),
+    }),
+    seats: zod.object({
+      used: zod.number(),
+      limit: zod.number(),
+    }),
+    reportsThisMonth: zod.number(),
+    apiKeys: zod.number(),
+    webhookDeliveriesThisMonth: zod.number(),
+  }),
+});
+
+export const HandleBillingWebhookHeader = zod.object({
+  "stripe-signature": zod.string(),
+});
+
+export const HandleBillingWebhookBody = zod.object({}).passthrough();
+
+export const HandleBillingWebhookResponse = zod.object({
+  received: zod.boolean(),
+});

@@ -29,6 +29,23 @@ All feature flags default to `false`. Set to `true` to enable.
 | `FEATURE_DATAFORSEO_IMPORT` | Enable real DataForSEO adapter |
 | `FEATURE_WHITE_LABEL` | Enable white-label configuration |
 
+## GEO/AEO Audit
+
+The GEO/AEO workflow is manual/mock first. Real answer-engine calls must stay disabled unless a later approved integration path explicitly enables them.
+
+| Variable | Required When | Description |
+| --- | --- | --- |
+| `GEO_AEO_ENABLED` | Optional | Enables the GEO/AEO module. Defaults to `false` when unset in code; `.env.example` enables local/manual development. |
+| `MOCK_ANSWER_ENGINE_ENABLED` | GEO/AEO enabled | Keeps deterministic mock answer-engine collection available. |
+| `REAL_ANSWER_ENGINE_CALLS_ENABLED` | Optional | Global guard for any real answer-engine call. Defaults to `false`. |
+| `MANUAL_GEO_AEO_SNAPSHOTS_ENABLED` | GEO/AEO enabled | Allows operators to paste/import answer snapshots manually. |
+| `GOOGLE_AI_OVERVIEWS_MANUAL_ONLY` | Always | Must remain `true`; automated scraping is not supported. |
+| `PERPLEXITY_ENABLED` | Real Perplexity scaffold | Requires `REAL_ANSWER_ENGINE_CALLS_ENABLED=true` and `PERPLEXITY_API_KEY`. |
+| `PERPLEXITY_API_KEY` | `PERPLEXITY_ENABLED=true` with real calls | Perplexity API key. Leave blank in local/CI. |
+| `GEMINI_VISIBILITY_ENABLED` | Future Gemini scaffold | Enables Gemini visibility scaffold only where supported. |
+| `CHATGPT_VISIBILITY_MANUAL_ONLY` | Always | Must remain `true` unless an approved official path is added. |
+| `AI_VISIBILITY_MONTHLY_MONITORING_ENABLED` | Optional | Enables future monthly monitoring workflow. |
+
 ## AI Providers
 
 | Variable | Required When | Description |

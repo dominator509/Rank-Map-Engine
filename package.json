@@ -25,6 +25,11 @@
     "test:live:services": "node ./scripts/check-live-services.mjs",
     "db:generate": "corepack pnpm --filter @workspace/db run generate",
     "db:migrate": "corepack pnpm --filter @workspace/db run migrate",
+    "api:route-drift": "node ./scripts/check-api-route-drift.mjs",
+    "api:route-drift:check": "node ./scripts/check-api-route-drift.mjs --fail-on-drift",
+    "security:secrets": "node ./scripts/check-secrets.mjs",
+    "security:audit": "corepack pnpm audit --audit-level high",
+    "security:check": "corepack pnpm run security:secrets && corepack pnpm run security:audit",
     "deploy:preflight": "node ./scripts/deploy-preflight.mjs",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

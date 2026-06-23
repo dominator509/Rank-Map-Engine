@@ -153,12 +153,7 @@ describeConcurrencyE2e("API concurrency validation", () => {
     const createdProjects = await db
       .select({ id: projectsTable.id })
       .from(projectsTable)
-      .where(
-        and(
-          eq(projectsTable.tenantId, tenant.id),
-          eq(projectsTable.clientId, clientId),
-        ),
-      );
+      .where(and(eq(projectsTable.tenantId, tenant.id), eq(projectsTable.clientId, clientId)));
     expect(createdProjects.length).toBe(createCount);
   }, 30000);
 });

@@ -10,12 +10,14 @@ Contact: security@rankmap.io *(placeholder — update before launch)*
 
 ## Security Practices
 
+The application threat model is maintained in [`docs/THREAT_MODEL.md`](./THREAT_MODEL.md).
+
 ### Secrets Management
 
 - **No hardcoded secrets.** All credentials, API keys, and tokens must be set via environment variables.
 - `.env` is in `.gitignore` and must never be committed.
 - `.env.example` contains only fake placeholder values (e.g., `your-secret-here`).
-- ESLint is configured to flag patterns that look like hardcoded secrets.
+- ESLint and `pnpm run security:secrets` flag patterns that look like hardcoded secrets.
 - All production secrets are managed via the hosting provider's secret store.
 
 ### Authentication & Sessions
@@ -50,6 +52,7 @@ Contact: security@rankmap.io *(placeholder — update before launch)*
 - All API inputs validated with Zod schemas before processing.
 - Error responses do not expose stack traces or internal details in production.
 - Rate limiting applied at `/api/*` (Phase 1+).
+- Sensitive route families have tighter scoped rate limits: auth, API key management, webhook management, provider search, exports/reports, AI-heavy workflows, ranking checks, and Stripe webhook verification.
 - CORS restricted to known origins in production.
 
 ### Third-Party Integrations
@@ -62,7 +65,8 @@ Contact: security@rankmap.io *(placeholder — update before launch)*
 
 ### Dependency Security
 
-- `pnpm audit` run after each major dependency change.
+- `pnpm run security:audit` runs `pnpm audit --audit-level high` after each major dependency change.
+- `pnpm run security:check` combines committed-secret scanning with the high/critical dependency audit and runs in CI.
 - Dependabot / manual review for critical CVEs.
 - No `--ignore-scripts` bypass in production installs.
 
@@ -86,8 +90,8 @@ Contact: security@rankmap.io *(placeholder — update before launch)*
 
 Before each phase ships:
 
-- [ ] `pnpm audit` — no critical/high CVEs
-- [ ] `pnpm run lint` — no hardcoded secret patterns
+- [ ] `pnpm run security:check` — no committed secret patterns and no high/critical CVEs
+- [ ] `pnpm run lint` — no hardcoded secret patterns in linted source
 - [ ] New routes have `requireRole()` middleware
 - [ ] New queries include `tenant_id` filter
 - [ ] No PII logged
@@ -96,4 +100,4 @@ Before each phase ships:
 
 ---
 
-*Last updated: Phase 0.*
+*Last updated: 2026-05-31.*

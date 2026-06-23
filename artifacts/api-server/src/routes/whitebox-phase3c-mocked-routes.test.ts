@@ -165,17 +165,67 @@ describe("whitebox phase 3c - mocked route branch expansion", () => {
         [],
         [{ seatsUsed: 1, seatsMax: 3 }],
         [],
-        [{ id: 99, email: "inv@example.com", role: "agency_user", token: "tok", expiresAt: new Date() }],
+        [
+          {
+            id: 99,
+            email: "inv@example.com",
+            role: "agency_user",
+            token: "tok",
+            expiresAt: new Date(),
+          },
+        ],
       ],
-      insert: [[{ id: 99, email: "inv@example.com", role: "agency_user", token: "tok", expiresAt: new Date() }]],
+      insert: [
+        [
+          {
+            id: 99,
+            email: "inv@example.com",
+            role: "agency_user",
+            token: "tok",
+            expiresAt: new Date(),
+          },
+        ],
+      ],
       update: [],
     };
     const { baseUrl, close } = await bootRoute("./team.ts", state);
     try {
-      expect((await fetch(`${baseUrl}/team/invite`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: "bad\nemail" }) })).status).toBe(400);
-      expect((await fetch(`${baseUrl}/team/invite`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: "ok@example.com", role: "bad-role" }) })).status).toBe(400);
-      expect((await fetch(`${baseUrl}/team/invite`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: "ok@example.com", role: "agency_user" }) })).status).toBe(201);
-      expect((await fetch(`${baseUrl}/team/invitations/accept`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: "tok", fullName: "User", password: "short" }) })).status).toBe(400);
+      expect(
+        (
+          await fetch(`${baseUrl}/team/invite`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email: "bad\nemail" }),
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await fetch(`${baseUrl}/team/invite`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email: "ok@example.com", role: "bad-role" }),
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await fetch(`${baseUrl}/team/invite`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email: "ok@example.com", role: "agency_user" }),
+          })
+        ).status,
+      ).toBe(201);
+      expect(
+        (
+          await fetch(`${baseUrl}/team/invitations/accept`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ token: "tok", fullName: "User", password: "short" }),
+          })
+        ).status,
+      ).toBe(400);
     } finally {
       await close();
     }
@@ -189,12 +239,47 @@ describe("whitebox phase 3c - mocked route branch expansion", () => {
     };
     const { baseUrl, close } = await bootRoute("./tenant.ts", state);
     try {
-      expect((await fetch(`${baseUrl}/tenant`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: 7 }) })).status).toBe(400);
-      expect((await fetch(`${baseUrl}/tenant`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ whiteLabelConfig: { huge: "x".repeat(10001) } }) })).status).toBe(400);
+      expect(
+        (
+          await fetch(`${baseUrl}/tenant`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ name: 7 }),
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await fetch(`${baseUrl}/tenant`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ whiteLabelConfig: { huge: "x".repeat(10001) } }),
+          })
+        ).status,
+      ).toBe(400);
       let nested: Record<string, unknown> = { x: true };
       for (let i = 0; i < 21; i += 1) nested = { next: nested };
-      expect((await fetch(`${baseUrl}/tenant`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ whiteLabelConfig: nested }) })).status).toBe(400);
-      expect((await fetch(`${baseUrl}/tenant`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: "Updated", whiteLabelConfig: { brand: { primary: "#000" } } }) })).status).toBe(200);
+      expect(
+        (
+          await fetch(`${baseUrl}/tenant`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ whiteLabelConfig: nested }),
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await fetch(`${baseUrl}/tenant`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              name: "Updated",
+              whiteLabelConfig: { brand: { primary: "#000" } },
+            }),
+          })
+        ).status,
+      ).toBe(200);
     } finally {
       await close();
     }
@@ -209,9 +294,38 @@ describe("whitebox phase 3c - mocked route branch expansion", () => {
     const { baseUrl, close } = await bootRoute("./projects.ts", state);
     try {
       expect((await fetch(`${baseUrl}/projects/not-a-number`)).status).toBe(400);
-      expect((await fetch(`${baseUrl}/projects`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: "Missing" }) })).status).toBe(400);
-      expect((await fetch(`${baseUrl}/projects`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ clientId: 1, name: "P", targetDomain: "p.example", locale: "en-US" }) })).status).toBe(201);
-      expect((await fetch(`${baseUrl}/projects/44`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: "P2" }) })).status).toBe(200);
+      expect(
+        (
+          await fetch(`${baseUrl}/projects`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ name: "Missing" }),
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await fetch(`${baseUrl}/projects`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              clientId: 1,
+              name: "P",
+              targetDomain: "p.example",
+              locale: "en-US",
+            }),
+          })
+        ).status,
+      ).toBe(201);
+      expect(
+        (
+          await fetch(`${baseUrl}/projects/44`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ name: "P2" }),
+          })
+        ).status,
+      ).toBe(200);
     } finally {
       await close();
     }
@@ -220,9 +334,29 @@ describe("whitebox phase 3c - mocked route branch expansion", () => {
   it("covers keywords route invalid cluster and update branches", async () => {
     const state: QueueState = {
       select: [
-        [{ id: 1, projectId: 2, tenantId: 1, searchVolume: 10, cpc: "1.1", kd: 20, intent: "informational", clusterId: null, isActive: true }],
+        [
+          {
+            id: 1,
+            projectId: 2,
+            tenantId: 1,
+            searchVolume: 10,
+            cpc: "1.1",
+            kd: 20,
+            intent: "informational",
+            clusterId: null,
+            isActive: true,
+          },
+        ],
         [],
-        [{ volumeWeight: "0.4", kdWeight: "0.3", intentWeight: "0.2", cpcWeight: "0.1", freshnessWeight: "0" }],
+        [
+          {
+            volumeWeight: "0.4",
+            kdWeight: "0.3",
+            intentWeight: "0.2",
+            cpcWeight: "0.1",
+            freshnessWeight: "0",
+          },
+        ],
       ],
       insert: [],
       update: [[{ id: 1 }]],
@@ -230,8 +364,24 @@ describe("whitebox phase 3c - mocked route branch expansion", () => {
     const { baseUrl, close } = await bootRoute("./keywords.ts", state);
     try {
       expect((await fetch(`${baseUrl}/projects/nope/keywords`)).status).toBe(400);
-      expect((await fetch(`${baseUrl}/projects/2/keywords/1`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ clusterId: 77 }) })).status).toBe(400);
-      expect((await fetch(`${baseUrl}/projects/2/keywords/1`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ isActive: false }) })).status).toBe(200);
+      expect(
+        (
+          await fetch(`${baseUrl}/projects/2/keywords/1`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ clusterId: 77 }),
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await fetch(`${baseUrl}/projects/2/keywords/1`, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ isActive: false }),
+          })
+        ).status,
+      ).toBe(200);
     } finally {
       await close();
     }
@@ -239,17 +389,24 @@ describe("whitebox phase 3c - mocked route branch expansion", () => {
 
   it("covers briefs route generate and approve branches", async () => {
     const state: QueueState = {
-      select: [
-        [{ id: 1, title: "B", clusterId: null, projectId: 2, tenantId: 1 }],
-      ],
+      select: [[{ id: 1, title: "B", clusterId: null, projectId: 2, tenantId: 1 }]],
       insert: [],
-      update: [[{ id: 1, title: "B", status: "draft" }], [{ id: 1, title: "B", status: "approved" }]],
+      update: [
+        [{ id: 1, title: "B", status: "draft" }],
+        [{ id: 1, title: "B", status: "approved" }],
+      ],
     };
     const { baseUrl, close } = await bootRoute("./briefs.ts", state);
     try {
-      expect((await fetch(`${baseUrl}/projects/nope/briefs/1/generate`, { method: "POST" })).status).toBe(400);
-      expect((await fetch(`${baseUrl}/projects/2/briefs/1/generate`, { method: "POST" })).status).toBe(200);
-      expect((await fetch(`${baseUrl}/projects/2/briefs/1/approve`, { method: "POST" })).status).toBe(200);
+      expect(
+        (await fetch(`${baseUrl}/projects/nope/briefs/1/generate`, { method: "POST" })).status,
+      ).toBe(400);
+      expect(
+        (await fetch(`${baseUrl}/projects/2/briefs/1/generate`, { method: "POST" })).status,
+      ).toBe(200);
+      expect(
+        (await fetch(`${baseUrl}/projects/2/briefs/1/approve`, { method: "POST" })).status,
+      ).toBe(200);
     } finally {
       await close();
     }

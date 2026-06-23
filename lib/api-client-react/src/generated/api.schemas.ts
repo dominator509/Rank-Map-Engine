@@ -622,6 +622,806 @@ export interface UsageSummary {
   projectsMax: number;
 }
 
+export type DetailedHealthStatusStatus =
+  (typeof DetailedHealthStatusStatus)[keyof typeof DetailedHealthStatusStatus];
+
+export const DetailedHealthStatusStatus = {
+  ok: "ok",
+  degraded: "degraded",
+} as const;
+
+export type DetailedHealthStatusServicesDatabaseStatus =
+  (typeof DetailedHealthStatusServicesDatabaseStatus)[keyof typeof DetailedHealthStatusServicesDatabaseStatus];
+
+export const DetailedHealthStatusServicesDatabaseStatus = {
+  ok: "ok",
+  error: "error",
+} as const;
+
+export type DetailedHealthStatusServicesDatabase = {
+  status: DetailedHealthStatusServicesDatabaseStatus;
+  latencyMs: number;
+};
+
+export type DetailedHealthStatusServicesAiStatus =
+  (typeof DetailedHealthStatusServicesAiStatus)[keyof typeof DetailedHealthStatusServicesAiStatus];
+
+export const DetailedHealthStatusServicesAiStatus = {
+  configured: "configured",
+  "mock-fallback": "mock-fallback",
+} as const;
+
+export type DetailedHealthStatusServicesAi = {
+  status: DetailedHealthStatusServicesAiStatus;
+};
+
+export type DetailedHealthStatusServicesSmtpStatus =
+  (typeof DetailedHealthStatusServicesSmtpStatus)[keyof typeof DetailedHealthStatusServicesSmtpStatus];
+
+export const DetailedHealthStatusServicesSmtpStatus = {
+  configured: "configured",
+  "mock-fallback": "mock-fallback",
+} as const;
+
+export type DetailedHealthStatusServicesSmtp = {
+  status: DetailedHealthStatusServicesSmtpStatus;
+};
+
+export type DetailedHealthStatusServicesBillingStatus =
+  (typeof DetailedHealthStatusServicesBillingStatus)[keyof typeof DetailedHealthStatusServicesBillingStatus];
+
+export const DetailedHealthStatusServicesBillingStatus = {
+  configured: "configured",
+  "missing-config": "missing-config",
+  disabled: "disabled",
+} as const;
+
+export type DetailedHealthStatusServicesBilling = {
+  status: DetailedHealthStatusServicesBillingStatus;
+  missing: string[];
+};
+
+export type DetailedHealthStatusServices = {
+  database: DetailedHealthStatusServicesDatabase;
+  ai: DetailedHealthStatusServicesAi;
+  smtp: DetailedHealthStatusServicesSmtp;
+  billing: DetailedHealthStatusServicesBilling;
+};
+
+export type DetailedHealthStatusMemory = {
+  heapUsedMB: number;
+  heapTotalMB: number;
+  rssMB: number;
+};
+
+export interface DetailedHealthStatus {
+  status: DetailedHealthStatusStatus;
+  timestamp: string;
+  uptimeSeconds: number;
+  responseTimeMs: number;
+  services: DetailedHealthStatusServices;
+  memory: DetailedHealthStatusMemory;
+  version: string;
+}
+
+export type AnalyticsOverviewTotals = {
+  clients: number;
+  projects: number;
+  keywords: number;
+  clusters: number;
+  briefs: number;
+  reports: number;
+  aiTasksThisMonth: number;
+};
+
+export interface AnalyticsSourceBucket {
+  source: string;
+  c: number;
+}
+
+export interface AnalyticsStatusBucket {
+  status: string;
+  c: number;
+}
+
+export interface AnalyticsOverview {
+  totals: AnalyticsOverviewTotals;
+  keywordsBySource: AnalyticsSourceBucket[];
+  briefsByStatus: AnalyticsStatusBucket[];
+  clustersByStatus: AnalyticsStatusBucket[];
+}
+
+export interface AnalyticsProject {
+  id: number;
+  name: string;
+  createdAt: string;
+  keywordCount: number;
+  clusterCount: number;
+  briefCount: number;
+}
+
+export interface AnalyticsVelocityPoint {
+  day: string;
+  count: number;
+}
+
+/**
+ * @nullable
+ */
+export type AuditLogEntryMetadata = { [key: string]: unknown } | null;
+
+export interface AuditLogEntry {
+  id: number;
+  action: string;
+  resourceType: string;
+  /** @nullable */
+  resourceId?: string | null;
+  /** @nullable */
+  metadata?: AuditLogEntryMetadata;
+  /** @nullable */
+  ipAddress?: string | null;
+  createdAt: string;
+  /** @nullable */
+  userName?: string | null;
+  /** @nullable */
+  userEmail?: string | null;
+}
+
+export type ContentCalendarStatus =
+  (typeof ContentCalendarStatus)[keyof typeof ContentCalendarStatus];
+
+export const ContentCalendarStatus = {
+  planned: "planned",
+  in_progress: "in_progress",
+  review: "review",
+  published: "published",
+} as const;
+
+export interface ContentCalendarEntry {
+  id: number;
+  tenantId: number;
+  projectId: number;
+  /** @nullable */
+  briefId?: number | null;
+  title: string;
+  status: ContentCalendarStatus;
+  /** @nullable */
+  dueDate?: string | null;
+  /** @nullable */
+  publishedDate?: string | null;
+  /** @nullable */
+  assignedTo?: number | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CalendarEntryBody {
+  title: string;
+  status?: ContentCalendarStatus;
+  /** @nullable */
+  dueDate?: string | null;
+  /** @nullable */
+  publishedDate?: string | null;
+  /** @nullable */
+  assignedTo?: number | null;
+  /** @nullable */
+  briefId?: number | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface UpdateCalendarEntryBody {
+  title?: string;
+  status?: ContentCalendarStatus;
+  /** @nullable */
+  dueDate?: string | null;
+  /** @nullable */
+  publishedDate?: string | null;
+  /** @nullable */
+  assignedTo?: number | null;
+  /** @nullable */
+  briefId?: number | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type CommentEntityType = (typeof CommentEntityType)[keyof typeof CommentEntityType];
+
+export const CommentEntityType = {
+  cluster: "cluster",
+  brief: "brief",
+  project: "project",
+  keyword: "keyword",
+} as const;
+
+export interface CommentUser {
+  /** @nullable */
+  id: number | null;
+  fullName: string;
+  /** @nullable */
+  avatarUrl?: string | null;
+}
+
+export interface Comment {
+  id: number;
+  tenantId?: number;
+  userId?: number;
+  body: string;
+  entityType: CommentEntityType;
+  entityId: number;
+  /** @nullable */
+  resolvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user?: CommentUser;
+}
+
+export interface CreateCommentBody {
+  entityType: CommentEntityType;
+  entityId: number;
+  body: string;
+}
+
+export type CustomFieldEntityType =
+  (typeof CustomFieldEntityType)[keyof typeof CustomFieldEntityType];
+
+export const CustomFieldEntityType = {
+  project: "project",
+  keyword: "keyword",
+  client: "client",
+} as const;
+
+export type CustomFieldType = (typeof CustomFieldType)[keyof typeof CustomFieldType];
+
+export const CustomFieldType = {
+  text: "text",
+  number: "number",
+  select: "select",
+  date: "date",
+  boolean: "boolean",
+} as const;
+
+export interface CustomField {
+  id: number;
+  tenantId: number;
+  entityType: CustomFieldEntityType;
+  name: string;
+  slug: string;
+  fieldType: CustomFieldType;
+  /** @nullable */
+  options?: string[] | null;
+  isRequired: boolean;
+  createdAt: string;
+}
+
+export interface CustomFieldBody {
+  entityType: CustomFieldEntityType;
+  name: string;
+  slug: string;
+  fieldType: CustomFieldType;
+  options?: string[];
+  isRequired?: boolean;
+}
+
+export interface CustomFieldValue {
+  id: number;
+  tenantId: number;
+  fieldId: number;
+  entityType: CustomFieldEntityType;
+  entityId: number;
+  value?: unknown;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpsertCustomFieldValueBody {
+  fieldId: number;
+  entityType: CustomFieldEntityType;
+  entityId: number;
+  value?: unknown;
+}
+
+/**
+ * @nullable
+ */
+export type GdprExportUser = { [key: string]: unknown } | null;
+
+export type GdprExportCommentsItem = { [key: string]: unknown };
+
+export type GdprExportAuditLogsItem = { [key: string]: unknown };
+
+export interface Notification {
+  id: number;
+  tenantId: number;
+  userId: number;
+  type: string;
+  title: string;
+  /** @nullable */
+  body?: string | null;
+  /** @nullable */
+  link?: string | null;
+  /** @nullable */
+  readAt?: string | null;
+  createdAt: string;
+}
+
+export interface GdprExport {
+  exportedAt: string;
+  /** @nullable */
+  user: GdprExportUser;
+  comments: GdprExportCommentsItem[];
+  auditLogs: GdprExportAuditLogsItem[];
+  notifications: Notification[];
+  keywords: Keyword[];
+  contentBriefs: ContentBrief[];
+}
+
+export interface GdprDeleteResponse {
+  ok: boolean;
+  message: string;
+}
+
+export interface CompetitorDomain {
+  id: number;
+  tenantId: number;
+  projectId: number;
+  domain: string;
+  /** @nullable */
+  label?: string | null;
+  createdAt: string;
+}
+
+export interface CreateCompetitorBody {
+  domain: string;
+  label?: string;
+}
+
+export interface CompetitorCoverage {
+  domain: string;
+  /** @nullable */
+  ranking: number | null;
+}
+
+export type KeywordGapKeyword = Keyword & {
+  competitorCoverage: CompetitorCoverage[];
+};
+
+export interface KeywordGapResponse {
+  keywords: KeywordGapKeyword[];
+  competitors: CompetitorDomain[];
+}
+
+/**
+ * @nullable
+ */
+export type ProjectExportScoreSettings = { [key: string]: unknown } | null;
+
+export interface ProjectExport {
+  exportedAt: string;
+  version: string;
+  project: Project;
+  keywords: Keyword[];
+  clusters: KeywordCluster[];
+  briefs: ContentBrief[];
+  reports: Report[];
+  /** @nullable */
+  scoreSettings: ProjectExportScoreSettings;
+}
+
+export interface KeywordRanking {
+  id: number;
+  phrase: string;
+  /** @nullable */
+  searchVolume?: number | null;
+  /** @nullable */
+  latestPosition: number | null;
+  /** @nullable */
+  latestUrl: string | null;
+  /** @nullable */
+  checkedAt: string | null;
+}
+
+export interface KeywordRankingHistoryEntry {
+  id: number;
+  tenantId: number;
+  keywordId: number;
+  /** @nullable */
+  position?: number | null;
+  /** @nullable */
+  url?: string | null;
+  checkedAt: string;
+}
+
+export interface CheckRankingBody {
+  keywordId: number;
+  /** @nullable */
+  position: number | null;
+  /** @nullable */
+  url?: string | null;
+}
+
+export interface BulkRankingCheckResponse {
+  checked: number;
+}
+
+export interface AutoClusterResponse {
+  clusters: KeywordCluster[];
+  taskId: number;
+}
+
+export type ReportScheduleType = (typeof ReportScheduleType)[keyof typeof ReportScheduleType];
+
+export const ReportScheduleType = {
+  project_summary: "project_summary",
+  topical_authority: "topical_authority",
+  content_pipeline: "content_pipeline",
+} as const;
+
+export type ReportScheduleFrequency =
+  (typeof ReportScheduleFrequency)[keyof typeof ReportScheduleFrequency];
+
+export const ReportScheduleFrequency = {
+  daily: "daily",
+  weekly: "weekly",
+  monthly: "monthly",
+} as const;
+
+export interface ReportSchedule {
+  id: number;
+  tenantId: number;
+  projectId: number;
+  reportType: ReportScheduleType;
+  frequency: ReportScheduleFrequency;
+  recipientEmails: string[];
+  /** @nullable */
+  lastSentAt?: string | null;
+  /** @nullable */
+  nextSendAt?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReportScheduleBody {
+  projectId: number;
+  reportType: ReportScheduleType;
+  frequency: ReportScheduleFrequency;
+  recipientEmails: string[];
+  isActive?: boolean;
+}
+
+export interface UpdateReportScheduleBody {
+  projectId?: number;
+  reportType?: ReportScheduleType;
+  frequency?: ReportScheduleFrequency;
+  recipientEmails?: string[];
+  isActive?: boolean;
+}
+
+export type ProjectTemplateConfig = { [key: string]: unknown };
+
+export interface ProjectTemplate {
+  id: number;
+  tenantId: number;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  config: ProjectTemplateConfig;
+  /** @nullable */
+  createdBy?: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TemplateBodyConfig = { [key: string]: unknown };
+
+export interface TemplateBody {
+  name: string;
+  description?: string;
+  config?: TemplateBodyConfig;
+}
+
+export type UpdateTemplateBodyConfig = { [key: string]: unknown };
+
+export interface UpdateTemplateBody {
+  name?: string;
+  description?: string;
+  config?: UpdateTemplateBodyConfig;
+}
+
+export interface SaveProjectAsTemplateBody {
+  name: string;
+  description?: string;
+}
+
+export type UsageReportPeriod = {
+  start: string;
+  end: string;
+};
+
+export interface UsageQuota {
+  used: number;
+  limit: number;
+}
+
+export type UsageReportUsage = {
+  keywords: UsageQuota;
+  briefs: UsageQuota;
+  aiTasks: UsageQuota;
+  seats: UsageQuota;
+  reportsThisMonth: number;
+  apiKeys: number;
+  webhookDeliveriesThisMonth: number;
+};
+
+export interface UsageReport {
+  plan: string;
+  period: UsageReportPeriod;
+  usage: UsageReportUsage;
+}
+
+export interface StripeWebhookResponse {
+  received: boolean;
+}
+
+export interface OkResponse {
+  ok: boolean;
+}
+
+export interface MessageResponse {
+  message: string;
+}
+
+export type TeamMemberRole = (typeof TeamMemberRole)[keyof typeof TeamMemberRole];
+
+export const TeamMemberRole = {
+  super_admin: "super_admin",
+  agency_admin: "agency_admin",
+  agency_user: "agency_user",
+  client: "client",
+} as const;
+
+export interface TeamMember {
+  id: number;
+  email: string;
+  fullName: string;
+  role: TeamMemberRole;
+  /** @nullable */
+  avatarUrl?: string | null;
+  /** @nullable */
+  lastLoginAt?: string | null;
+  createdAt: string;
+}
+
+export type UpdateTeamMemberRoleBodyRole =
+  (typeof UpdateTeamMemberRoleBodyRole)[keyof typeof UpdateTeamMemberRoleBodyRole];
+
+export const UpdateTeamMemberRoleBodyRole = {
+  agency_admin: "agency_admin",
+  agency_user: "agency_user",
+  client: "client",
+} as const;
+
+export interface UpdateTeamMemberRoleBody {
+  role: UpdateTeamMemberRoleBodyRole;
+}
+
+export type InviteTeamMemberBodyRole =
+  (typeof InviteTeamMemberBodyRole)[keyof typeof InviteTeamMemberBodyRole];
+
+export const InviteTeamMemberBodyRole = {
+  agency_admin: "agency_admin",
+  agency_user: "agency_user",
+  client: "client",
+} as const;
+
+export interface InviteTeamMemberBody {
+  email: string;
+  role?: InviteTeamMemberBodyRole;
+}
+
+export interface TeamInviteResponse {
+  id: number;
+  email: string;
+  role: string;
+  token: string;
+  expiresAt: string;
+  inviteUrl: string;
+}
+
+export interface TeamInvitation {
+  id: number;
+  tenantId: number;
+  email: string;
+  role: string;
+  token: string;
+  invitedBy: number;
+  expiresAt: string;
+  /** @nullable */
+  acceptedAt?: string | null;
+  createdAt: string;
+}
+
+export interface AcceptTeamInvitationBody {
+  token: string;
+  fullName: string;
+  password: string;
+}
+
+export type AcceptTeamInvitationResponseUser = {
+  id: number;
+  email: string;
+  fullName: string;
+  role: string;
+};
+
+export interface AcceptTeamInvitationResponse {
+  user: AcceptTeamInvitationResponseUser;
+}
+
+export type IntegrationProvider = (typeof IntegrationProvider)[keyof typeof IntegrationProvider];
+
+export const IntegrationProvider = {
+  ahrefs: "ahrefs",
+  semrush: "semrush",
+  dataforseo: "dataforseo",
+  google_search_console: "google_search_console",
+} as const;
+
+export type KeywordSearchProvider =
+  (typeof KeywordSearchProvider)[keyof typeof KeywordSearchProvider];
+
+export const KeywordSearchProvider = {
+  ahrefs: "ahrefs",
+  semrush: "semrush",
+  dataforseo: "dataforseo",
+} as const;
+
+export interface Integration {
+  id: number;
+  provider: IntegrationProvider;
+  isActive: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type ConfigureIntegrationBodyCredentials = { [key: string]: string };
+
+export interface ConfigureIntegrationBody {
+  provider: IntegrationProvider;
+  credentials: ConfigureIntegrationBodyCredentials;
+}
+
+export interface SearchIntegrationKeywordsBody {
+  query: string;
+}
+
+export interface ProviderKeyword {
+  phrase: string;
+  searchVolume?: number;
+  cpc?: number;
+  kd?: number;
+  intent?: string;
+  source?: string;
+}
+
+export type ApiKeyScope = (typeof ApiKeyScope)[keyof typeof ApiKeyScope];
+
+export const ApiKeyScope = {
+  read: "read",
+  write: "write",
+} as const;
+
+export interface ApiKey {
+  id: number;
+  name: string;
+  keyPrefix: string;
+  scopes: ApiKeyScope[];
+  /** @nullable */
+  lastUsedAt?: string | null;
+  /** @nullable */
+  expiresAt?: string | null;
+  /** @nullable */
+  revokedAt?: string | null;
+  createdAt: string;
+}
+
+export interface CreateApiKeyBody {
+  name: string;
+  scopes?: ApiKeyScope[];
+  expiresInDays?: number;
+}
+
+export interface CreateApiKeyResponse {
+  id: number;
+  name: string;
+  keyPrefix: string;
+  scopes: ApiKeyScope[];
+  /** @nullable */
+  expiresAt?: string | null;
+  createdAt: string;
+  key: string;
+}
+
+export type WebhookEvent = (typeof WebhookEvent)[keyof typeof WebhookEvent];
+
+export const WebhookEvent = {
+  keywordimported: "keyword.imported",
+  clustercreated: "cluster.created",
+  clusterapproved: "cluster.approved",
+  clusterrejected: "cluster.rejected",
+  briefcreated: "brief.created",
+  briefapproved: "brief.approved",
+  reportgenerated: "report.generated",
+  projectcreated: "project.created",
+  ai_taskcompleted: "ai_task.completed",
+} as const;
+
+export interface WebhookEndpoint {
+  id: number;
+  tenantId: number;
+  url: string;
+  events: WebhookEvent[];
+  /** @nullable */
+  secret?: null;
+  isActive: boolean;
+  /** @nullable */
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WebhookEndpointWithSecret {
+  id: number;
+  tenantId: number;
+  url: string;
+  events: WebhookEvent[];
+  secret: string;
+  isActive: boolean;
+  /** @nullable */
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateWebhookBody {
+  url: string;
+  events?: WebhookEvent[];
+  description?: string;
+}
+
+export interface UpdateWebhookBody {
+  url?: string;
+  events?: WebhookEvent[];
+  isActive?: boolean;
+  description?: string;
+}
+
+export type WebhookDeliveryPayload = { [key: string]: unknown };
+
+export interface WebhookDelivery {
+  id: number;
+  endpointId: number;
+  tenantId: number;
+  event: WebhookEvent;
+  payload: WebhookDeliveryPayload;
+  status: string;
+  /** @nullable */
+  statusCode?: number | null;
+  /** @nullable */
+  responseBody?: string | null;
+  attempts: number;
+  /** @nullable */
+  lastAttemptAt?: string | null;
+  createdAt: string;
+}
+
+export interface UnreadNotificationCount {
+  count: number;
+}
+
 export type ListProjectsParams = {
   clientId?: number;
 };
@@ -644,3 +1444,36 @@ export type ListAiTasksParams = {
 export type ListBriefsParams = {
   status?: string;
 };
+
+export type ListWebhookDeliveriesParams = {
+  /**
+   * @maximum 100
+   */
+  limit?: number;
+};
+
+export type ListAuditLogEntriesParams = {
+  /**
+   * @maximum 200
+   */
+  limit?: number;
+  offset?: number;
+  resourceType?: string;
+  action?: string;
+};
+
+export type ListCommentsParams = {
+  entityType: CommentEntityType;
+  entityId: number;
+};
+
+export type ListCustomFieldsParams = {
+  entityType?: CustomFieldEntityType;
+};
+
+export type ListCustomFieldValuesParams = {
+  entityType: CustomFieldEntityType;
+  entityId: number;
+};
+
+export type HandleBillingWebhookBody = { [key: string]: unknown };

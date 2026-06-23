@@ -71,27 +71,21 @@
             "code": "invalid_type",
             "expected": "string",
             "received": "undefined",
-            "path": [
-              "password"
-            ],
+            "path": ["password"],
             "message": "Required"
           },
           {
             "code": "invalid_type",
             "expected": "string",
             "received": "undefined",
-            "path": [
-              "fullName"
-            ],
+            "path": ["fullName"],
             "message": "Required"
           },
           {
             "code": "invalid_type",
             "expected": "string",
             "received": "undefined",
-            "path": [
-              "tenantName"
-            ],
+            "path": ["tenantName"],
             "message": "Required"
           }
         ]

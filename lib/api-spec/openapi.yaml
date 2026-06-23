@@ -19,6 +19,11 @@ tags:
   - name: ai-tasks
   - name: tenant
   - name: billing
+  - name: team
+  - name: integrations
+  - name: api-keys
+  - name: webhooks
+  - name: notifications
 
 paths:
   /healthz:
@@ -1171,6 +1176,1724 @@ paths:
               schema:
                 $ref: "#/components/schemas/UsageSummary"
 
+  /team:
+    get:
+      operationId: listTeamMembers
+      tags: [team]
+      responses:
+        "200":
+          description: Team members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamMember"
+
+  /team/{userId}:
+    patch:
+      operationId: updateTeamMemberRole
+      tags: [team]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTeamMemberRoleBody"
+      responses:
+        "200":
+          description: Updated team member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Team member not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: removeTeamMember
+      tags: [team]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+        "400":
+          description: Cannot remove current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Team member not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /team/invite:
+    post:
+      operationId: inviteTeamMember
+      tags: [team]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteTeamMemberBody"
+      responses:
+        "201":
+          description: Invitation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamInviteResponse"
+        "400":
+          description: Invalid invite
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "402":
+          description: Seat limit reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /team/invitations:
+    get:
+      operationId: listTeamInvitations
+      tags: [team]
+      responses:
+        "200":
+          description: Team invitations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamInvitation"
+
+  /team/invitations/{id}:
+    delete:
+      operationId: deleteTeamInvitation
+      tags: [team]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /team/invitations/accept:
+    post:
+      operationId: acceptTeamInvitation
+      tags: [team]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptTeamInvitationBody"
+      responses:
+        "200":
+          description: Invitation accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcceptTeamInvitationResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Invitation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Invitation already accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "410":
+          description: Invitation expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /integrations:
+    get:
+      operationId: listIntegrations
+      tags: [integrations]
+      responses:
+        "200":
+          description: Configured integrations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Integration"
+    post:
+      operationId: configureIntegration
+      tags: [integrations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfigureIntegrationBody"
+      responses:
+        "200":
+          description: Updated integration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Integration"
+        "201":
+          description: Created integration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Integration"
+        "400":
+          description: Invalid integration payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /integrations/{provider}:
+    delete:
+      operationId: deleteIntegration
+      tags: [integrations]
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/IntegrationProvider"
+      responses:
+        "204":
+          description: Deleted
+
+  /integrations/{provider}/search:
+    post:
+      operationId: searchIntegrationKeywords
+      tags: [integrations]
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/KeywordSearchProvider"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchIntegrationKeywordsBody"
+      responses:
+        "200":
+          description: Keyword provider results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProviderKeyword"
+        "400":
+          description: Invalid provider or query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Stored credentials could not be read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api-keys:
+    get:
+      operationId: listApiKeys
+      tags: [api-keys]
+      responses:
+        "200":
+          description: Active API keys
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApiKey"
+    post:
+      operationId: createApiKey
+      tags: [api-keys]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApiKeyBody"
+      responses:
+        "201":
+          description: Created API key with one-time secret
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateApiKeyResponse"
+        "400":
+          description: Invalid API key payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api-keys/{id}:
+    delete:
+      operationId: revokeApiKey
+      tags: [api-keys]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Revoked
+        "404":
+          description: API key not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /webhooks:
+    get:
+      operationId: listWebhooks
+      tags: [webhooks]
+      responses:
+        "200":
+          description: Webhook endpoints
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WebhookEndpoint"
+    post:
+      operationId: createWebhook
+      tags: [webhooks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWebhookBody"
+      responses:
+        "201":
+          description: Created webhook endpoint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookEndpointWithSecret"
+        "400":
+          description: Invalid webhook payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /webhooks/{id}:
+    patch:
+      operationId: updateWebhook
+      tags: [webhooks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWebhookBody"
+      responses:
+        "200":
+          description: Updated webhook endpoint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookEndpoint"
+        "400":
+          description: Invalid webhook URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Webhook not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteWebhook
+      tags: [webhooks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /webhooks/{id}/test:
+    post:
+      operationId: testWebhook
+      tags: [webhooks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Test event queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: Webhook not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /webhooks/{id}/deliveries:
+    get:
+      operationId: listWebhookDeliveries
+      tags: [webhooks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+      responses:
+        "200":
+          description: Webhook deliveries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WebhookDelivery"
+
+  /webhooks/events:
+    get:
+      operationId: listWebhookEvents
+      tags: [webhooks]
+      responses:
+        "200":
+          description: Supported webhook events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WebhookEvent"
+
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/unread-count:
+    get:
+      operationId: getUnreadNotificationCount
+      tags: [notifications]
+      responses:
+        "200":
+          description: Unread notification count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnreadNotificationCount"
+
+  /notifications/read-all:
+    patch:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      responses:
+        "200":
+          description: All unread notifications marked read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Notification marked read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          description: Invalid notification id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /notifications/{id}:
+    delete:
+      operationId: deleteNotification
+      tags: [notifications]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Notification deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          description: Invalid notification id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /healthz/detailed:
+    get:
+      operationId: getDetailedHealth
+      tags: [health]
+      parameters:
+        - name: x-health-check-token
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: authorization
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Detailed operational health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailedHealthStatus"
+        "503":
+          description: One or more required services are degraded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailedHealthStatus"
+
+  /tenant:
+    get:
+      operationId: getTenant
+      tags: [tenant]
+      responses:
+        "200":
+          description: Current tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+        "404":
+          description: Tenant not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateTenant
+      tags: [tenant]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTenantBody"
+      responses:
+        "200":
+          description: Updated tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+        "400":
+          description: Invalid tenant payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tenant/dashboard:
+    get:
+      operationId: getTenantDashboard
+      tags: [tenant]
+      responses:
+        "200":
+          description: Tenant dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /clients/{clientId}/projects:
+    get:
+      operationId: listClientProjects
+      tags: [projects]
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Projects for a client
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+        "404":
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createClientProject
+      tags: [projects]
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectBody"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "400":
+          description: Invalid project payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /clients/{clientId}/projects/{id}:
+    get:
+      operationId: getClientProject
+      tags: [projects]
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project scoped to a client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateClientProject
+      tags: [projects]
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProjectBody"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "400":
+          description: Invalid project payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteClientProject
+      tags: [projects]
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /analytics/overview:
+    get:
+      operationId: getAnalyticsOverview
+      tags: [analytics]
+      responses:
+        "200":
+          description: Tenant-wide analytics overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsOverview"
+
+  /analytics/projects:
+    get:
+      operationId: listAnalyticsProjects
+      tags: [analytics]
+      responses:
+        "200":
+          description: Per-project analytics rollups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnalyticsProject"
+
+  /analytics/velocity:
+    get:
+      operationId: getAnalyticsVelocity
+      tags: [analytics]
+      responses:
+        "200":
+          description: Daily content velocity counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnalyticsVelocityPoint"
+
+  /audit-log:
+    get:
+      operationId: listAuditLogEntries
+      tags: [audit-log]
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 200
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: resourceType
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: action
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLogEntry"
+
+  /comments:
+    get:
+      operationId: listComments
+      tags: [comments]
+      parameters:
+        - name: entityType
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommentEntityType"
+        - name: entityId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Comments for an entity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+        "400":
+          description: Invalid comment query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createComment
+      tags: [comments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCommentBody"
+      responses:
+        "201":
+          description: Created comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: Invalid comment payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /comments/{id}/resolve:
+    patch:
+      operationId: resolveComment
+      tags: [comments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Resolved comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "404":
+          description: Comment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /comments/{id}:
+    delete:
+      operationId: deleteComment
+      tags: [comments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "403":
+          description: Cannot delete another user's comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /custom-fields:
+    get:
+      operationId: listCustomFields
+      tags: [custom-fields]
+      parameters:
+        - name: entityType
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/CustomFieldEntityType"
+      responses:
+        "200":
+          description: Custom field definitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomField"
+    post:
+      operationId: createCustomField
+      tags: [custom-fields]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomFieldBody"
+      responses:
+        "201":
+          description: Created custom field definition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomField"
+        "400":
+          description: Invalid custom field payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /custom-fields/{id}:
+    delete:
+      operationId: deleteCustomField
+      tags: [custom-fields]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted custom field
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /custom-field-values:
+    get:
+      operationId: listCustomFieldValues
+      tags: [custom-fields]
+      parameters:
+        - name: entityType
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/CustomFieldEntityType"
+        - name: entityId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Custom field values for an entity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomFieldValue"
+        "400":
+          description: Invalid custom field value query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: upsertCustomFieldValue
+      tags: [custom-fields]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertCustomFieldValueBody"
+      responses:
+        "200":
+          description: Updated custom field value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomFieldValue"
+        "201":
+          description: Created custom field value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomFieldValue"
+        "400":
+          description: Invalid custom field value payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /gdpr/export:
+    get:
+      operationId: exportGdprData
+      tags: [gdpr]
+      responses:
+        "200":
+          description: JSON export for the current user's GDPR right of access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GdprExport"
+
+  /gdpr/me:
+    delete:
+      operationId: deleteCurrentUserGdprData
+      tags: [gdpr]
+      responses:
+        "200":
+          description: Account deletion accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GdprDeleteResponse"
+        "422":
+          description: Admin ownership transfer required first
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /projects/{projectId}/calendar:
+    get:
+      operationId: listProjectCalendarEntries
+      tags: [calendar]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Content calendar entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentCalendarEntry"
+    post:
+      operationId: createProjectCalendarEntry
+      tags: [calendar]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CalendarEntryBody"
+      responses:
+        "201":
+          description: Created calendar entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentCalendarEntry"
+        "400":
+          description: Invalid calendar payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /projects/{projectId}/calendar/{id}:
+    patch:
+      operationId: updateProjectCalendarEntry
+      tags: [calendar]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCalendarEntryBody"
+      responses:
+        "200":
+          description: Updated calendar entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentCalendarEntry"
+        "404":
+          description: Calendar entry not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteProjectCalendarEntry
+      tags: [calendar]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted calendar entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /projects/{projectId}/competitors:
+    get:
+      operationId: listProjectCompetitors
+      tags: [competitors]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Competitor domains
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CompetitorDomain"
+    post:
+      operationId: createProjectCompetitor
+      tags: [competitors]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCompetitorBody"
+      responses:
+        "201":
+          description: Created competitor domain
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompetitorDomain"
+        "400":
+          description: Invalid competitor payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /projects/{projectId}/competitors/{id}:
+    delete:
+      operationId: deleteProjectCompetitor
+      tags: [competitors]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted competitor domain
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /projects/{projectId}/competitors/keyword-gap:
+    get:
+      operationId: getKeywordGap
+      tags: [competitors]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Competitor keyword gap analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeywordGapResponse"
+
+  /projects/{projectId}/export/keywords.csv:
+    get:
+      operationId: exportProjectKeywordsCsv
+      tags: [exports]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project keywords as CSV
+          content:
+            text/csv:
+              schema:
+                type: string
+        "404":
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /projects/{projectId}/export/project.json:
+    get:
+      operationId: exportProjectJson
+      tags: [exports]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Full project export
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectExport"
+        "404":
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /projects/{projectId}/rankings:
+    get:
+      operationId: listProjectRankings
+      tags: [rankings]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Latest ranking summary per keyword
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/KeywordRanking"
+
+  /projects/{projectId}/rankings/{keywordId}/history:
+    get:
+      operationId: getProjectRankingHistory
+      tags: [rankings]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: keywordId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ranking history for a keyword
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/KeywordRankingHistoryEntry"
+
+  /projects/{projectId}/rankings/check:
+    post:
+      operationId: checkProjectRanking
+      tags: [rankings]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckRankingBody"
+      responses:
+        "201":
+          description: Recorded ranking check
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeywordRankingHistoryEntry"
+
+  /projects/{projectId}/rankings/check-all:
+    post:
+      operationId: checkAllProjectRankings
+      tags: [rankings]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Bulk ranking check summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkRankingCheckResponse"
+
+  /projects/{projectId}/clusters/auto:
+    post:
+      operationId: autoClusterProjectKeywords
+      tags: [clusters]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Auto-created clusters and queued AI task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutoClusterResponse"
+        "400":
+          description: Invalid project or no keywords to cluster
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /report-schedules:
+    get:
+      operationId: listReportSchedules
+      tags: [report-schedules]
+      responses:
+        "200":
+          description: Tenant report schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReportSchedule"
+    post:
+      operationId: createReportSchedule
+      tags: [report-schedules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportScheduleBody"
+      responses:
+        "201":
+          description: Created report schedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportSchedule"
+        "400":
+          description: Invalid report schedule payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /projects/{projectId}/report-schedules:
+    get:
+      operationId: listProjectReportSchedules
+      tags: [report-schedules]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Report schedules for a project
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReportSchedule"
+
+  /report-schedules/{id}:
+    patch:
+      operationId: updateReportSchedule
+      tags: [report-schedules]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReportScheduleBody"
+      responses:
+        "200":
+          description: Updated report schedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportSchedule"
+        "404":
+          description: Schedule not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteReportSchedule
+      tags: [report-schedules]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted report schedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /templates:
+    get:
+      operationId: listProjectTemplates
+      tags: [templates]
+      responses:
+        "200":
+          description: Project templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectTemplate"
+    post:
+      operationId: createProjectTemplate
+      tags: [templates]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TemplateBody"
+      responses:
+        "201":
+          description: Created project template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectTemplate"
+
+  /templates/{id}:
+    patch:
+      operationId: updateProjectTemplate
+      tags: [templates]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTemplateBody"
+      responses:
+        "200":
+          description: Updated project template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectTemplate"
+        "404":
+          description: Template not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteProjectTemplate
+      tags: [templates]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted project template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /projects/{projectId}/save-as-template:
+    post:
+      operationId: saveProjectAsTemplate
+      tags: [templates]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveProjectAsTemplateBody"
+      responses:
+        "201":
+          description: Project saved as a reusable template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectTemplate"
+        "404":
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /usage:
+    get:
+      operationId: getUsageReport
+      tags: [usage]
+      responses:
+        "200":
+          description: Tenant quota usage report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageReport"
+
+  /billing/webhook:
+    post:
+      operationId: handleBillingWebhook
+      tags: [billing]
+      parameters:
+        - name: stripe-signature
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Stripe webhook accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StripeWebhookResponse"
+        "400":
+          description: Invalid Stripe webhook
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -1983,3 +3706,1366 @@ components:
         - seatsMax
         - projectsCount
         - projectsMax
+
+    DetailedHealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        timestamp:
+          type: string
+        uptimeSeconds:
+          type: integer
+        responseTimeMs:
+          type: integer
+        services:
+          type: object
+          properties:
+            database:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ok, error]
+                latencyMs:
+                  type: integer
+              required:
+                - status
+                - latencyMs
+            ai:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [configured, mock-fallback]
+              required:
+                - status
+            smtp:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [configured, mock-fallback]
+              required:
+                - status
+            billing:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [configured, missing-config, disabled]
+                missing:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - status
+                - missing
+          required:
+            - database
+            - ai
+            - smtp
+            - billing
+        memory:
+          type: object
+          properties:
+            heapUsedMB:
+              type: integer
+            heapTotalMB:
+              type: integer
+            rssMB:
+              type: integer
+          required:
+            - heapUsedMB
+            - heapTotalMB
+            - rssMB
+        version:
+          type: string
+      required:
+        - status
+        - timestamp
+        - uptimeSeconds
+        - responseTimeMs
+        - services
+        - memory
+        - version
+
+    AnalyticsOverview:
+      type: object
+      properties:
+        totals:
+          type: object
+          properties:
+            clients:
+              type: integer
+            projects:
+              type: integer
+            keywords:
+              type: integer
+            clusters:
+              type: integer
+            briefs:
+              type: integer
+            reports:
+              type: integer
+            aiTasksThisMonth:
+              type: integer
+          required:
+            - clients
+            - projects
+            - keywords
+            - clusters
+            - briefs
+            - reports
+            - aiTasksThisMonth
+        keywordsBySource:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalyticsSourceBucket"
+        briefsByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalyticsStatusBucket"
+        clustersByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalyticsStatusBucket"
+      required:
+        - totals
+        - keywordsBySource
+        - briefsByStatus
+        - clustersByStatus
+
+    AnalyticsSourceBucket:
+      type: object
+      properties:
+        source:
+          type: string
+        c:
+          type: integer
+      required:
+        - source
+        - c
+
+    AnalyticsStatusBucket:
+      type: object
+      properties:
+        status:
+          type: string
+        c:
+          type: integer
+      required:
+        - status
+        - c
+
+    AnalyticsProject:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        createdAt:
+          type: string
+        keywordCount:
+          type: integer
+        clusterCount:
+          type: integer
+        briefCount:
+          type: integer
+      required:
+        - id
+        - name
+        - createdAt
+        - keywordCount
+        - clusterCount
+        - briefCount
+
+    AnalyticsVelocityPoint:
+      type: object
+      properties:
+        day:
+          type: string
+        count:
+          type: integer
+      required:
+        - day
+        - count
+
+    AuditLogEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        action:
+          type: string
+        resourceType:
+          type: string
+        resourceId:
+          type: ["string", "null"]
+        metadata:
+          type: ["object", "null"]
+        ipAddress:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        userName:
+          type: ["string", "null"]
+        userEmail:
+          type: ["string", "null"]
+      required:
+        - id
+        - action
+        - resourceType
+        - createdAt
+
+    ContentCalendarStatus:
+      type: string
+      enum: [planned, in_progress, review, published]
+
+    ContentCalendarEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        projectId:
+          type: integer
+        briefId:
+          type: ["integer", "null"]
+        title:
+          type: string
+        status:
+          $ref: "#/components/schemas/ContentCalendarStatus"
+        dueDate:
+          type: ["string", "null"]
+        publishedDate:
+          type: ["string", "null"]
+        assignedTo:
+          type: ["integer", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - projectId
+        - title
+        - status
+        - createdAt
+        - updatedAt
+
+    CalendarEntryBody:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          $ref: "#/components/schemas/ContentCalendarStatus"
+        dueDate:
+          type: ["string", "null"]
+        publishedDate:
+          type: ["string", "null"]
+        assignedTo:
+          type: ["integer", "null"]
+        briefId:
+          type: ["integer", "null"]
+        notes:
+          type: ["string", "null"]
+      required:
+        - title
+
+    UpdateCalendarEntryBody:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          $ref: "#/components/schemas/ContentCalendarStatus"
+        dueDate:
+          type: ["string", "null"]
+        publishedDate:
+          type: ["string", "null"]
+        assignedTo:
+          type: ["integer", "null"]
+        briefId:
+          type: ["integer", "null"]
+        notes:
+          type: ["string", "null"]
+
+    CommentEntityType:
+      type: string
+      enum: [cluster, brief, project, keyword]
+
+    CommentUser:
+      type: object
+      properties:
+        id:
+          type: ["integer", "null"]
+        fullName:
+          type: string
+        avatarUrl:
+          type: ["string", "null"]
+      required:
+        - id
+        - fullName
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        userId:
+          type: integer
+        body:
+          type: string
+        entityType:
+          $ref: "#/components/schemas/CommentEntityType"
+        entityId:
+          type: integer
+        resolvedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        user:
+          $ref: "#/components/schemas/CommentUser"
+      required:
+        - id
+        - body
+        - entityType
+        - entityId
+        - createdAt
+        - updatedAt
+
+    CreateCommentBody:
+      type: object
+      properties:
+        entityType:
+          $ref: "#/components/schemas/CommentEntityType"
+        entityId:
+          type: integer
+        body:
+          type: string
+      required:
+        - entityType
+        - entityId
+        - body
+
+    CustomFieldEntityType:
+      type: string
+      enum: [project, keyword, client]
+
+    CustomFieldType:
+      type: string
+      enum: [text, number, select, date, boolean]
+
+    CustomField:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        entityType:
+          $ref: "#/components/schemas/CustomFieldEntityType"
+        name:
+          type: string
+        slug:
+          type: string
+        fieldType:
+          $ref: "#/components/schemas/CustomFieldType"
+        options:
+          type: ["array", "null"]
+          items:
+            type: string
+        isRequired:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - entityType
+        - name
+        - slug
+        - fieldType
+        - isRequired
+        - createdAt
+
+    CustomFieldBody:
+      type: object
+      properties:
+        entityType:
+          $ref: "#/components/schemas/CustomFieldEntityType"
+        name:
+          type: string
+        slug:
+          type: string
+        fieldType:
+          $ref: "#/components/schemas/CustomFieldType"
+        options:
+          type: array
+          items:
+            type: string
+        isRequired:
+          type: boolean
+      required:
+        - entityType
+        - name
+        - slug
+        - fieldType
+
+    CustomFieldValue:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        fieldId:
+          type: integer
+        entityType:
+          $ref: "#/components/schemas/CustomFieldEntityType"
+        entityId:
+          type: integer
+        value: {}
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - fieldId
+        - entityType
+        - entityId
+        - createdAt
+        - updatedAt
+
+    UpsertCustomFieldValueBody:
+      type: object
+      properties:
+        fieldId:
+          type: integer
+        entityType:
+          $ref: "#/components/schemas/CustomFieldEntityType"
+        entityId:
+          type: integer
+        value: {}
+      required:
+        - fieldId
+        - entityType
+        - entityId
+
+    GdprExport:
+      type: object
+      properties:
+        exportedAt:
+          type: string
+        user:
+          type: ["object", "null"]
+        comments:
+          type: array
+          items:
+            type: object
+        auditLogs:
+          type: array
+          items:
+            type: object
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+        keywords:
+          type: array
+          items:
+            $ref: "#/components/schemas/Keyword"
+        contentBriefs:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentBrief"
+      required:
+        - exportedAt
+        - user
+        - comments
+        - auditLogs
+        - notifications
+        - keywords
+        - contentBriefs
+
+    GdprDeleteResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+      required:
+        - ok
+        - message
+
+    CompetitorDomain:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        projectId:
+          type: integer
+        domain:
+          type: string
+        label:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - projectId
+        - domain
+        - createdAt
+
+    CreateCompetitorBody:
+      type: object
+      properties:
+        domain:
+          type: string
+        label:
+          type: string
+      required:
+        - domain
+
+    CompetitorCoverage:
+      type: object
+      properties:
+        domain:
+          type: string
+        ranking:
+          type: ["integer", "null"]
+      required:
+        - domain
+        - ranking
+
+    KeywordGapKeyword:
+      allOf:
+        - $ref: "#/components/schemas/Keyword"
+        - type: object
+          properties:
+            competitorCoverage:
+              type: array
+              items:
+                $ref: "#/components/schemas/CompetitorCoverage"
+          required:
+            - competitorCoverage
+
+    KeywordGapResponse:
+      type: object
+      properties:
+        keywords:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeywordGapKeyword"
+        competitors:
+          type: array
+          items:
+            $ref: "#/components/schemas/CompetitorDomain"
+      required:
+        - keywords
+        - competitors
+
+    ProjectExport:
+      type: object
+      properties:
+        exportedAt:
+          type: string
+        version:
+          type: string
+        project:
+          $ref: "#/components/schemas/Project"
+        keywords:
+          type: array
+          items:
+            $ref: "#/components/schemas/Keyword"
+        clusters:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeywordCluster"
+        briefs:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentBrief"
+        reports:
+          type: array
+          items:
+            $ref: "#/components/schemas/Report"
+        scoreSettings:
+          type: ["object", "null"]
+      required:
+        - exportedAt
+        - version
+        - project
+        - keywords
+        - clusters
+        - briefs
+        - reports
+        - scoreSettings
+
+    KeywordRanking:
+      type: object
+      properties:
+        id:
+          type: integer
+        phrase:
+          type: string
+        searchVolume:
+          type: ["integer", "null"]
+        latestPosition:
+          type: ["integer", "null"]
+        latestUrl:
+          type: ["string", "null"]
+        checkedAt:
+          type: ["string", "null"]
+      required:
+        - id
+        - phrase
+        - latestPosition
+        - latestUrl
+        - checkedAt
+
+    KeywordRankingHistoryEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        keywordId:
+          type: integer
+        position:
+          type: ["integer", "null"]
+        url:
+          type: ["string", "null"]
+        checkedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - keywordId
+        - checkedAt
+
+    CheckRankingBody:
+      type: object
+      properties:
+        keywordId:
+          type: integer
+        position:
+          type: ["integer", "null"]
+        url:
+          type: ["string", "null"]
+      required:
+        - keywordId
+        - position
+
+    BulkRankingCheckResponse:
+      type: object
+      properties:
+        checked:
+          type: integer
+      required:
+        - checked
+
+    AutoClusterResponse:
+      type: object
+      properties:
+        clusters:
+          type: array
+          items:
+            $ref: "#/components/schemas/KeywordCluster"
+        taskId:
+          type: integer
+      required:
+        - clusters
+        - taskId
+
+    ReportScheduleType:
+      type: string
+      enum: [project_summary, topical_authority, content_pipeline]
+
+    ReportScheduleFrequency:
+      type: string
+      enum: [daily, weekly, monthly]
+
+    ReportSchedule:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        projectId:
+          type: integer
+        reportType:
+          $ref: "#/components/schemas/ReportScheduleType"
+        frequency:
+          $ref: "#/components/schemas/ReportScheduleFrequency"
+        recipientEmails:
+          type: array
+          items:
+            type: string
+        lastSentAt:
+          type: ["string", "null"]
+        nextSendAt:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - projectId
+        - reportType
+        - frequency
+        - recipientEmails
+        - isActive
+        - createdAt
+        - updatedAt
+
+    ReportScheduleBody:
+      type: object
+      properties:
+        projectId:
+          type: integer
+        reportType:
+          $ref: "#/components/schemas/ReportScheduleType"
+        frequency:
+          $ref: "#/components/schemas/ReportScheduleFrequency"
+        recipientEmails:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+      required:
+        - projectId
+        - reportType
+        - frequency
+        - recipientEmails
+
+    UpdateReportScheduleBody:
+      type: object
+      properties:
+        projectId:
+          type: integer
+        reportType:
+          $ref: "#/components/schemas/ReportScheduleType"
+        frequency:
+          $ref: "#/components/schemas/ReportScheduleFrequency"
+        recipientEmails:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+
+    ProjectTemplate:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        config:
+          type: object
+        createdBy:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - name
+        - config
+        - createdAt
+        - updatedAt
+
+    TemplateBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        config:
+          type: object
+      required:
+        - name
+
+    UpdateTemplateBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        config:
+          type: object
+
+    SaveProjectAsTemplateBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+
+    UsageReport:
+      type: object
+      properties:
+        plan:
+          type: string
+        period:
+          type: object
+          properties:
+            start:
+              type: string
+            end:
+              type: string
+          required:
+            - start
+            - end
+        usage:
+          type: object
+          properties:
+            keywords:
+              $ref: "#/components/schemas/UsageQuota"
+            briefs:
+              $ref: "#/components/schemas/UsageQuota"
+            aiTasks:
+              $ref: "#/components/schemas/UsageQuota"
+            seats:
+              $ref: "#/components/schemas/UsageQuota"
+            reportsThisMonth:
+              type: integer
+            apiKeys:
+              type: integer
+            webhookDeliveriesThisMonth:
+              type: integer
+          required:
+            - keywords
+            - briefs
+            - aiTasks
+            - seats
+            - reportsThisMonth
+            - apiKeys
+            - webhookDeliveriesThisMonth
+      required:
+        - plan
+        - period
+        - usage
+
+    UsageQuota:
+      type: object
+      properties:
+        used:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - used
+        - limit
+
+    StripeWebhookResponse:
+      type: object
+      properties:
+        received:
+          type: boolean
+      required:
+        - received
+
+    OkResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+        - ok
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    TeamMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+          enum: [super_admin, agency_admin, agency_user, client]
+        avatarUrl:
+          type: ["string", "null"]
+        lastLoginAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - email
+        - fullName
+        - role
+        - createdAt
+
+    UpdateTeamMemberRoleBody:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [agency_admin, agency_user, client]
+      required:
+        - role
+
+    InviteTeamMemberBody:
+      type: object
+      properties:
+        email:
+          type: string
+        role:
+          type: string
+          enum: [agency_admin, agency_user, client]
+      required:
+        - email
+
+    TeamInviteResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        role:
+          type: string
+        token:
+          type: string
+        expiresAt:
+          type: string
+        inviteUrl:
+          type: string
+      required:
+        - id
+        - email
+        - role
+        - token
+        - expiresAt
+        - inviteUrl
+
+    TeamInvitation:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        email:
+          type: string
+        role:
+          type: string
+        token:
+          type: string
+        invitedBy:
+          type: integer
+        expiresAt:
+          type: string
+        acceptedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - email
+        - role
+        - token
+        - invitedBy
+        - expiresAt
+        - createdAt
+
+    AcceptTeamInvitationBody:
+      type: object
+      properties:
+        token:
+          type: string
+        fullName:
+          type: string
+        password:
+          type: string
+      required:
+        - token
+        - fullName
+        - password
+
+    AcceptTeamInvitationResponse:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+            email:
+              type: string
+            fullName:
+              type: string
+            role:
+              type: string
+          required:
+            - id
+            - email
+            - fullName
+            - role
+      required:
+        - user
+
+    IntegrationProvider:
+      type: string
+      enum: [ahrefs, semrush, dataforseo, google_search_console]
+
+    KeywordSearchProvider:
+      type: string
+      enum: [ahrefs, semrush, dataforseo]
+
+    Integration:
+      type: object
+      properties:
+        id:
+          type: integer
+        provider:
+          $ref: "#/components/schemas/IntegrationProvider"
+        isActive:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - provider
+        - isActive
+
+    ConfigureIntegrationBody:
+      type: object
+      properties:
+        provider:
+          $ref: "#/components/schemas/IntegrationProvider"
+        credentials:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - provider
+        - credentials
+
+    SearchIntegrationKeywordsBody:
+      type: object
+      properties:
+        query:
+          type: string
+      required:
+        - query
+
+    ProviderKeyword:
+      type: object
+      properties:
+        phrase:
+          type: string
+        searchVolume:
+          type: integer
+        cpc:
+          type: number
+        kd:
+          type: integer
+        intent:
+          type: string
+        source:
+          type: string
+      required:
+        - phrase
+
+    ApiKeyScope:
+      type: string
+      enum: [read, write]
+
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        keyPrefix:
+          type: string
+        scopes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApiKeyScope"
+        lastUsedAt:
+          type: ["string", "null"]
+        expiresAt:
+          type: ["string", "null"]
+        revokedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - keyPrefix
+        - scopes
+        - createdAt
+
+    CreateApiKeyBody:
+      type: object
+      properties:
+        name:
+          type: string
+        scopes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApiKeyScope"
+        expiresInDays:
+          type: integer
+      required:
+        - name
+
+    CreateApiKeyResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        keyPrefix:
+          type: string
+        scopes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApiKeyScope"
+        expiresAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        key:
+          type: string
+      required:
+        - id
+        - name
+        - keyPrefix
+        - scopes
+        - createdAt
+        - key
+
+    WebhookEvent:
+      type: string
+      enum:
+        - keyword.imported
+        - cluster.created
+        - cluster.approved
+        - cluster.rejected
+        - brief.created
+        - brief.approved
+        - report.generated
+        - project.created
+        - ai_task.completed
+
+    WebhookEndpoint:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        url:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookEvent"
+        secret:
+          type: "null"
+        isActive:
+          type: boolean
+        description:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - url
+        - events
+        - isActive
+        - createdAt
+        - updatedAt
+
+    WebhookEndpointWithSecret:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        url:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookEvent"
+        secret:
+          type: string
+        isActive:
+          type: boolean
+        description:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - url
+        - events
+        - secret
+        - isActive
+        - createdAt
+        - updatedAt
+
+    CreateWebhookBody:
+      type: object
+      properties:
+        url:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookEvent"
+        description:
+          type: string
+      required:
+        - url
+
+    UpdateWebhookBody:
+      type: object
+      properties:
+        url:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookEvent"
+        isActive:
+          type: boolean
+        description:
+          type: string
+
+    WebhookDelivery:
+      type: object
+      properties:
+        id:
+          type: integer
+        endpointId:
+          type: integer
+        tenantId:
+          type: integer
+        event:
+          $ref: "#/components/schemas/WebhookEvent"
+        payload:
+          type: object
+        status:
+          type: string
+        statusCode:
+          type: ["integer", "null"]
+        responseBody:
+          type: ["string", "null"]
+        attempts:
+          type: integer
+        lastAttemptAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - endpointId
+        - tenantId
+        - event
+        - payload
+        - status
+        - attempts
+        - createdAt
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        userId:
+          type: integer
+        type:
+          type: string
+        title:
+          type: string
+        body:
+          type: ["string", "null"]
+        link:
+          type: ["string", "null"]
+        readAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - userId
+        - type
+        - title
+        - createdAt
+
+    UnreadNotificationCount:
+      type: object
+      properties:
+        count:
+          type: integer
+      required:
+        - count

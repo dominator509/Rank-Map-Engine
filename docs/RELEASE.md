@@ -7,8 +7,10 @@ This repository should only be deployed from a commit that has passed CI.
 GitHub Actions runs the release checks in `.github/workflows/ci.yml`:
 
 - generated migration and API client drift check
+- API route/OpenAPI drift gate
 - format check
 - lint
+- committed-secret scan and high/critical dependency audit
 - typecheck
 - unit tests
 - API E2E against a migrated disposable Postgres database
@@ -29,6 +31,16 @@ corepack pnpm run deploy:preflight
 ```
 
 The preflight checks required production environment variables, applies pending database migrations, and runs live-service diagnostics when real provider credentials are configured.
+
+Before release sign-off, verify the implemented-route inventory has no OpenAPI drift:
+
+```powershell
+corepack pnpm run api:route-drift:check
+```
+
+The generated `artifacts/api-spec/API_ROUTE_DRIFT_REPORT.md` must report `0` undocumented
+operations and `0` stale documented operations. CI runs the same strict gate so route drift fails
+before release.
 
 Phase 39 launch sign-off is tracked in [`docs/LAUNCH_READINESS.md`](./LAUNCH_READINESS.md). Do not treat local preflight as launch approval by itself; hosted staging load-test evidence and real-provider smoke-test evidence must be attached there.
 

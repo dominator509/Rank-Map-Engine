@@ -21,8 +21,7 @@ describe.sequential("whitebox phase 4 - security and exception boundaries", () =
   let baseUrl = "";
   const originalEnv = { ...process.env };
 
-  beforeAll(
-    async () => {
+  beforeAll(async () => {
     process.env.NODE_ENV = "test";
     process.env.DATABASE_URL = process.env.DATABASE_URL ?? "postgres://invalid@127.0.0.1:1/invalid";
     process.env.SESSION_SECRET = "whitebox-session-secret-with-at-least-32-characters";
@@ -39,9 +38,7 @@ describe.sequential("whitebox phase 4 - security and exception boundaries", () =
       throw new Error("Test server did not expose a TCP port.");
     }
     baseUrl = `http://127.0.0.1:${address.port}`;
-    },
-    30000,
-  );
+  }, 30000);
 
   afterAll(async () => {
     process.env = originalEnv;
@@ -60,7 +57,10 @@ describe.sequential("whitebox phase 4 - security and exception boundaries", () =
 
   it("fails closed when decrypted payload is not a valid string map", () => {
     const encrypted = encryptIntegrationCredentials({ token: "abc123" });
-    const tampered = { ...encrypted, ciphertext: Buffer.from('{"token":1}', "utf8").toString("base64") };
+    const tampered = {
+      ...encrypted,
+      ciphertext: Buffer.from('{"token":1}', "utf8").toString("base64"),
+    };
     expect(() => decryptIntegrationCredentials(tampered)).toThrow();
 
     expect(decryptIntegrationCredentials({ token: 1 })).toEqual({});
@@ -70,7 +70,11 @@ describe.sequential("whitebox phase 4 - security and exception boundaries", () =
     const response = await fetch(`${baseUrl}/api/billing/webhook`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ id: "evt_missing_sig", type: "customer.created", data: { object: {} } }),
+      body: JSON.stringify({
+        id: "evt_missing_sig",
+        type: "customer.created",
+        data: { object: {} },
+      }),
     });
 
     expect(response.status).toBe(400);

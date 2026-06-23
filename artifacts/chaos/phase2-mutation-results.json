@@ -49,9 +49,7 @@
             "code": "invalid_type",
             "expected": "array",
             "received": "object",
-            "path": [
-              "keywords"
-            ],
+            "path": ["keywords"],
             "message": "Expected array, received object"
           }
         ]

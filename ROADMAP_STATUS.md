@@ -8,9 +8,13 @@
 
 **Status:** The false generated "all 39 phases complete" claim has been retired. Phases 11-39 now follow the canonical roadmap in `BUILD_ROADMAP.md`; implementation status must be proven phase by phase.
 
-**Last audited:** 2026-05-27
+**Last audited:** 2026-06-01
 
 **Current production-readiness focus:** collect hosted staging load-test evidence, real-provider smoke-test evidence, operational handoff approvals, and final go/no-go sign-off.
+
+## GEO/AEO Product Expansion Status - 2026-06-23
+
+GEO/AEO is being added as an additive RankMap module, not a replacement for the existing SEO/content strategy system. Initial discovery found no existing GEO/AEO product code; an untracked planning pack under `docs/geo-aeo/GEO_AEO_*` already existed. The first implementation increment added canonical GEO/AEO docs, manual/mock-first environment flags, deploy-preflight guardrails, and a shared domain/scoring package. This does not change the Phase 39 no-go launch-readiness status.
 
 The summary below is the working truth table. The detailed generated checklist sections later in this file are retained as historical implementation notes only; do not treat their "complete" headings as launch sign-off until they are reconciled against the canonical acceptance criteria.
 
@@ -25,7 +29,8 @@ The summary below is the working truth table. The detailed generated checklist s
 | Deprecated SEORx placeholder | Fixed | Architecture and environment docs now identify DataForSEO as the canonical Phase 13 provider. |
 | Dead scaffold code | Removed | Unused Phase 0 home page and `scripts/src/hello.ts` scaffold were removed. |
 | Placeholder test | Fixed | Health test now validates the generated Zod health contract instead of trivially passing. |
-| OpenAPI/generated client drift | Logged | The generated client still covers the original core API plus billing, while later phase UI code uses `customFetch` for newer route families. Full OpenAPI expansion remains a release-gate task under Phase 36. |
+| OpenAPI/generated client drift | Fixed | Generated OpenAPI, React client, and Zod contracts now cover all 131 implemented Express operations, including tenant, analytics, audit, client projects, comments, custom fields, GDPR, calendar, competitors, exports, rankings, report schedules, templates, usage, health, and billing webhook surfaces. |
+| API route drift inventory | Fixed | `pnpm run api:route-drift` now writes `artifacts/api-spec/API_ROUTE_DRIFT_REPORT.md`; current scan shows 0 implemented operations missing OpenAPI contracts and 0 stale documented operations. |
 
 ---
 
@@ -67,7 +72,7 @@ The summary below is the working truth table. The detailed generated checklist s
 | 31 | Usage Analytics and Plan Metering | Canonical phase defined; not verified complete | Usage counters and plan-limit enforcement |
 | 32 | GDPR Compliance Tools | Canonical phase defined; not verified complete | Data export, deletion/anonymization, retention evidence |
 | 33 | Enhanced Health and Monitoring | Partially implemented through health/config checks | Dependency readiness and degraded-state coverage |
-| 34 | Security Hardening | Canonical phase defined; not verified complete | Threat model, rate limits, and security scan evidence |
+| 34 | Security Hardening | Partially verified; threat model, CI secret/dependency gates, auth-boundary tests, scoped sensitive rate limits, and broader cross-tenant assertions added | Continue route-family authorization expansion and tune rate-limit thresholds from hosted traffic evidence |
 | 35 | Observability and Incident Readiness | Canonical phase defined; not verified complete | Runbooks, metrics, tracing/logging evidence |
 | 36 | Database Migrations and Release Gate | Implemented and locally verified; live production config pending | CI/preflight evidence plus staging credentials |
 | 37 | Browser E2E and Frontend Production QA | Substantially complete; browser E2E, mobile, accessibility, and visual baselines passing | Broaden browser coverage opportunistically as new features stabilize |
@@ -131,7 +136,24 @@ The summary below is the working truth table. The detailed generated checklist s
 | Rollback rehearsal | Pending | Required in staging before final go decision. |
 | `docs/RELEASE.md` | Updated | Release gate now links to Phase 39 launch readiness and states local preflight alone is not launch approval. |
 | `docs/ENV.md` | Updated | Documents `OPENAI_BASE_URL` and `OPENAI_TIMEOUT_MS` for provider timeout/fallback configuration. |
+| Local release gate sweep | Pass | On 2026-06-01, `format:check`, `lint`, `security:secrets`, `api:route-drift:check`, `typecheck`, `test`, `test:e2e:api`, `build`, `audit --prod`, and `git diff --check` passed under RTK. |
 | Current go/no-go | No-go | Launch blocked until the pending external evidence and owner approvals are attached. |
+
+---
+
+## Phase 34/36 Security Gate Evidence - 2026-05-31
+
+| Check | Result | Notes |
+|-------|--------|-------|
+| `pnpm run security:secrets` | Pass | Added tracked-file secret scanner for high-confidence OpenAI, Stripe, RankMap API key, AWS access key, and private-key block patterns; `.env.example` now uses non-realistic placeholder values. |
+| `pnpm run security:audit` | Pass for high/critical gate | Added `pnpm audit --audit-level high`; patched transitive `fast-uri` through a pnpm override to resolve the high-severity Orval/OpenAPI parser advisory. One moderate advisory remains below the release-fail threshold. |
+| `.github/workflows/ci.yml` | Updated | CI now runs `pnpm run security:check` after lint and before typecheck so committed-secret and high/critical dependency drift fail the release gate. |
+| `docs/SECURITY.md` and `docs/RELEASE.md` | Updated | Security and release documentation now reference the first-party security gate rather than relying only on ad hoc audit/lint instructions. |
+| `docs/THREAT_MODEL.md` | Added | Documents assets, trust boundaries, representative abuse cases, existing controls, and residual risks for tenants, billing, providers, exports, API keys, webhooks, background jobs, and operational tooling. |
+| `auth.security.test.ts` | Pass | Adds fast authorization-boundary regression tests for unauthenticated access, wrong-role access, malformed API-key scopes, read-only API-key mutation attempts, and allowed read-only API-key reads. |
+| Route-family-specific rate limits | Pass | Added scoped limiters for API key lifecycle, webhook management, project/GDPR exports and reports, provider search, AI-heavy clustering/brief/ranking workflows, and Stripe webhook verification. |
+| `app.rate-limits.test.ts` | Pass | Verifies sensitive route-family limiters return `429` before API key, provider search, and billing webhook handlers continue expensive or sensitive work. |
+| Broader cross-tenant route assertions | Added | Docker API E2E now verifies Tenant B receives `404` for Tenant A client-project, keyword, cluster, brief, report, calendar, competitor, ranking, report schedule, and export routes. |
 
 ---
 
