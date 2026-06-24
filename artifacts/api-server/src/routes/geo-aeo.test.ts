@@ -14,9 +14,11 @@ const serviceMocks = vi.hoisted(() => ({
   previewGeoAeoPromptCsv: vi.fn(),
   listGeoAeoAnswerSnapshots: vi.fn(),
   createGeoAeoAnswerSnapshot: vi.fn(),
-  createGeoAeoAnswerSnapshots: vi.fn(),
+  createGeoAeoSnapshotImportBatch: vi.fn(),
   parseGeoAeoSnapshotCsv: vi.fn(),
   previewGeoAeoSnapshotCsv: vi.fn(),
+  listGeoAeoSnapshotImportBatches: vi.fn(),
+  rollbackGeoAeoSnapshotImportBatch: vi.fn(),
   updateGeoAeoAnswerSnapshot: vi.fn(),
   listGeoAeoCompetitors: vi.fn(),
   createGeoAeoCompetitor: vi.fn(),
@@ -135,6 +137,11 @@ beforeEach(() => {
     status: "in_review",
     approvedAt: null,
   });
+  accessMocks.getTenantScopedGeoAeoPrompt.mockResolvedValue({
+    id: 1,
+    tenantId: 7,
+    auditId: 101,
+  });
   serviceMocks.updateGeoAeoAudit.mockResolvedValue({
     id: 101,
     tenantId: 7,
@@ -162,6 +169,29 @@ beforeEach(() => {
     duplicateRows: 0,
     invalid: [],
     duplicates: [],
+  });
+  serviceMocks.parseGeoAeoSnapshotCsv.mockReturnValue({
+    errors: [],
+    snapshots: [
+      {
+        auditId: 101,
+        promptId: 1,
+        engine: "chatgpt",
+        captureMethod: "csv_import",
+        answerText: "x",
+      },
+    ],
+  });
+  serviceMocks.createGeoAeoSnapshotImportBatch.mockResolvedValue({
+    batch: { id: 801, auditId: 101, importType: "snapshot_csv", importedRows: 1 },
+    snapshots: [{ id: 901, auditId: 101, promptId: 1, importBatchId: 801 }],
+  });
+  serviceMocks.listGeoAeoSnapshotImportBatches.mockResolvedValue([
+    { id: 801, auditId: 101, importType: "snapshot_csv", importedRows: 1, status: "active" },
+  ]);
+  serviceMocks.rollbackGeoAeoSnapshotImportBatch.mockResolvedValue({
+    batch: { id: 801, auditId: 101, status: "rolled_back" },
+    rolledBackSnapshots: 1,
   });
   serviceMocks.createGeoAeoCitation.mockResolvedValue({
     id: 401,
@@ -289,7 +319,106 @@ describe("GEO/AEO route security and approval boundaries", () => {
         auditId: 101,
         csvText: "promptId,engine,captureMethod,answerText\n1,chatgpt,csv_import,x",
       });
-      expect(serviceMocks.createGeoAeoAnswerSnapshots).not.toHaveBeenCalled();
+      expect(serviceMocks.createGeoAeoSnapshotImportBatch).not.toHaveBeenCalled();
+    } finally {
+      await close();
+    }
+  });
+
+  it("imports snapshots into a rollbackable batch", async () => {
+    const { baseUrl, close } = await bootGeoAeoRoute();
+    try {
+      const response = await fetch(`${baseUrl}/geo-aeo/audits/101/snapshots/import-csv`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-role": "agency_admin" },
+        body: JSON.stringify({
+          csvText: "promptId,engine,captureMethod,answerText\n1,chatgpt,csv_import,x",
+        }),
+      });
+
+      expect(response.status).toBe(201);
+      expect(await response.json()).toEqual({
+        imported: 1,
+        batch: { id: 801, auditId: 101, importType: "snapshot_csv", importedRows: 1 },
+        snapshots: [{ id: 901, auditId: 101, promptId: 1, importBatchId: 801 }],
+      });
+      expect(serviceMocks.createGeoAeoSnapshotImportBatch).toHaveBeenCalledWith({
+        tenantId: 7,
+        auditId: 101,
+        userId: 11,
+        snapshots: [
+          {
+            auditId: 101,
+            promptId: 1,
+            engine: "chatgpt",
+            captureMethod: "csv_import",
+            answerText: "x",
+          },
+        ],
+        preview: {
+          totalRows: 1,
+          validRows: 1,
+          invalidRows: 0,
+          duplicateRows: 0,
+          invalid: [],
+          duplicates: [],
+        },
+      });
+      expect(accessMocks.auditGeoAeoEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "geo_aeo.snapshot.imported",
+          resourceType: "geo_aeo_import_batch",
+          resourceId: 801,
+        }),
+      );
+    } finally {
+      await close();
+    }
+  });
+
+  it("lists and rolls back snapshot import batches for operators only", async () => {
+    const { baseUrl, close } = await bootGeoAeoRoute();
+    try {
+      const forbidden = await fetch(`${baseUrl}/geo-aeo/snapshot-imports/801`, {
+        method: "DELETE",
+        headers: { "x-role": "client" },
+      });
+
+      expect(forbidden.status).toBe(403);
+      expect(serviceMocks.rollbackGeoAeoSnapshotImportBatch).not.toHaveBeenCalled();
+
+      const list = await fetch(`${baseUrl}/geo-aeo/audits/101/snapshot-imports`, {
+        headers: { "x-role": "agency_admin" },
+      });
+
+      expect(list.status).toBe(200);
+      expect(await list.json()).toEqual([
+        { id: 801, auditId: 101, importType: "snapshot_csv", importedRows: 1, status: "active" },
+      ]);
+      expect(serviceMocks.listGeoAeoSnapshotImportBatches).toHaveBeenCalledWith({
+        tenantId: 7,
+        auditId: 101,
+      });
+
+      const rollback = await fetch(`${baseUrl}/geo-aeo/snapshot-imports/801`, {
+        method: "DELETE",
+        headers: { "x-role": "agency_admin" },
+      });
+
+      expect(rollback.status).toBe(200);
+      expect(serviceMocks.rollbackGeoAeoSnapshotImportBatch).toHaveBeenCalledWith({
+        tenantId: 7,
+        importBatchId: 801,
+        userId: 11,
+      });
+      expect(accessMocks.auditGeoAeoEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "geo_aeo.snapshot_import.rolled_back",
+          resourceType: "geo_aeo_import_batch",
+          resourceId: 801,
+          metadata: { auditId: 101, rolledBackSnapshots: 1 },
+        }),
+      );
     } finally {
       await close();
     }

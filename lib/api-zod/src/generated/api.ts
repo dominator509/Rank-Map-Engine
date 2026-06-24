@@ -1279,6 +1279,7 @@ export const ListGeoAeoAnswerSnapshotsResponseItem = zod.object({
   auditId: zod.number(),
   promptId: zod.number(),
   promptVariantId: zod.number().nullish(),
+  importBatchId: zod.number().nullish(),
   engine: zod.enum(["chatgpt", "gemini", "perplexity", "google_ai_overviews", "other"]),
   engineMode: zod.string(),
   captureMethod: zod.enum(["manual_paste", "csv_import", "mock_adapter", "api_adapter"]),
@@ -1345,6 +1346,56 @@ export const PreviewGeoAeoAnswerSnapshotsImportResponse = zod.object({
   ),
 });
 
+export const ListGeoAeoSnapshotImportBatchesParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ListGeoAeoSnapshotImportBatchesResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  importType: zod.string(),
+  source: zod.string(),
+  status: zod.string(),
+  totalRows: zod.number(),
+  importedRows: zod.number(),
+  invalidRows: zod.number(),
+  duplicateRows: zod.number(),
+  createdById: zod.number().nullish(),
+  deletedById: zod.number().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+  deletedAt: zod.string().nullish(),
+});
+export const ListGeoAeoSnapshotImportBatchesResponse = zod.array(
+  ListGeoAeoSnapshotImportBatchesResponseItem,
+);
+
+export const RollbackGeoAeoSnapshotImportBatchParams = zod.object({
+  importBatchId: zod.coerce.number(),
+});
+
+export const RollbackGeoAeoSnapshotImportBatchResponse = zod.object({
+  batch: zod.object({
+    id: zod.number(),
+    tenantId: zod.number(),
+    auditId: zod.number(),
+    importType: zod.string(),
+    source: zod.string(),
+    status: zod.string(),
+    totalRows: zod.number(),
+    importedRows: zod.number(),
+    invalidRows: zod.number(),
+    duplicateRows: zod.number(),
+    createdById: zod.number().nullish(),
+    deletedById: zod.number().nullish(),
+    createdAt: zod.string(),
+    updatedAt: zod.string(),
+    deletedAt: zod.string().nullish(),
+  }),
+  rolledBackSnapshots: zod.number(),
+});
+
 export const UpdateGeoAeoAnswerSnapshotParams = zod.object({
   snapshotId: zod.coerce.number(),
 });
@@ -1363,6 +1414,7 @@ export const UpdateGeoAeoAnswerSnapshotResponse = zod.object({
   auditId: zod.number(),
   promptId: zod.number(),
   promptVariantId: zod.number().nullish(),
+  importBatchId: zod.number().nullish(),
   engine: zod.enum(["chatgpt", "gemini", "perplexity", "google_ai_overviews", "other"]),
   engineMode: zod.string(),
   captureMethod: zod.enum(["manual_paste", "csv_import", "mock_adapter", "api_adapter"]),

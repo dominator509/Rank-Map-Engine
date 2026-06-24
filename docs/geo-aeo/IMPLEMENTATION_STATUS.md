@@ -111,6 +111,14 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - Tests/checks to run: focused GEO/AEO tests, route drift, API spec codegen, API/frontend typecheck, lint, browser e2e wrapper, full workspace tests, security gate, and build.
 - Rollback plan: remove the preview service helpers/routes/OpenAPI operations/generated clients and the UI preview controls while leaving the existing all-or-nothing CSV imports intact.
 
+## Checkpoint - 2026-06-24 Snapshot Import Rollback
+
+- Current task: close the G7 snapshot CSV rollback/delete import gap with a durable import batch model.
+- Acceptance criteria targeted: snapshot CSV imports create tenant-scoped import batch records; imported snapshot rows store `importBatchId`; operators can list active snapshot import batches and roll one back; rollback soft-deletes imported snapshots plus snapshot-linked citations and mentions; client-role users remain blocked; rollback actions are audited; OpenAPI/generated clients include list/delete batch operations; the protected browser workflow shows rollback controls after snapshot import.
+- Files expected to change: GEO/AEO DB schema/migration, shared GEO/AEO constants, `geo-aeo-service.ts`, `geo-aeo.ts` routes, route/service tests, OpenAPI spec and generated clients, `artifacts/rankmap/src/pages/geo-aeo.tsx`, `artifacts/rankmap/e2e/workspace.spec.ts`, and this status document.
+- Tests/checks to run: `db:generate`, focused GEO/AEO route/service tests, route drift, API spec codegen, DB/API/frontend typecheck, lint, browser e2e wrapper, full workspace tests, security gate, and build.
+- Rollback plan: remove the import-batch table/columns/migration, batch service helpers/routes/OpenAPI operations/generated clients, and UI rollback controls while returning snapshot CSV imports to direct bulk insert behavior.
+
 ## Phase Checklist
 
 - [x] G0 discovery completed.
@@ -136,6 +144,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - [x] Manual action item creation/editing exposed in the GEO/AEO page.
 - [x] Manual competitor/source/schema/action item soft-delete exposed in the GEO/AEO page.
 - [x] Prompt/snapshot CSV import preview and duplicate gates added.
+- [x] Snapshot CSV import batch rollback/delete controls added.
 - [ ] G17 final security hardening and smoke in progress.
 
 ## Tests/Checks Run
@@ -281,6 +290,18 @@ Continue final hardening after adding route tests, service hardening tests, Open
 | `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
 | `corepack pnpm run build` | Pass | Full workspace build passed after import preview and duplicate gates. |
 | `corepack pnpm run test:e2e:api` | Pass | API e2e wrapper passed against a temporary Postgres database after the import preview increment. |
+| `corepack pnpm run db:generate` | Pass | Generated additive migration `lib/db/drizzle/0003_worried_living_mummy.sql` for snapshot import batches, snapshot `import_batch_id`, and mention soft-delete support. |
+| `corepack pnpm run typecheck:libs` | Pass | Rebuilt library declarations after adding the import-batch schema before API typecheck. |
+| `corepack pnpm --filter @workspace/api-spec run codegen` | Pass | Regenerated API client/Zod packages after adding snapshot import batch list/rollback operations. |
+| `corepack pnpm exec vitest run artifacts/api-server/src/lib/geo-aeo-service.test.ts artifacts/api-server/src/routes/geo-aeo.test.ts` | Pass | 25 focused GEO/AEO route/service tests passed after adding snapshot import batch creation and rollback coverage. |
+| `corepack pnpm run api:route-drift:check` | Pass | OpenAPI route drift stayed zero after documenting snapshot import batch routes. |
+| `corepack pnpm run typecheck` | Pass | Full workspace typecheck passed after snapshot import rollback changes. |
+| `corepack pnpm run lint` | Pass | ESLint completed with zero warnings after adding snapshot import rollback controls. |
+| `corepack pnpm run test` | Pass | Full Vitest suite passed after snapshot import rollback: 92 passed, 4 e2e tests skipped by default gates. |
+| `corepack pnpm run test:e2e:browser` | Pass | Browser e2e wrapper passed after showing the rollback control on the protected GEO/AEO snapshot import workflow. |
+| `corepack pnpm run test:e2e:api` | Pass | API e2e wrapper passed against a temporary Postgres database after the rollback migration and route changes. |
+| `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
+| `corepack pnpm run build` | Pass | Full workspace build passed after snapshot import rollback. |
 
 ## Known Limitations
 
@@ -293,10 +314,10 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - GEO/AEO report export supports markdown, CSV, JSON, and PDF.
 - The frontend surface exposes primary manual fallback controls, monitoring creation/approval, score override, action item creation/editing, edit-in-place for competitors/source recommendations/schema findings, and soft-delete controls for manual competitors/source recommendations/schema findings/action items.
 - Prompt and snapshot CSV imports now have operator-only preview endpoints/UI summaries with valid/invalid/duplicate row counts, and imports reject duplicate prompt text or duplicate prompt/engine/answer-hash snapshots before writing rows.
-- Snapshot import rollback/delete import remains unimplemented; snapshot rows can be corrected through existing update flows, but there is no batch import rollback model yet.
+- Snapshot CSV imports now create rollbackable import batches; rollback applies to imports written through this batch model and does not retroactively group older snapshot rows that predate the batch migration.
 - Client-role GEO/AEO views are tenant-scoped and approved-only, but the current user schema has no per-client contact assignment model, so row-level client-contact scoping would require a future data-model addition.
 - OpenAPI and generated client/Zod packages now include GEO/AEO routes; the first frontend surface still uses `customFetch` directly.
 - Repo API and browser e2e wrappers now pass against temporary Postgres databases, including an authenticated GEO/AEO protected browser journey for the manual fallback workflow.
 - RTK was not available on PATH in the 2026-06-24 resumed environment, so verification commands in that resumed block ran through plain `corepack pnpm`.
-- The existing repo has substantial pre-existing uncommitted changes; this feature block must avoid reverting them.
+- The resumed 2026-06-24 rollback increment started from a clean worktree after commit `1907213`.
 - GEO/AEO is not production-ready and does not change the Phase 39 launch no-go status.

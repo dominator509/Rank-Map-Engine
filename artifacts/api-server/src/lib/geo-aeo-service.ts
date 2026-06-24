@@ -34,6 +34,7 @@ import {
   geoAeoCompetitorsTable,
   geoAeoEnginesTable,
   geoAeoFindingsTable,
+  geoAeoImportBatchesTable,
   geoAeoMentionsTable,
   geoAeoMonitoringRunsTable,
   geoAeoPromptsTable,
@@ -65,6 +66,11 @@ export type GeoAeoCsvImportPreview = {
   duplicateRows: number;
   invalid: GeoAeoCsvPreviewIssue[];
   duplicates: GeoAeoCsvPreviewIssue[];
+};
+
+export type GeoAeoSnapshotImportBatchResult = {
+  batch: typeof geoAeoImportBatchesTable.$inferSelect;
+  snapshots: (typeof geoAeoAnswerSnapshotsTable.$inferSelect)[];
 };
 
 export interface ListGeoAeoAuditsParams {
@@ -576,6 +582,157 @@ export async function createGeoAeoAnswerSnapshots(params: {
       ),
     )
     .returning();
+}
+
+export async function createGeoAeoSnapshotImportBatch(params: {
+  tenantId: number;
+  auditId: number;
+  userId: number;
+  snapshots: GeoAeoSnapshotCreateInput[];
+  preview: GeoAeoCsvImportPreview;
+}): Promise<GeoAeoSnapshotImportBatchResult> {
+  return db.transaction(async (tx) => {
+    const [batch] = await tx
+      .insert(geoAeoImportBatchesTable)
+      .values({
+        tenantId: params.tenantId,
+        auditId: params.auditId,
+        importType: "snapshot_csv",
+        source: "csv",
+        status: "active",
+        totalRows: params.preview.totalRows,
+        importedRows: params.snapshots.length,
+        invalidRows: params.preview.invalidRows,
+        duplicateRows: params.preview.duplicateRows,
+        createdById: params.userId,
+      })
+      .returning();
+
+    const snapshots =
+      params.snapshots.length === 0
+        ? []
+        : await tx
+            .insert(geoAeoAnswerSnapshotsTable)
+            .values(
+              params.snapshots.map((snapshot) =>
+                toAnswerSnapshotInsert(params.tenantId, params.userId, snapshot, batch.id),
+              ),
+            )
+            .returning();
+
+    return { batch, snapshots };
+  });
+}
+
+export async function listGeoAeoSnapshotImportBatches(params: {
+  tenantId: number;
+  auditId: number;
+}) {
+  return db
+    .select()
+    .from(geoAeoImportBatchesTable)
+    .where(
+      and(
+        eq(geoAeoImportBatchesTable.tenantId, params.tenantId),
+        eq(geoAeoImportBatchesTable.auditId, params.auditId),
+        eq(geoAeoImportBatchesTable.importType, "snapshot_csv"),
+        isNull(geoAeoImportBatchesTable.deletedAt),
+      ),
+    )
+    .orderBy(desc(geoAeoImportBatchesTable.createdAt));
+}
+
+export async function rollbackGeoAeoSnapshotImportBatch(params: {
+  tenantId: number;
+  importBatchId: number;
+  userId: number;
+}) {
+  return db.transaction(async (tx) => {
+    const [batch] = await tx
+      .select()
+      .from(geoAeoImportBatchesTable)
+      .where(
+        and(
+          eq(geoAeoImportBatchesTable.tenantId, params.tenantId),
+          eq(geoAeoImportBatchesTable.id, params.importBatchId),
+          eq(geoAeoImportBatchesTable.importType, "snapshot_csv"),
+          eq(geoAeoImportBatchesTable.status, "active"),
+          isNull(geoAeoImportBatchesTable.deletedAt),
+        ),
+      )
+      .limit(1);
+
+    if (!batch) return null;
+
+    const importedSnapshots = await tx
+      .select({ id: geoAeoAnswerSnapshotsTable.id })
+      .from(geoAeoAnswerSnapshotsTable)
+      .where(
+        and(
+          eq(geoAeoAnswerSnapshotsTable.tenantId, params.tenantId),
+          eq(geoAeoAnswerSnapshotsTable.importBatchId, params.importBatchId),
+          isNull(geoAeoAnswerSnapshotsTable.deletedAt),
+        ),
+      );
+    const snapshotIds = importedSnapshots.map((snapshot) => snapshot.id);
+    const deletedAt = new Date();
+
+    if (snapshotIds.length > 0) {
+      await tx
+        .update(geoAeoCitationsTable)
+        .set({ deletedAt })
+        .where(
+          and(
+            eq(geoAeoCitationsTable.tenantId, params.tenantId),
+            inArray(geoAeoCitationsTable.snapshotId, snapshotIds),
+            isNull(geoAeoCitationsTable.deletedAt),
+          ),
+        );
+
+      await tx
+        .update(geoAeoMentionsTable)
+        .set({ deletedAt })
+        .where(
+          and(
+            eq(geoAeoMentionsTable.tenantId, params.tenantId),
+            inArray(geoAeoMentionsTable.snapshotId, snapshotIds),
+            isNull(geoAeoMentionsTable.deletedAt),
+          ),
+        );
+
+      await tx
+        .update(geoAeoAnswerSnapshotsTable)
+        .set({ deletedAt })
+        .where(
+          and(
+            eq(geoAeoAnswerSnapshotsTable.tenantId, params.tenantId),
+            eq(geoAeoAnswerSnapshotsTable.importBatchId, params.importBatchId),
+            isNull(geoAeoAnswerSnapshotsTable.deletedAt),
+          ),
+        );
+    }
+
+    const [rolledBackBatch] = await tx
+      .update(geoAeoImportBatchesTable)
+      .set({
+        status: "rolled_back",
+        deletedAt,
+        deletedById: params.userId,
+      })
+      .where(
+        and(
+          eq(geoAeoImportBatchesTable.tenantId, params.tenantId),
+          eq(geoAeoImportBatchesTable.id, params.importBatchId),
+          isNull(geoAeoImportBatchesTable.deletedAt),
+        ),
+      )
+      .returning();
+
+    return {
+      batch: rolledBackBatch ?? batch,
+      rolledBackSnapshots: snapshotIds.length,
+    };
+  });
 }
 
 export async function updateGeoAeoAnswerSnapshot(params: {
@@ -1973,12 +2130,14 @@ function toAnswerSnapshotInsert(
   tenantId: number,
   userId: number,
   input: GeoAeoSnapshotCreateInput,
+  importBatchId?: number,
 ): typeof geoAeoAnswerSnapshotsTable.$inferInsert {
   return {
     tenantId,
     auditId: input.auditId,
     promptId: input.promptId,
     promptVariantId: input.promptVariantId ?? null,
+    importBatchId: importBatchId ?? null,
     engine: input.engine,
     engineMode: input.captureMethod === "csv_import" ? "consumer_manual" : "consumer_manual",
     captureMethod: input.captureMethod,

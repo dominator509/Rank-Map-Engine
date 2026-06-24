@@ -781,6 +781,8 @@ export interface GeoAeoAnswerSnapshot {
   promptId: number;
   /** @nullable */
   promptVariantId?: number | null;
+  /** @nullable */
+  importBatchId?: number | null;
   engine: GeoAeoEngine;
   engineMode: string;
   captureMethod: GeoAeoCaptureMethod;
@@ -810,9 +812,36 @@ export interface GeoAeoSnapshotCreateBody {
   locationContext?: string;
 }
 
+export interface GeoAeoSnapshotImportBatch {
+  id: number;
+  tenantId: number;
+  auditId: number;
+  importType: string;
+  source: string;
+  status: string;
+  totalRows: number;
+  importedRows: number;
+  invalidRows: number;
+  duplicateRows: number;
+  /** @nullable */
+  createdById?: number | null;
+  /** @nullable */
+  deletedById?: number | null;
+  createdAt: string;
+  updatedAt: string;
+  /** @nullable */
+  deletedAt?: string | null;
+}
+
 export interface GeoAeoSnapshotImportResult {
   imported: number;
+  batch: GeoAeoSnapshotImportBatch;
   snapshots: GeoAeoAnswerSnapshot[];
+}
+
+export interface GeoAeoSnapshotImportRollbackResult {
+  batch: GeoAeoSnapshotImportBatch;
+  rolledBackSnapshots: number;
 }
 
 export interface GeoAeoManualRecord {

@@ -1410,6 +1410,40 @@ paths:
               schema:
                 $ref: "#/components/schemas/GeoAeoCsvImportPreview"
 
+  /geo-aeo/audits/{auditId}/snapshot-imports:
+    get:
+      operationId: listGeoAeoSnapshotImportBatches
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: Snapshot CSV import batches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoSnapshotImportBatch"
+
+  /geo-aeo/snapshot-imports/{importBatchId}:
+    delete:
+      operationId: rollbackGeoAeoSnapshotImportBatch
+      tags: [geo-aeo]
+      parameters:
+        - name: importBatchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Rolled back snapshot CSV import batch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoSnapshotImportRollbackResult"
+
   /geo-aeo/snapshots/{snapshotId}:
     patch:
       operationId: updateGeoAeoAnswerSnapshot
@@ -4797,6 +4831,8 @@ components:
           type: integer
         promptVariantId:
           type: ["integer", "null"]
+        importBatchId:
+          type: ["integer", "null"]
         engine:
           $ref: "#/components/schemas/GeoAeoEngine"
         engineMode:
@@ -4870,13 +4906,74 @@ components:
       properties:
         imported:
           type: integer
+        batch:
+          $ref: "#/components/schemas/GeoAeoSnapshotImportBatch"
         snapshots:
           type: array
           items:
             $ref: "#/components/schemas/GeoAeoAnswerSnapshot"
       required:
         - imported
+        - batch
         - snapshots
+
+    GeoAeoSnapshotImportBatch:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        auditId:
+          type: integer
+        importType:
+          type: string
+        source:
+          type: string
+        status:
+          type: string
+        totalRows:
+          type: integer
+        importedRows:
+          type: integer
+        invalidRows:
+          type: integer
+        duplicateRows:
+          type: integer
+        createdById:
+          type: ["integer", "null"]
+        deletedById:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        deletedAt:
+          type: ["string", "null"]
+      required:
+        - id
+        - tenantId
+        - auditId
+        - importType
+        - source
+        - status
+        - totalRows
+        - importedRows
+        - invalidRows
+        - duplicateRows
+        - createdAt
+        - updatedAt
+
+    GeoAeoSnapshotImportRollbackResult:
+      type: object
+      properties:
+        batch:
+          $ref: "#/components/schemas/GeoAeoSnapshotImportBatch"
+        rolledBackSnapshots:
+          type: integer
+      required:
+        - batch
+        - rolledBackSnapshots
 
     GeoAeoManualRecord:
       type: object

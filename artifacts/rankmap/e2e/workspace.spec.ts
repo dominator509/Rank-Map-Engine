@@ -260,6 +260,7 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
   await expect(page.getByTestId("geo-aeo-import-preview-summary").getByText("1 valid")).toBeVisible();
   await page.getByTestId("geo-aeo-import-snapshots").click();
   await expect(page.getByText("Snapshots imported", { exact: true }).first()).toBeVisible();
+  await expect(page.getByTestId("geo-aeo-rollback-snapshot-import").first()).toBeVisible();
   await expect(page.getByText("1 answer snapshots")).toBeVisible();
 
   await page.getByRole("button", { name: "Mention" }).click();

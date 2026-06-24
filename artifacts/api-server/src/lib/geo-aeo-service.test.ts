@@ -2,8 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const dbState = vi.hoisted(() => ({
   updateSet: undefined as Record<string, unknown> | undefined,
+  updateSets: [] as Record<string, unknown>[],
   updateReturningRows: [] as unknown[][],
   insertValues: undefined as Record<string, unknown> | undefined,
+  insertValuesList: [] as unknown[],
   insertReturningRows: [] as unknown[][],
   selectRows: [] as unknown[][],
 }));
@@ -40,28 +42,33 @@ vi.mock("@workspace/db", () => {
     return chain;
   };
 
+  const dbMock = {
+    select: vi.fn(chainSelect),
+    update: vi.fn(() => ({
+      set: vi.fn((updates: Record<string, unknown>) => {
+        dbState.updateSet = updates;
+        dbState.updateSets.push(updates);
+        return {
+          where: vi.fn(() => ({
+            returning: vi.fn(async () => dbState.updateReturningRows.shift() ?? []),
+          })),
+        };
+      }),
+    })),
+    insert: vi.fn(() => ({
+      values: vi.fn((values: Record<string, unknown>) => {
+        dbState.insertValues = values;
+        dbState.insertValuesList.push(values);
+        return {
+          returning: vi.fn(async () => dbState.insertReturningRows.shift() ?? []),
+        };
+      }),
+    })),
+    transaction: vi.fn(async (callback: (tx: typeof dbMock) => unknown) => callback(dbMock)),
+  };
+
   return {
-    db: {
-      select: vi.fn(chainSelect),
-      update: vi.fn(() => ({
-        set: vi.fn((updates: Record<string, unknown>) => {
-          dbState.updateSet = updates;
-          return {
-            where: vi.fn(() => ({
-              returning: vi.fn(async () => dbState.updateReturningRows.shift() ?? []),
-            })),
-          };
-        }),
-      })),
-      insert: vi.fn(() => ({
-        values: vi.fn((values: Record<string, unknown>) => {
-          dbState.insertValues = values;
-          return {
-            returning: vi.fn(async () => dbState.insertReturningRows.shift() ?? []),
-          };
-        }),
-      })),
-    },
+    db: dbMock,
     geoAeoActionItemsTable: tableMock(),
     geoAeoActionPlansTable: tableMock(),
     geoAeoAnswerSnapshotsTable: tableMock(),
@@ -70,6 +77,7 @@ vi.mock("@workspace/db", () => {
     geoAeoCompetitorsTable: tableMock(),
     geoAeoEnginesTable: tableMock(),
     geoAeoFindingsTable: tableMock(),
+    geoAeoImportBatchesTable: tableMock(),
     geoAeoMentionsTable: tableMock(),
     geoAeoMonitoringRunsTable: tableMock(),
     geoAeoPromptsTable: tableMock(),
@@ -83,8 +91,10 @@ vi.mock("@workspace/db", () => {
 describe("GEO/AEO service hardening", () => {
   beforeEach(() => {
     dbState.updateSet = undefined;
+    dbState.updateSets = [];
     dbState.updateReturningRows = [];
     dbState.insertValues = undefined;
+    dbState.insertValuesList = [];
     dbState.insertReturningRows = [];
     dbState.selectRows = [];
   });
@@ -154,6 +164,88 @@ describe("GEO/AEO service hardening", () => {
         { row: 4, reason: "Duplicate snapshot already appears on row 3." },
       ],
     });
+  });
+
+  it("creates a snapshot CSV import batch and stamps imported snapshots", async () => {
+    const { createGeoAeoSnapshotImportBatch } = await import("./geo-aeo-service.js");
+    dbState.insertReturningRows.push([{ id: 901, importType: "snapshot_csv", importedRows: 2 }]);
+    dbState.insertReturningRows.push([
+      { id: 1001, importBatchId: 901, promptId: 11 },
+      { id: 1002, importBatchId: 901, promptId: 12 },
+    ]);
+
+    const result = await createGeoAeoSnapshotImportBatch({
+      tenantId: 7,
+      auditId: 101,
+      userId: 12,
+      preview: {
+        totalRows: 2,
+        validRows: 2,
+        invalidRows: 0,
+        duplicateRows: 0,
+        invalid: [],
+        duplicates: [],
+      },
+      snapshots: [
+        {
+          auditId: 101,
+          promptId: 11,
+          engine: "chatgpt",
+          captureMethod: "csv_import",
+          answerText: "First answer",
+        },
+        {
+          auditId: 101,
+          promptId: 12,
+          engine: "perplexity",
+          captureMethod: "csv_import",
+          answerText: "Second answer",
+        },
+      ],
+    });
+
+    expect(result.batch).toEqual({ id: 901, importType: "snapshot_csv", importedRows: 2 });
+    expect(result.snapshots).toHaveLength(2);
+    expect(dbState.insertValuesList[0]).toMatchObject({
+      tenantId: 7,
+      auditId: 101,
+      importType: "snapshot_csv",
+      totalRows: 2,
+      importedRows: 2,
+      createdById: 12,
+    });
+    expect(dbState.insertValuesList[1]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ importBatchId: 901, promptId: 11, answerText: "First answer" }),
+        expect.objectContaining({ importBatchId: 901, promptId: 12, answerText: "Second answer" }),
+      ]),
+    );
+  });
+
+  it("rolls back a snapshot import batch by soft-deleting linked rows", async () => {
+    const { rollbackGeoAeoSnapshotImportBatch } = await import("./geo-aeo-service.js");
+    dbState.selectRows = [
+      [{ id: 901, auditId: 101, status: "active", importedRows: 2 }],
+      [{ id: 1001 }, { id: 1002 }],
+    ];
+    dbState.updateReturningRows.push([{ id: 901, auditId: 101, status: "rolled_back" }]);
+
+    const rollback = await rollbackGeoAeoSnapshotImportBatch({
+      tenantId: 7,
+      importBatchId: 901,
+      userId: 12,
+    });
+
+    expect(rollback).toEqual({
+      batch: { id: 901, auditId: 101, status: "rolled_back" },
+      rolledBackSnapshots: 2,
+    });
+    expect(dbState.updateSets).toHaveLength(4);
+    expect(dbState.updateSets[0]?.deletedAt).toBeInstanceOf(Date);
+    expect(dbState.updateSets[1]?.deletedAt).toBeInstanceOf(Date);
+    expect(dbState.updateSets[2]?.deletedAt).toBeInstanceOf(Date);
+    expect(dbState.updateSets[3]).toMatchObject({ status: "rolled_back", deletedById: 12 });
+    expect(dbState.updateSets[3]?.deletedAt).toBeInstanceOf(Date);
   });
 
   it("stores audit approval metadata when approving an audit", async () => {

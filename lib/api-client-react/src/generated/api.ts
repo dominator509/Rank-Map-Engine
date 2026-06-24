@@ -91,7 +91,9 @@ import type {
   GeoAeoSchemaFindingUpdateBody,
   GeoAeoScoreBody,
   GeoAeoSnapshotCreateBody,
+  GeoAeoSnapshotImportBatch,
   GeoAeoSnapshotImportResult,
+  GeoAeoSnapshotImportRollbackResult,
   GeoAeoSnapshotUpdateBody,
   GeoAeoSourceRecommendationCreateBody,
   GeoAeoSourceRecommendationUpdateBody,
@@ -4754,6 +4756,158 @@ export const usePreviewGeoAeoAnswerSnapshotsImport = <
   TContext
 > => {
   return useMutation(getPreviewGeoAeoAnswerSnapshotsImportMutationOptions(options));
+};
+
+export const getListGeoAeoSnapshotImportBatchesUrl = (auditId: number) => {
+  return `/api/geo-aeo/audits/${auditId}/snapshot-imports`;
+};
+
+export const listGeoAeoSnapshotImportBatches = async (
+  auditId: number,
+  options?: RequestInit,
+): Promise<GeoAeoSnapshotImportBatch[]> => {
+  return customFetch<GeoAeoSnapshotImportBatch[]>(getListGeoAeoSnapshotImportBatchesUrl(auditId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListGeoAeoSnapshotImportBatchesQueryKey = (auditId: number) => {
+  return [`/api/geo-aeo/audits/${auditId}/snapshot-imports`] as const;
+};
+
+export const getListGeoAeoSnapshotImportBatchesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listGeoAeoSnapshotImportBatches>>,
+  TError = ErrorType<unknown>,
+>(
+  auditId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listGeoAeoSnapshotImportBatches>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListGeoAeoSnapshotImportBatchesQueryKey(auditId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listGeoAeoSnapshotImportBatches>>> = ({
+    signal,
+  }) => listGeoAeoSnapshotImportBatches(auditId, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!auditId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listGeoAeoSnapshotImportBatches>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListGeoAeoSnapshotImportBatchesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listGeoAeoSnapshotImportBatches>>
+>;
+export type ListGeoAeoSnapshotImportBatchesQueryError = ErrorType<unknown>;
+
+export function useListGeoAeoSnapshotImportBatches<
+  TData = Awaited<ReturnType<typeof listGeoAeoSnapshotImportBatches>>,
+  TError = ErrorType<unknown>,
+>(
+  auditId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listGeoAeoSnapshotImportBatches>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListGeoAeoSnapshotImportBatchesQueryOptions(auditId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getRollbackGeoAeoSnapshotImportBatchUrl = (importBatchId: number) => {
+  return `/api/geo-aeo/snapshot-imports/${importBatchId}`;
+};
+
+export const rollbackGeoAeoSnapshotImportBatch = async (
+  importBatchId: number,
+  options?: RequestInit,
+): Promise<GeoAeoSnapshotImportRollbackResult> => {
+  return customFetch<GeoAeoSnapshotImportRollbackResult>(
+    getRollbackGeoAeoSnapshotImportBatchUrl(importBatchId),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getRollbackGeoAeoSnapshotImportBatchMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof rollbackGeoAeoSnapshotImportBatch>>,
+    TError,
+    { importBatchId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof rollbackGeoAeoSnapshotImportBatch>>,
+  TError,
+  { importBatchId: number },
+  TContext
+> => {
+  const mutationKey = ["rollbackGeoAeoSnapshotImportBatch"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof rollbackGeoAeoSnapshotImportBatch>>,
+    { importBatchId: number }
+  > = (props) => {
+    const { importBatchId } = props ?? {};
+
+    return rollbackGeoAeoSnapshotImportBatch(importBatchId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RollbackGeoAeoSnapshotImportBatchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof rollbackGeoAeoSnapshotImportBatch>>
+>;
+
+export type RollbackGeoAeoSnapshotImportBatchMutationError = ErrorType<unknown>;
+
+export const useRollbackGeoAeoSnapshotImportBatch = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof rollbackGeoAeoSnapshotImportBatch>>,
+    TError,
+    { importBatchId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof rollbackGeoAeoSnapshotImportBatch>>,
+  TError,
+  { importBatchId: number },
+  TContext
+> => {
+  return useMutation(getRollbackGeoAeoSnapshotImportBatchMutationOptions(options));
 };
 
 export const getUpdateGeoAeoAnswerSnapshotUrl = (snapshotId: number) => {

@@ -180,6 +180,37 @@ export const geoAeoPromptVariantsTable = pgTable(
   ],
 );
 
+export const geoAeoImportBatchesTable = pgTable(
+  "geo_aeo_import_batches",
+  {
+    id: serial("id").primaryKey(),
+    tenantId: integer("tenant_id")
+      .notNull()
+      .references(() => tenantsTable.id, { onDelete: "cascade" }),
+    auditId: integer("audit_id")
+      .notNull()
+      .references(() => geoAeoAuditsTable.id, { onDelete: "cascade" }),
+    importType: text("import_type").notNull(),
+    source: text("source").notNull().default("csv"),
+    status: text("status").notNull().default("active"),
+    totalRows: integer("total_rows").notNull().default(0),
+    importedRows: integer("imported_rows").notNull().default(0),
+    invalidRows: integer("invalid_rows").notNull().default(0),
+    duplicateRows: integer("duplicate_rows").notNull().default(0),
+    createdById: integer("created_by_id").references(() => usersTable.id, { onDelete: "set null" }),
+    deletedById: integer("deleted_by_id").references(() => usersTable.id, { onDelete: "set null" }),
+    createdAt,
+    updatedAt,
+    deletedAt,
+  },
+  (table) => [
+    index("geo_aeo_import_batches_tenant_idx").on(table.tenantId),
+    index("geo_aeo_import_batches_audit_idx").on(table.auditId),
+    index("geo_aeo_import_batches_type_idx").on(table.importType),
+    index("geo_aeo_import_batches_status_idx").on(table.status),
+  ],
+);
+
 export const geoAeoAnswerSnapshotsTable = pgTable(
   "geo_aeo_answer_snapshots",
   {
@@ -194,6 +225,9 @@ export const geoAeoAnswerSnapshotsTable = pgTable(
       .notNull()
       .references(() => geoAeoPromptsTable.id, { onDelete: "cascade" }),
     promptVariantId: integer("prompt_variant_id").references(() => geoAeoPromptVariantsTable.id, {
+      onDelete: "set null",
+    }),
+    importBatchId: integer("import_batch_id").references(() => geoAeoImportBatchesTable.id, {
       onDelete: "set null",
     }),
     engine: text("engine").notNull(),
@@ -220,6 +254,7 @@ export const geoAeoAnswerSnapshotsTable = pgTable(
     index("geo_aeo_answer_snapshots_tenant_idx").on(table.tenantId),
     index("geo_aeo_answer_snapshots_audit_idx").on(table.auditId),
     index("geo_aeo_answer_snapshots_prompt_idx").on(table.promptId),
+    index("geo_aeo_answer_snapshots_import_batch_idx").on(table.importBatchId),
     index("geo_aeo_answer_snapshots_engine_idx").on(table.engine),
     index("geo_aeo_answer_snapshots_capture_idx").on(table.captureMethod),
   ],
@@ -247,6 +282,7 @@ export const geoAeoMentionsTable = pgTable(
     evidenceSnippet: text("evidence_snippet"),
     confidenceScore: real("confidence_score"),
     createdAt,
+    deletedAt,
   },
   (table) => [
     index("geo_aeo_mentions_tenant_idx").on(table.tenantId),

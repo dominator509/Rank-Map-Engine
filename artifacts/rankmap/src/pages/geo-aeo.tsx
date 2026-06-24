@@ -179,6 +179,18 @@ type GeoAeoCsvImportPreview = {
   duplicates: GeoAeoCsvPreviewIssue[];
 };
 
+type GeoAeoSnapshotImportBatch = {
+  id: number;
+  auditId: number;
+  importType: string;
+  status: string;
+  totalRows: number;
+  importedRows: number;
+  invalidRows: number;
+  duplicateRows: number;
+  createdAt: string;
+};
+
 type ClientAuditDetail = {
   audit: GeoAeoAudit;
   findings: GeoAeoFinding[];
@@ -372,6 +384,12 @@ export default function GeoAeo() {
     enabled: !isClientUser && auditId > 0,
   });
 
+  const snapshotImportBatches = useQuery<GeoAeoSnapshotImportBatch[]>({
+    queryKey: ["/api/geo-aeo/audits", auditId, "snapshot-imports"],
+    queryFn: () => customFetch(`/api/geo-aeo/audits/${auditId}/snapshot-imports`),
+    enabled: !isClientUser && auditId > 0,
+  });
+
   const findings = useQuery<GeoAeoFinding[]>({
     queryKey: ["/api/geo-aeo/audits", auditId, "findings"],
     queryFn: () => customFetch(`/api/geo-aeo/audits/${auditId}/findings`),
@@ -439,6 +457,7 @@ export default function GeoAeo() {
 
   const invalidateManualFallback = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "snapshots"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "snapshot-imports"] });
     queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "competitors"] });
     queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "citations"] });
     queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "source-recommendations"] });
@@ -567,8 +586,18 @@ export default function GeoAeo() {
     onSuccess: () => {
       setSnapshotCsv("");
       setSnapshotImportPreview(null);
-      queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "snapshots"] });
+      invalidateManualFallback();
       toast({ title: "Snapshots imported" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
+  const rollbackSnapshotImport = useMutation({
+    mutationFn: (importBatchId: number) =>
+      customFetch(`/api/geo-aeo/snapshot-imports/${importBatchId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      invalidateManualFallback();
+      toast({ title: "Snapshot import rolled back" });
     },
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
@@ -1303,6 +1332,34 @@ export default function GeoAeo() {
                           Import Snapshots
                         </Button>
                       </div>
+                      {Boolean(snapshotImportBatches.data?.length) && (
+                        <div className="space-y-2 rounded-md border p-3">
+                          <div className="text-sm font-medium">Recent imports</div>
+                          {snapshotImportBatches.data?.slice(0, 3).map((batch) => (
+                            <div
+                              key={batch.id}
+                              className="flex flex-wrap items-center justify-between gap-2 text-sm"
+                            >
+                              <div>
+                                <div>{batch.importedRows} snapshots</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(batch.createdAt).toLocaleString()}
+                                </div>
+                              </div>
+                              <Button
+                                data-testid="geo-aeo-rollback-snapshot-import"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => rollbackSnapshotImport.mutate(batch.id)}
+                                disabled={rollbackSnapshotImport.isPending}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Roll Back
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </div>

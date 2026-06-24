@@ -51,11 +51,11 @@ import {
   createGeoAeoSourceRecommendation,
   createGeoAeoMonitoringRun,
   createGeoAeoAnswerSnapshot,
-  createGeoAeoAnswerSnapshots,
   createGeoAeoAudit,
   createGeoAeoActionItem,
   createGeoAeoPrompt,
   createGeoAeoPrompts,
+  createGeoAeoSnapshotImportBatch,
   listApprovedGeoAeoClientAudits,
   listApprovedGeoAeoMonitoringRuns,
   listGeoAeoAnswerSnapshots,
@@ -66,11 +66,13 @@ import {
   listGeoAeoMonitoringRuns,
   listGeoAeoPrompts,
   listGeoAeoSchemaFindings,
+  listGeoAeoSnapshotImportBatches,
   listGeoAeoSourceRecommendations,
   parseGeoAeoPromptCsv,
   parseGeoAeoSnapshotCsv,
   previewGeoAeoPromptCsv,
   previewGeoAeoSnapshotCsv,
+  rollbackGeoAeoSnapshotImportBatch,
   softDeleteGeoAeoActionItem,
   softDeleteGeoAeoCitation,
   softDeleteGeoAeoCompetitor,
@@ -479,6 +481,28 @@ router.post(
   },
 );
 
+router.get(
+  "/geo-aeo/audits/:auditId/snapshot-imports",
+  requireAuth,
+  requireRole(GEO_AEO_OPERATOR_ROLES),
+  async (req, res): Promise<void> => {
+    const auditId = parseId(req.params.auditId);
+    if (auditId === null) {
+      res.status(400).json({ error: "Invalid auditId" });
+      return;
+    }
+
+    const { tenantId } = req.session.user!;
+    if (!(await getTenantScopedGeoAeoAudit(auditId, tenantId))) {
+      res.status(404).json({ error: "Audit not found" });
+      return;
+    }
+
+    const batches = await listGeoAeoSnapshotImportBatches({ tenantId, auditId });
+    res.json(batches);
+  },
+);
+
 router.post(
   "/geo-aeo/audits/:auditId/snapshots/import-csv",
   requireAuth,
@@ -532,23 +556,64 @@ router.post(
       }
     }
 
-    const snapshots = await createGeoAeoAnswerSnapshots({
+    const importBatch = await createGeoAeoSnapshotImportBatch({
       tenantId,
+      auditId,
       userId,
       snapshots: importResult.snapshots,
+      preview,
     });
 
     await auditGeoAeoEvent({
       tenantId,
       userId,
       action: "geo_aeo.snapshot.imported",
-      resourceType: "geo_aeo_audit",
-      resourceId: auditId,
-      metadata: { imported: snapshots.length },
+      resourceType: "geo_aeo_import_batch",
+      resourceId: importBatch.batch.id,
+      metadata: { auditId, imported: importBatch.snapshots.length },
       req,
     });
 
-    res.status(201).json({ imported: snapshots.length, snapshots });
+    res.status(201).json({
+      imported: importBatch.snapshots.length,
+      batch: importBatch.batch,
+      snapshots: importBatch.snapshots,
+    });
+  },
+);
+
+router.delete(
+  "/geo-aeo/snapshot-imports/:importBatchId",
+  requireAuth,
+  requireRole(GEO_AEO_OPERATOR_ROLES),
+  async (req, res): Promise<void> => {
+    const importBatchId = parseId(req.params.importBatchId);
+    if (importBatchId === null) {
+      res.status(400).json({ error: "Invalid importBatchId" });
+      return;
+    }
+
+    const { tenantId, id: userId } = req.session.user!;
+    const rollback = await rollbackGeoAeoSnapshotImportBatch({ tenantId, importBatchId, userId });
+    if (!rollback) {
+      res.status(404).json({ error: "Import batch not found" });
+      return;
+    }
+
+    await auditGeoAeoEvent({
+      tenantId,
+      userId,
+      action: "geo_aeo.snapshot_import.rolled_back",
+      resourceType: "geo_aeo_import_batch",
+      resourceId: importBatchId,
+      metadata: {
+        auditId: rollback.batch.auditId,
+        rolledBackSnapshots: rollback.rolledBackSnapshots,
+      },
+      req,
+    });
+
+    res.status(200).json(rollback);
   },
 );
 

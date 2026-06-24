@@ -90,6 +90,7 @@ export const GEO_AEO_AUDIT_EVENTS = [
   "geo_aeo.snapshot.created",
   "geo_aeo.snapshot.updated",
   "geo_aeo.snapshot.imported",
+  "geo_aeo.snapshot_import.rolled_back",
   "geo_aeo.competitor.created",
   "geo_aeo.competitor.updated",
   "geo_aeo.competitor.deleted",
