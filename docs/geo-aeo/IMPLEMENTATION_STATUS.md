@@ -135,6 +135,14 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - Tests/checks to run: focused GEO/AEO service tests, full workspace tests, typecheck, lint, API e2e, browser e2e, security gate, and build.
 - Rollback plan: remove prompt/snapshot/methodology fields from generated report data and remove the new export rows/sections while leaving existing summary/finding/action-plan report export behavior intact.
 
+## Checkpoint - 2026-06-24 Final QA Command Parity
+
+- Current task: close the G17 final security/QA gap by making the roadmap-named verification commands executable in this repo and running the full final gate set.
+- Acceptance criteria targeted: `test:security`, `test:adapter-contract`, and `smoke` scripts exist; adapter contract, security, typecheck, lint, full tests, build, and smoke all pass; smoke proves the API and browser e2e wrappers sequentially against disposable Postgres databases.
+- Files expected to change: root `package.json`, a small smoke runner, and this status document.
+- Tests/checks to run: `corepack pnpm run test:adapter-contract`, `corepack pnpm run test:security`, `corepack pnpm run typecheck`, `corepack pnpm run lint`, `corepack pnpm run test`, `corepack pnpm run build`, and `corepack pnpm run smoke`.
+- Rollback plan: remove the three package script aliases and `scripts/run-smoke.mjs`; keep the underlying e2e/security/test wrappers unchanged.
+
 ## Phase Checklist
 
 - [x] G0 discovery completed.
@@ -161,7 +169,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - [x] Manual competitor/source/schema/action item soft-delete exposed in the GEO/AEO page.
 - [x] Prompt/snapshot CSV import preview and duplicate gates added.
 - [x] Snapshot CSV import batch rollback/delete controls added.
-- [ ] G17 final security hardening and smoke in progress.
+- [x] G17 final security hardening and smoke completed.
 
 ## Tests/Checks Run
 
@@ -337,6 +345,13 @@ Continue final hardening after adding route tests, service hardening tests, Open
 | `corepack pnpm run build` | Pass | Full workspace build passed after required report-section expansion. |
 | `corepack pnpm run test:e2e:api` | Pass | API e2e wrapper passed sequentially after an earlier parallel API/browser e2e attempt hit a temporary Postgres startup collision. |
 | `corepack pnpm run test:e2e:browser` | Pass | Browser e2e wrapper passed sequentially after the same temporary Postgres startup collision in the earlier parallel attempt. |
+| `corepack pnpm run test:adapter-contract` | Pass | Roadmap alias now runs the GEO/AEO answer-engine adapter contract tests: 4 passed. |
+| `corepack pnpm run test:security` | Pass | Roadmap alias now runs `security:check`; secret scan passed and `pnpm audit --audit-level high` passed with only 2 low and 3 moderate findings. |
+| `corepack pnpm run typecheck` | Pass | Full workspace typecheck passed during final QA command parity. |
+| `corepack pnpm run lint` | Pass | ESLint completed with zero warnings during final QA command parity. |
+| `corepack pnpm run test` | Pass | Full Vitest suite passed during final QA command parity: 99 passed, 4 e2e tests skipped by default gates. |
+| `corepack pnpm run build` | Pass | Full workspace build passed during final QA command parity. |
+| `corepack pnpm run smoke` | Pass | New smoke alias ran API e2e and browser e2e sequentially against disposable Postgres databases; both completed successfully. |
 
 ## Known Limitations
 
@@ -356,6 +371,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - Client-role GEO/AEO views are tenant-scoped and approved-only, but the current user schema has no per-client contact assignment model, so row-level client-contact scoping would require a future data-model addition.
 - OpenAPI and generated client/Zod packages now include GEO/AEO routes; the first frontend surface still uses `customFetch` directly.
 - Repo API and browser e2e wrappers now pass against temporary Postgres databases, including an authenticated GEO/AEO protected browser journey for the manual fallback workflow.
+- The roadmap-named G17 final QA commands are executable through package scripts: `test:security`, `test:adapter-contract`, and `smoke`.
 - RTK was not available on PATH in the 2026-06-24 resumed environment, so verification commands in that resumed block ran through plain `corepack pnpm`.
 - The resumed 2026-06-24 rollback increment started from a clean worktree after commit `1907213`.
 - GEO/AEO is not production-ready and does not change the Phase 39 launch no-go status.
