@@ -279,7 +279,7 @@ try {
       PLAYWRIGHT_BASE_URL: webUrl,
     },
     stdio: "pipe",
-    timeoutMs: 120_000,
+    timeoutMs: 240_000,
   });
 } finally {
   await stopManagedProcesses();

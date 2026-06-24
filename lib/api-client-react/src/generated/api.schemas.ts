@@ -513,6 +513,7 @@ export const ReportType = {
   project_summary: "project_summary",
   topical_authority: "topical_authority",
   content_pipeline: "content_pipeline",
+  geo_aeo_visibility_audit: "geo_aeo_visibility_audit",
 } as const;
 
 export type ReportFormat = (typeof ReportFormat)[keyof typeof ReportFormat];
@@ -521,6 +522,7 @@ export const ReportFormat = {
   pdf: "pdf",
   csv: "csv",
   json: "json",
+  markdown: "markdown",
 } as const;
 
 /**
@@ -564,6 +566,737 @@ export const GenerateReportBodyFormat = {
 export interface GenerateReportBody {
   type: GenerateReportBodyType;
   format: GenerateReportBodyFormat;
+}
+
+export type GeoAeoEngine = (typeof GeoAeoEngine)[keyof typeof GeoAeoEngine];
+
+export const GeoAeoEngine = {
+  chatgpt: "chatgpt",
+  gemini: "gemini",
+  perplexity: "perplexity",
+  google_ai_overviews: "google_ai_overviews",
+  other: "other",
+} as const;
+
+export type GeoAeoCaptureMethod = (typeof GeoAeoCaptureMethod)[keyof typeof GeoAeoCaptureMethod];
+
+export const GeoAeoCaptureMethod = {
+  manual_paste: "manual_paste",
+  csv_import: "csv_import",
+  mock_adapter: "mock_adapter",
+  api_adapter: "api_adapter",
+} as const;
+
+export type GeoAeoAuditStatus = (typeof GeoAeoAuditStatus)[keyof typeof GeoAeoAuditStatus];
+
+export const GeoAeoAuditStatus = {
+  draft: "draft",
+  in_review: "in_review",
+  approved: "approved",
+  archived: "archived",
+} as const;
+
+export type GeoAeoAuditMonitoringCadence =
+  (typeof GeoAeoAuditMonitoringCadence)[keyof typeof GeoAeoAuditMonitoringCadence];
+
+export const GeoAeoAuditMonitoringCadence = {
+  none: "none",
+  monthly: "monthly",
+  quarterly: "quarterly",
+} as const;
+
+/**
+ * @nullable
+ */
+export type GeoAeoAuditBusinessFacts = { [key: string]: unknown } | null;
+
+export interface GeoAeoAudit {
+  id: number;
+  tenantId: number;
+  clientId: number;
+  /** @nullable */
+  projectId?: number | null;
+  auditName: string;
+  websiteUrl: string;
+  niche: string;
+  /** @nullable */
+  servicesOrProducts?: string[] | null;
+  /** @nullable */
+  targetLocation?: string | null;
+  /** @nullable */
+  targetAudience?: string | null;
+  status: GeoAeoAuditStatus;
+  monitoringEnabled: boolean;
+  monitoringCadence: GeoAeoAuditMonitoringCadence;
+  /** @nullable */
+  nextMonitoringRunAt?: string | null;
+  /** @nullable */
+  businessFacts?: GeoAeoAuditBusinessFacts;
+  /** @nullable */
+  visibilityScore?: number | null;
+  /** @nullable */
+  visibilityLabel?: string | null;
+  /** @nullable */
+  summary?: string | null;
+  /** @nullable */
+  createdById?: number | null;
+  /** @nullable */
+  updatedById?: number | null;
+  /** @nullable */
+  approvedById?: number | null;
+  /** @nullable */
+  approvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type GeoAeoAuditCreateBodyBusinessFacts = { [key: string]: unknown };
+
+export type GeoAeoAuditCreateBodyMonitoringCadence =
+  (typeof GeoAeoAuditCreateBodyMonitoringCadence)[keyof typeof GeoAeoAuditCreateBodyMonitoringCadence];
+
+export const GeoAeoAuditCreateBodyMonitoringCadence = {
+  none: "none",
+  monthly: "monthly",
+  quarterly: "quarterly",
+} as const;
+
+export interface GeoAeoAuditCreateBody {
+  clientId: number;
+  projectId?: number;
+  auditName: string;
+  websiteUrl: string;
+  niche: string;
+  servicesOrProducts: string[];
+  targetLocation?: string;
+  targetAudience?: string;
+  businessFacts?: GeoAeoAuditCreateBodyBusinessFacts;
+  targetEngines: GeoAeoEngine[];
+  monitoringEnabled?: boolean;
+  monitoringCadence?: GeoAeoAuditCreateBodyMonitoringCadence;
+  nextMonitoringRunAt?: string;
+}
+
+export type GeoAeoAuditUpdateBodyBusinessFacts = { [key: string]: unknown };
+
+export type GeoAeoAuditUpdateBodyStatus =
+  (typeof GeoAeoAuditUpdateBodyStatus)[keyof typeof GeoAeoAuditUpdateBodyStatus];
+
+export const GeoAeoAuditUpdateBodyStatus = {
+  draft: "draft",
+  in_review: "in_review",
+  approved: "approved",
+  archived: "archived",
+} as const;
+
+export type GeoAeoAuditUpdateBodyMonitoringCadence =
+  (typeof GeoAeoAuditUpdateBodyMonitoringCadence)[keyof typeof GeoAeoAuditUpdateBodyMonitoringCadence];
+
+export const GeoAeoAuditUpdateBodyMonitoringCadence = {
+  none: "none",
+  monthly: "monthly",
+  quarterly: "quarterly",
+} as const;
+
+export interface GeoAeoAuditUpdateBody {
+  auditName?: string;
+  websiteUrl?: string;
+  niche?: string;
+  servicesOrProducts?: string[];
+  /** @nullable */
+  targetLocation?: string | null;
+  /** @nullable */
+  targetAudience?: string | null;
+  businessFacts?: GeoAeoAuditUpdateBodyBusinessFacts;
+  status?: GeoAeoAuditUpdateBodyStatus;
+  /** @nullable */
+  summary?: string | null;
+  monitoringEnabled?: boolean;
+  monitoringCadence?: GeoAeoAuditUpdateBodyMonitoringCadence;
+  /** @nullable */
+  nextMonitoringRunAt?: string | null;
+}
+
+export interface GeoAeoPrompt {
+  id: number;
+  tenantId: number;
+  auditId: number;
+  /** @nullable */
+  promptSetId?: number | null;
+  promptText: string;
+  /** @nullable */
+  normalizedPrompt?: string | null;
+  /** @nullable */
+  intent?: string | null;
+  /** @nullable */
+  funnelStage?: string | null;
+  /** @nullable */
+  serviceOrProduct?: string | null;
+  /** @nullable */
+  location?: string | null;
+  priority: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GeoAeoPromptCreateBody {
+  auditId: number;
+  promptSetId?: number;
+  promptText: string;
+  intent?: string;
+  funnelStage?: string;
+  serviceOrProduct?: string;
+  location?: string;
+  priority?: number;
+}
+
+export interface GeoAeoCsvImportBody {
+  csvText: string;
+}
+
+export interface GeoAeoPromptImportResult {
+  imported: number;
+  prompts: GeoAeoPrompt[];
+}
+
+export interface GeoAeoAnswerSnapshot {
+  id: number;
+  tenantId: number;
+  auditId: number;
+  promptId: number;
+  /** @nullable */
+  promptVariantId?: number | null;
+  engine: GeoAeoEngine;
+  engineMode: string;
+  captureMethod: GeoAeoCaptureMethod;
+  answerText: string;
+  answerHash: string;
+  /** @nullable */
+  locationContext?: string | null;
+  clientMentioned: boolean;
+  clientCited: boolean;
+  /** @nullable */
+  sentiment?: string | null;
+  /** @nullable */
+  accuracyRiskScore?: number | null;
+  capturedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GeoAeoSnapshotCreateBody {
+  auditId: number;
+  promptId: number;
+  promptVariantId?: number;
+  engine: GeoAeoEngine;
+  captureMethod: GeoAeoCaptureMethod;
+  answerText: string;
+  capturedAt?: string;
+  locationContext?: string;
+}
+
+export interface GeoAeoSnapshotImportResult {
+  imported: number;
+  snapshots: GeoAeoAnswerSnapshot[];
+}
+
+export interface GeoAeoManualRecord {
+  id?: number;
+  tenantId?: number;
+  auditId?: number;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+export interface GeoAeoSnapshotUpdateBody {
+  clientMentioned?: boolean;
+  clientCited?: boolean;
+  /** @nullable */
+  sentiment?: string | null;
+  /** @nullable */
+  accuracyRiskScore?: number | null;
+  /** @nullable */
+  locationContext?: string | null;
+}
+
+export interface GeoAeoCompetitorCreateBody {
+  name: string;
+  websiteUrl?: string;
+  aliases?: string[];
+  notes?: string;
+}
+
+export interface GeoAeoCompetitorUpdateBody {
+  name?: string;
+  websiteUrl?: string;
+  aliases?: string[];
+  notes?: string;
+}
+
+export interface GeoAeoCitationCreateBody {
+  snapshotId?: number;
+  url?: string;
+  sourceName?: string;
+  sourceType?: string;
+  isClientOwned?: boolean;
+  isCompetitorOwned?: boolean;
+  authorityEstimate?: number;
+  notes?: string;
+}
+
+export type GeoAeoSourceRecommendationCreateBodyPriority =
+  (typeof GeoAeoSourceRecommendationCreateBodyPriority)[keyof typeof GeoAeoSourceRecommendationCreateBodyPriority];
+
+export const GeoAeoSourceRecommendationCreateBodyPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  critical: "critical",
+} as const;
+
+export type GeoAeoSourceRecommendationCreateBodyStatus =
+  (typeof GeoAeoSourceRecommendationCreateBodyStatus)[keyof typeof GeoAeoSourceRecommendationCreateBodyStatus];
+
+export const GeoAeoSourceRecommendationCreateBodyStatus = {
+  draft: "draft",
+  approved: "approved",
+  rejected: "rejected",
+  done: "done",
+} as const;
+
+export interface GeoAeoSourceRecommendationCreateBody {
+  sourceName: string;
+  sourceUrl?: string;
+  sourceType?: string;
+  reason?: string;
+  priority?: GeoAeoSourceRecommendationCreateBodyPriority;
+  status?: GeoAeoSourceRecommendationCreateBodyStatus;
+}
+
+export type GeoAeoSourceRecommendationUpdateBodyPriority =
+  (typeof GeoAeoSourceRecommendationUpdateBodyPriority)[keyof typeof GeoAeoSourceRecommendationUpdateBodyPriority];
+
+export const GeoAeoSourceRecommendationUpdateBodyPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  critical: "critical",
+} as const;
+
+export type GeoAeoSourceRecommendationUpdateBodyStatus =
+  (typeof GeoAeoSourceRecommendationUpdateBodyStatus)[keyof typeof GeoAeoSourceRecommendationUpdateBodyStatus];
+
+export const GeoAeoSourceRecommendationUpdateBodyStatus = {
+  draft: "draft",
+  approved: "approved",
+  rejected: "rejected",
+  done: "done",
+} as const;
+
+export interface GeoAeoSourceRecommendationUpdateBody {
+  sourceName?: string;
+  sourceUrl?: string;
+  sourceType?: string;
+  reason?: string;
+  priority?: GeoAeoSourceRecommendationUpdateBodyPriority;
+  status?: GeoAeoSourceRecommendationUpdateBodyStatus;
+}
+
+export type GeoAeoSchemaFindingCreateBodySeverity =
+  (typeof GeoAeoSchemaFindingCreateBodySeverity)[keyof typeof GeoAeoSchemaFindingCreateBodySeverity];
+
+export const GeoAeoSchemaFindingCreateBodySeverity = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  critical: "critical",
+} as const;
+
+export type GeoAeoSchemaFindingCreateBodyStatus =
+  (typeof GeoAeoSchemaFindingCreateBodyStatus)[keyof typeof GeoAeoSchemaFindingCreateBodyStatus];
+
+export const GeoAeoSchemaFindingCreateBodyStatus = {
+  draft: "draft",
+  approved: "approved",
+  rejected: "rejected",
+  done: "done",
+} as const;
+
+export interface GeoAeoSchemaFindingCreateBody {
+  pageUrl?: string;
+  schemaType?: string;
+  issueType: string;
+  severity?: GeoAeoSchemaFindingCreateBodySeverity;
+  recommendation?: string;
+  status?: GeoAeoSchemaFindingCreateBodyStatus;
+}
+
+export type GeoAeoSchemaFindingUpdateBodySeverity =
+  (typeof GeoAeoSchemaFindingUpdateBodySeverity)[keyof typeof GeoAeoSchemaFindingUpdateBodySeverity];
+
+export const GeoAeoSchemaFindingUpdateBodySeverity = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  critical: "critical",
+} as const;
+
+export type GeoAeoSchemaFindingUpdateBodyStatus =
+  (typeof GeoAeoSchemaFindingUpdateBodyStatus)[keyof typeof GeoAeoSchemaFindingUpdateBodyStatus];
+
+export const GeoAeoSchemaFindingUpdateBodyStatus = {
+  draft: "draft",
+  approved: "approved",
+  rejected: "rejected",
+  done: "done",
+} as const;
+
+export interface GeoAeoSchemaFindingUpdateBody {
+  pageUrl?: string;
+  schemaType?: string;
+  issueType?: string;
+  severity?: GeoAeoSchemaFindingUpdateBodySeverity;
+  recommendation?: string;
+  status?: GeoAeoSchemaFindingUpdateBodyStatus;
+}
+
+export type GeoAeoMonitoringRunStatus =
+  (typeof GeoAeoMonitoringRunStatus)[keyof typeof GeoAeoMonitoringRunStatus];
+
+export const GeoAeoMonitoringRunStatus = {
+  draft: "draft",
+  in_review: "in_review",
+  approved: "approved",
+  archived: "archived",
+} as const;
+
+/**
+ * @nullable
+ */
+export type GeoAeoMonitoringRunActionPlanTemplate = { [key: string]: unknown } | null;
+
+/**
+ * @nullable
+ */
+export type GeoAeoMonitoringRunReportTemplate = { [key: string]: unknown } | null;
+
+export interface GeoAeoMonitoringRun {
+  id: number;
+  tenantId: number;
+  auditId: number;
+  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
+  runMonth: string;
+  /**
+   * @nullable
+   * @pattern ^\d{4}-(0[1-9]|1[0-2])$
+   */
+  baselineMonth?: string | null;
+  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
+  comparisonMonth: string;
+  status: GeoAeoMonitoringRunStatus;
+  /** @nullable */
+  baselineScore?: number | null;
+  /** @nullable */
+  currentScore?: number | null;
+  /** @nullable */
+  scoreDelta?: number | null;
+  baselineSnapshotCount: number;
+  currentSnapshotCount: number;
+  /** @nullable */
+  actionPlanTemplate?: GeoAeoMonitoringRunActionPlanTemplate;
+  /** @nullable */
+  reportTemplate?: GeoAeoMonitoringRunReportTemplate;
+  /** @nullable */
+  summary?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  approvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type GeoAeoMonitoringRunCreateBodyActionPlanTemplate = { [key: string]: unknown };
+
+export type GeoAeoMonitoringRunCreateBodyReportTemplate = { [key: string]: unknown };
+
+export interface GeoAeoMonitoringRunCreateBody {
+  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
+  runMonth: string;
+  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
+  baselineMonth?: string;
+  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
+  comparisonMonth?: string;
+  baselineScore?: number;
+  currentScore?: number;
+  baselineSnapshotCount?: number;
+  currentSnapshotCount?: number;
+  actionPlanTemplate?: GeoAeoMonitoringRunCreateBodyActionPlanTemplate;
+  reportTemplate?: GeoAeoMonitoringRunCreateBodyReportTemplate;
+  summary?: string;
+  notes?: string;
+}
+
+export type GeoAeoMonitoringRunUpdateBodyActionPlanTemplate = { [key: string]: unknown };
+
+export type GeoAeoMonitoringRunUpdateBodyReportTemplate = { [key: string]: unknown };
+
+export type GeoAeoMonitoringRunUpdateBodyStatus =
+  (typeof GeoAeoMonitoringRunUpdateBodyStatus)[keyof typeof GeoAeoMonitoringRunUpdateBodyStatus];
+
+export const GeoAeoMonitoringRunUpdateBodyStatus = {
+  draft: "draft",
+  in_review: "in_review",
+  approved: "approved",
+  archived: "archived",
+} as const;
+
+export interface GeoAeoMonitoringRunUpdateBody {
+  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
+  runMonth?: string;
+  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
+  baselineMonth?: string;
+  /** @pattern ^\d{4}-(0[1-9]|1[0-2])$ */
+  comparisonMonth?: string;
+  baselineScore?: number;
+  currentScore?: number;
+  baselineSnapshotCount?: number;
+  currentSnapshotCount?: number;
+  actionPlanTemplate?: GeoAeoMonitoringRunUpdateBodyActionPlanTemplate;
+  reportTemplate?: GeoAeoMonitoringRunUpdateBodyReportTemplate;
+  summary?: string;
+  notes?: string;
+  status?: GeoAeoMonitoringRunUpdateBodyStatus;
+}
+
+/**
+ * @nullable
+ */
+export type GeoAeoFindingEvidence = { [key: string]: unknown } | null;
+
+export type GeoAeoFindingStatus = (typeof GeoAeoFindingStatus)[keyof typeof GeoAeoFindingStatus];
+
+export const GeoAeoFindingStatus = {
+  draft: "draft",
+  needs_review: "needs_review",
+  approved: "approved",
+  rejected: "rejected",
+  deleted: "deleted",
+  superseded: "superseded",
+} as const;
+
+export interface GeoAeoFinding {
+  id: number;
+  tenantId: number;
+  auditId: number;
+  findingType: string;
+  severity: string;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  evidence?: GeoAeoFindingEvidence;
+  /** @nullable */
+  recommendation?: string | null;
+  status: GeoAeoFindingStatus;
+  /** @nullable */
+  approvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type GeoAeoFindingUpdateBodyStatus =
+  (typeof GeoAeoFindingUpdateBodyStatus)[keyof typeof GeoAeoFindingUpdateBodyStatus];
+
+export const GeoAeoFindingUpdateBodyStatus = {
+  draft: "draft",
+  needs_review: "needs_review",
+  approved: "approved",
+  rejected: "rejected",
+  deleted: "deleted",
+} as const;
+
+export interface GeoAeoFindingUpdateBody {
+  findingType?: string;
+  title?: string;
+  description?: string;
+  recommendation?: string;
+  status?: GeoAeoFindingUpdateBodyStatus;
+}
+
+export interface GeoAeoScoreBody {
+  brandMentionCoverage?: number;
+  citationCoverage?: number;
+  promptIntentCoverage?: number;
+  competitorGapOpportunity?: number;
+  entityClarityScore?: number;
+  schemaReadinessScore?: number;
+  sourceAuthorityReadiness?: number;
+  accuracyRiskScore?: number;
+  score?: number;
+  reason?: string;
+}
+
+export type GeoAeoVisibilityScoreResultNormalizedInputs = { [key: string]: unknown };
+
+export interface GeoAeoVisibilityScoreResult {
+  score: number;
+  label: string;
+  normalizedInputs: GeoAeoVisibilityScoreResultNormalizedInputs;
+  explanations: string[];
+}
+
+export type GeoAeoStoredScoreResultScore = { [key: string]: unknown };
+
+export interface GeoAeoStoredScoreResult {
+  score: GeoAeoStoredScoreResultScore;
+  result: GeoAeoVisibilityScoreResult;
+}
+
+export type GeoAeoAnalysisResultInserted = {
+  mentions: number;
+  citations: number;
+  findings: number;
+};
+
+export interface GeoAeoAnalysisResult {
+  score: GeoAeoVisibilityScoreResult;
+  inserted: GeoAeoAnalysisResultInserted;
+}
+
+export interface GeoAeoActionPlan {
+  id: number;
+  tenantId: number;
+  auditId: number;
+  name: string;
+  timeHorizonDays: number;
+  /** @nullable */
+  summary?: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type GeoAeoActionItemPriority =
+  (typeof GeoAeoActionItemPriority)[keyof typeof GeoAeoActionItemPriority];
+
+export const GeoAeoActionItemPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  critical: "critical",
+} as const;
+
+export type GeoAeoActionItemStatus =
+  (typeof GeoAeoActionItemStatus)[keyof typeof GeoAeoActionItemStatus];
+
+export const GeoAeoActionItemStatus = {
+  draft: "draft",
+  approved: "approved",
+  in_progress: "in_progress",
+  done: "done",
+  deferred: "deferred",
+} as const;
+
+export interface GeoAeoActionItem {
+  id: number;
+  tenantId: number;
+  auditId: number;
+  actionPlanId: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  category: string;
+  priority: GeoAeoActionItemPriority;
+  weekNumber: number;
+  /** @nullable */
+  ownerRole?: string | null;
+  status: GeoAeoActionItemStatus;
+  /** @nullable */
+  relatedFindingId?: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GeoAeoActionPlanWithItems {
+  plan: GeoAeoActionPlan;
+  items: GeoAeoActionItem[];
+}
+
+export interface GeoAeoActionPlanGenerateBody {
+  name?: string;
+  timeHorizonDays?: number;
+}
+
+export type GeoAeoActionItemUpdateBodyPriority =
+  (typeof GeoAeoActionItemUpdateBodyPriority)[keyof typeof GeoAeoActionItemUpdateBodyPriority];
+
+export const GeoAeoActionItemUpdateBodyPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  critical: "critical",
+} as const;
+
+export type GeoAeoActionItemUpdateBodyStatus =
+  (typeof GeoAeoActionItemUpdateBodyStatus)[keyof typeof GeoAeoActionItemUpdateBodyStatus];
+
+export const GeoAeoActionItemUpdateBodyStatus = {
+  draft: "draft",
+  approved: "approved",
+  in_progress: "in_progress",
+  done: "done",
+  deferred: "deferred",
+} as const;
+
+export interface GeoAeoActionItemUpdateBody {
+  title?: string;
+  description?: string;
+  category?: string;
+  priority?: GeoAeoActionItemUpdateBodyPriority;
+  weekNumber?: number;
+  status?: GeoAeoActionItemUpdateBodyStatus;
+}
+
+export type GeoAeoReportGenerateBodyFormat =
+  (typeof GeoAeoReportGenerateBodyFormat)[keyof typeof GeoAeoReportGenerateBodyFormat];
+
+export const GeoAeoReportGenerateBodyFormat = {
+  markdown: "markdown",
+  csv: "csv",
+  json: "json",
+  pdf: "pdf",
+} as const;
+
+export interface GeoAeoReportGenerateBody {
+  format?: GeoAeoReportGenerateBodyFormat;
+}
+
+export type GeoAeoReportExportBodyFormat =
+  (typeof GeoAeoReportExportBodyFormat)[keyof typeof GeoAeoReportExportBodyFormat];
+
+export const GeoAeoReportExportBodyFormat = {
+  markdown: "markdown",
+  csv: "csv",
+  json: "json",
+  pdf: "pdf",
+} as const;
+
+export interface GeoAeoReportExportBody {
+  format?: GeoAeoReportExportBodyFormat;
+}
+
+export type GeoAeoReport = Report;
+
+export interface GeoAeoClientAuditDetail {
+  audit: GeoAeoAudit;
+  findings: GeoAeoFinding[];
+  actionPlan: GeoAeoActionPlanWithItems | null;
+  reports: GeoAeoReport[];
+  monitoringRuns: GeoAeoMonitoringRun[];
 }
 
 export type PlanName = (typeof PlanName)[keyof typeof PlanName];
@@ -1444,6 +2177,14 @@ export type ListAiTasksParams = {
 export type ListBriefsParams = {
   status?: string;
 };
+
+export type ListGeoAeoAuditsParams = {
+  clientId?: number;
+  projectId?: number;
+  status?: string;
+};
+
+export type ExportGeoAeoReport200Four = { [key: string]: unknown };
 
 export type ListWebhookDeliveriesParams = {
   /**

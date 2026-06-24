@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { neutralizeCsvCell } from "./csv.js";
+import { neutralizeCsvCell, parseCsvObjects } from "./csv.js";
 import { validateGeoAeoEnv } from "./env.js";
 import {
   calculateGeoAeoVisibilityScore,
@@ -120,5 +120,16 @@ describe("GEO/AEO shared validation", () => {
       "'=IMPORTXML(\"https://example.test\")",
     );
     expect(neutralizeCsvCell("normal text")).toBe("normal text");
+  });
+
+  it("parses quoted CSV objects and neutralizes imported cells", () => {
+    const rows = parseCsvObjects(
+      'promptText,intent\n"Best plumbers, Austin",commercial\n"=IMPORTXML(""https://example.test"")",informational',
+    );
+
+    expect(rows).toEqual([
+      { promptText: "Best plumbers, Austin", intent: "commercial" },
+      { promptText: "'=IMPORTXML(\"https://example.test\")", intent: "informational" },
+    ]);
   });
 });

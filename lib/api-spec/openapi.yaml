@@ -24,6 +24,7 @@ tags:
   - name: api-keys
   - name: webhooks
   - name: notifications
+  - name: geo-aeo
 
 paths:
   /healthz:
@@ -1107,6 +1108,784 @@ paths:
       responses:
         "204":
           description: Deleted
+
+  /geo-aeo/audits:
+    get:
+      operationId: listGeoAeoAudits
+      tags: [geo-aeo]
+      parameters:
+        - name: clientId
+          in: query
+          schema:
+            type: integer
+        - name: projectId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: GEO/AEO audits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoAudit"
+    post:
+      operationId: createGeoAeoAudit
+      tags: [geo-aeo]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoAuditCreateBody"
+      responses:
+        "201":
+          description: Created GEO/AEO audit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoAudit"
+
+  /geo-aeo/client/audits:
+    get:
+      operationId: listApprovedGeoAeoClientAudits
+      tags: [geo-aeo]
+      responses:
+        "200":
+          description: Approved GEO/AEO audits visible to client viewers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoAudit"
+
+  /geo-aeo/client/audits/{auditId}:
+    get:
+      operationId: getApprovedGeoAeoClientAudit
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: Approved GEO/AEO audit detail visible to client viewers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoClientAuditDetail"
+        "404":
+          description: Audit not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /geo-aeo/client/audits/{auditId}/monitoring-runs:
+    get:
+      operationId: listApprovedGeoAeoClientMonitoringRuns
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: Approved monthly GEO/AEO monitoring progress visible to client viewers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoMonitoringRun"
+        "404":
+          description: Audit not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /geo-aeo/audits/{auditId}:
+    get:
+      operationId: getGeoAeoAudit
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: GEO/AEO audit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoAudit"
+    patch:
+      operationId: updateGeoAeoAudit
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoAuditUpdateBody"
+      responses:
+        "200":
+          description: Updated GEO/AEO audit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoAudit"
+    delete:
+      operationId: deleteGeoAeoAudit
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "204":
+          description: Deleted
+
+  /geo-aeo/audits/{auditId}/approve:
+    post:
+      operationId: approveGeoAeoAudit
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: Approved GEO/AEO audit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoAudit"
+
+  /geo-aeo/audits/{auditId}/prompts:
+    get:
+      operationId: listGeoAeoPrompts
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: GEO/AEO prompts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoPrompt"
+    post:
+      operationId: createGeoAeoPrompt
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoPromptCreateBody"
+      responses:
+        "201":
+          description: Created prompt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoPrompt"
+
+  /geo-aeo/audits/{auditId}/prompts/import:
+    post:
+      operationId: importGeoAeoPrompts
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoCsvImportBody"
+      responses:
+        "201":
+          description: Imported prompts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoPromptImportResult"
+
+  /geo-aeo/audits/{auditId}/snapshots:
+    get:
+      operationId: listGeoAeoAnswerSnapshots
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: GEO/AEO answer snapshots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoAnswerSnapshot"
+    post:
+      operationId: createGeoAeoAnswerSnapshot
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoSnapshotCreateBody"
+      responses:
+        "201":
+          description: Created answer snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoAnswerSnapshot"
+
+  /geo-aeo/audits/{auditId}/snapshots/import-csv:
+    post:
+      operationId: importGeoAeoAnswerSnapshots
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoCsvImportBody"
+      responses:
+        "201":
+          description: Imported answer snapshots
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoSnapshotImportResult"
+
+  /geo-aeo/snapshots/{snapshotId}:
+    patch:
+      operationId: updateGeoAeoAnswerSnapshot
+      tags: [geo-aeo]
+      parameters:
+        - name: snapshotId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoSnapshotUpdateBody"
+      responses:
+        "200":
+          description: Updated answer snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoAnswerSnapshot"
+
+  /geo-aeo/audits/{auditId}/competitors:
+    get:
+      operationId: listGeoAeoCompetitors
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: GEO/AEO competitors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoManualRecord"
+    post:
+      operationId: createGeoAeoCompetitor
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoCompetitorCreateBody"
+      responses:
+        "201":
+          description: Created competitor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoManualRecord"
+
+  /geo-aeo/competitors/{competitorId}:
+    patch:
+      operationId: updateGeoAeoCompetitor
+      tags: [geo-aeo]
+      parameters:
+        - name: competitorId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoCompetitorUpdateBody"
+      responses:
+        "200":
+          description: Updated competitor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoManualRecord"
+
+  /geo-aeo/audits/{auditId}/citations:
+    get:
+      operationId: listGeoAeoCitations
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: GEO/AEO citations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoManualRecord"
+    post:
+      operationId: createGeoAeoCitation
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoCitationCreateBody"
+      responses:
+        "201":
+          description: Created citation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoManualRecord"
+
+  /geo-aeo/citations/{citationId}:
+    delete:
+      operationId: deleteGeoAeoCitation
+      tags: [geo-aeo]
+      parameters:
+        - name: citationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /geo-aeo/audits/{auditId}/source-recommendations:
+    get:
+      operationId: listGeoAeoSourceRecommendations
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: GEO/AEO source recommendations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoManualRecord"
+    post:
+      operationId: createGeoAeoSourceRecommendation
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoSourceRecommendationCreateBody"
+      responses:
+        "201":
+          description: Created source recommendation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoManualRecord"
+
+  /geo-aeo/source-recommendations/{sourceRecommendationId}:
+    patch:
+      operationId: updateGeoAeoSourceRecommendation
+      tags: [geo-aeo]
+      parameters:
+        - name: sourceRecommendationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoSourceRecommendationUpdateBody"
+      responses:
+        "200":
+          description: Updated source recommendation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoManualRecord"
+
+  /geo-aeo/audits/{auditId}/schema-findings:
+    get:
+      operationId: listGeoAeoSchemaFindings
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: GEO/AEO schema findings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoManualRecord"
+    post:
+      operationId: createGeoAeoSchemaFinding
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoSchemaFindingCreateBody"
+      responses:
+        "201":
+          description: Created schema finding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoManualRecord"
+
+  /geo-aeo/schema-findings/{schemaFindingId}:
+    patch:
+      operationId: updateGeoAeoSchemaFinding
+      tags: [geo-aeo]
+      parameters:
+        - name: schemaFindingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoSchemaFindingUpdateBody"
+      responses:
+        "200":
+          description: Updated schema finding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoManualRecord"
+
+  /geo-aeo/audits/{auditId}/monitoring-runs:
+    get:
+      operationId: listGeoAeoMonitoringRuns
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: GEO/AEO monitoring runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoMonitoringRun"
+    post:
+      operationId: createGeoAeoMonitoringRun
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoMonitoringRunCreateBody"
+      responses:
+        "201":
+          description: Created monitoring run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoMonitoringRun"
+
+  /geo-aeo/monitoring-runs/{monitoringRunId}:
+    patch:
+      operationId: updateGeoAeoMonitoringRun
+      tags: [geo-aeo]
+      parameters:
+        - name: monitoringRunId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoMonitoringRunUpdateBody"
+      responses:
+        "200":
+          description: Updated monitoring run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoMonitoringRun"
+
+  /geo-aeo/monitoring-runs/{monitoringRunId}/approve:
+    post:
+      operationId: approveGeoAeoMonitoringRun
+      tags: [geo-aeo]
+      parameters:
+        - name: monitoringRunId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Approved monitoring run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoMonitoringRun"
+
+  /geo-aeo/audits/{auditId}/analyze:
+    post:
+      operationId: analyzeGeoAeoAudit
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: GEO/AEO analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoAnalysisResult"
+
+  /geo-aeo/audits/{auditId}/score:
+    post:
+      operationId: scoreGeoAeoAudit
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoScoreBody"
+      responses:
+        "201":
+          description: Stored GEO/AEO score
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoStoredScoreResult"
+
+  /geo-aeo/audits/{auditId}/findings:
+    get:
+      operationId: listGeoAeoFindings
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: GEO/AEO findings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoAeoFinding"
+
+  /geo-aeo/findings/{findingId}:
+    patch:
+      operationId: updateGeoAeoFinding
+      tags: [geo-aeo]
+      parameters:
+        - name: findingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoFindingUpdateBody"
+      responses:
+        "200":
+          description: Updated finding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoFinding"
+
+  /geo-aeo/audits/{auditId}/action-plan/generate:
+    post:
+      operationId: generateGeoAeoActionPlan
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoActionPlanGenerateBody"
+      responses:
+        "201":
+          description: Generated action plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoActionPlanWithItems"
+
+  /geo-aeo/audits/{auditId}/action-plan:
+    get:
+      operationId: getGeoAeoActionPlan
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      responses:
+        "200":
+          description: Latest action plan
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/GeoAeoActionPlanWithItems"
+                  - type: "null"
+
+  /geo-aeo/action-items/{actionItemId}:
+    patch:
+      operationId: updateGeoAeoActionItem
+      tags: [geo-aeo]
+      parameters:
+        - name: actionItemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoActionItemUpdateBody"
+      responses:
+        "200":
+          description: Updated action item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoActionItem"
+
+  /geo-aeo/audits/{auditId}/report/generate:
+    post:
+      operationId: generateGeoAeoReport
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoReportGenerateBody"
+      responses:
+        "201":
+          description: Generated GEO/AEO report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoReport"
+        "409":
+          description: Audit requires a linked project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /geo-aeo/reports/{reportId}/export:
+    post:
+      operationId: exportGeoAeoReport
+      tags: [geo-aeo]
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoReportExportBody"
+      responses:
+        "200":
+          description: Exported GEO/AEO report
+          content:
+            text/markdown:
+              schema:
+                type: string
+            text/csv:
+              schema:
+                type: string
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
 
   /billing/plans:
     get:
@@ -2895,6 +3674,14 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
 components:
+  parameters:
+    GeoAeoAuditId:
+      name: auditId
+      in: path
+      required: true
+      schema:
+        type: integer
+
   schemas:
     HealthStatus:
       type: object
@@ -3580,10 +4367,10 @@ components:
           type: integer
         type:
           type: string
-          enum: [project_summary, topical_authority, content_pipeline]
+          enum: [project_summary, topical_authority, content_pipeline, geo_aeo_visibility_audit]
         format:
           type: string
-          enum: [pdf, csv, json]
+          enum: [pdf, csv, json, markdown]
         generatedAt:
           type: ["string", "null"]
         fileUrl:
@@ -3612,6 +4399,918 @@ components:
       required:
         - type
         - format
+
+    GeoAeoEngine:
+      type: string
+      enum: [chatgpt, gemini, perplexity, google_ai_overviews, other]
+
+    GeoAeoCaptureMethod:
+      type: string
+      enum: [manual_paste, csv_import, mock_adapter, api_adapter]
+
+    GeoAeoAudit:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        clientId:
+          type: integer
+        projectId:
+          type: ["integer", "null"]
+        auditName:
+          type: string
+        websiteUrl:
+          type: string
+        niche:
+          type: string
+        servicesOrProducts:
+          type: ["array", "null"]
+          items:
+            type: string
+        targetLocation:
+          type: ["string", "null"]
+        targetAudience:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [draft, in_review, approved, archived]
+        monitoringEnabled:
+          type: boolean
+        monitoringCadence:
+          type: string
+          enum: [none, monthly, quarterly]
+        nextMonitoringRunAt:
+          type: ["string", "null"]
+        businessFacts:
+          type: ["object", "null"]
+          additionalProperties: true
+        visibilityScore:
+          type: ["number", "null"]
+        visibilityLabel:
+          type: ["string", "null"]
+        summary:
+          type: ["string", "null"]
+        createdById:
+          type: ["integer", "null"]
+        updatedById:
+          type: ["integer", "null"]
+        approvedById:
+          type: ["integer", "null"]
+        approvedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - clientId
+        - auditName
+        - websiteUrl
+        - niche
+        - status
+        - monitoringEnabled
+        - monitoringCadence
+        - createdAt
+        - updatedAt
+
+    GeoAeoAuditCreateBody:
+      type: object
+      properties:
+        clientId:
+          type: integer
+        projectId:
+          type: integer
+        auditName:
+          type: string
+        websiteUrl:
+          type: string
+        niche:
+          type: string
+        servicesOrProducts:
+          type: array
+          items:
+            type: string
+        targetLocation:
+          type: string
+        targetAudience:
+          type: string
+        businessFacts:
+          type: object
+          additionalProperties: true
+        targetEngines:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoAeoEngine"
+        monitoringEnabled:
+          type: boolean
+        monitoringCadence:
+          type: string
+          enum: [none, monthly, quarterly]
+        nextMonitoringRunAt:
+          type: string
+      required:
+        - clientId
+        - auditName
+        - websiteUrl
+        - niche
+        - servicesOrProducts
+        - targetEngines
+
+    GeoAeoAuditUpdateBody:
+      type: object
+      properties:
+        auditName:
+          type: string
+        websiteUrl:
+          type: string
+        niche:
+          type: string
+        servicesOrProducts:
+          type: array
+          items:
+            type: string
+        targetLocation:
+          type: ["string", "null"]
+        targetAudience:
+          type: ["string", "null"]
+        businessFacts:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+          enum: [draft, in_review, approved, archived]
+        summary:
+          type: ["string", "null"]
+        monitoringEnabled:
+          type: boolean
+        monitoringCadence:
+          type: string
+          enum: [none, monthly, quarterly]
+        nextMonitoringRunAt:
+          type: ["string", "null"]
+
+    GeoAeoPrompt:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        auditId:
+          type: integer
+        promptSetId:
+          type: ["integer", "null"]
+        promptText:
+          type: string
+        normalizedPrompt:
+          type: ["string", "null"]
+        intent:
+          type: ["string", "null"]
+        funnelStage:
+          type: ["string", "null"]
+        serviceOrProduct:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        priority:
+          type: integer
+        status:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - auditId
+        - promptText
+        - priority
+        - status
+        - createdAt
+        - updatedAt
+
+    GeoAeoPromptCreateBody:
+      type: object
+      properties:
+        auditId:
+          type: integer
+        promptSetId:
+          type: integer
+        promptText:
+          type: string
+        intent:
+          type: string
+        funnelStage:
+          type: string
+        serviceOrProduct:
+          type: string
+        location:
+          type: string
+        priority:
+          type: integer
+      required:
+        - auditId
+        - promptText
+
+    GeoAeoCsvImportBody:
+      type: object
+      properties:
+        csvText:
+          type: string
+      required:
+        - csvText
+
+    GeoAeoPromptImportResult:
+      type: object
+      properties:
+        imported:
+          type: integer
+        prompts:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoAeoPrompt"
+      required:
+        - imported
+        - prompts
+
+    GeoAeoAnswerSnapshot:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        auditId:
+          type: integer
+        promptId:
+          type: integer
+        promptVariantId:
+          type: ["integer", "null"]
+        engine:
+          $ref: "#/components/schemas/GeoAeoEngine"
+        engineMode:
+          type: string
+        captureMethod:
+          $ref: "#/components/schemas/GeoAeoCaptureMethod"
+        answerText:
+          type: string
+        answerHash:
+          type: string
+        locationContext:
+          type: ["string", "null"]
+        clientMentioned:
+          type: boolean
+        clientCited:
+          type: boolean
+        sentiment:
+          type: ["string", "null"]
+        accuracyRiskScore:
+          type: ["number", "null"]
+        capturedAt:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - auditId
+        - promptId
+        - engine
+        - engineMode
+        - captureMethod
+        - answerText
+        - answerHash
+        - clientMentioned
+        - clientCited
+        - capturedAt
+        - createdAt
+        - updatedAt
+
+    GeoAeoSnapshotCreateBody:
+      type: object
+      properties:
+        auditId:
+          type: integer
+        promptId:
+          type: integer
+        promptVariantId:
+          type: integer
+        engine:
+          $ref: "#/components/schemas/GeoAeoEngine"
+        captureMethod:
+          $ref: "#/components/schemas/GeoAeoCaptureMethod"
+        answerText:
+          type: string
+        capturedAt:
+          type: string
+        locationContext:
+          type: string
+      required:
+        - auditId
+        - promptId
+        - engine
+        - captureMethod
+        - answerText
+
+    GeoAeoSnapshotImportResult:
+      type: object
+      properties:
+        imported:
+          type: integer
+        snapshots:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoAeoAnswerSnapshot"
+      required:
+        - imported
+        - snapshots
+
+    GeoAeoManualRecord:
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        auditId:
+          type: integer
+        status:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    GeoAeoSnapshotUpdateBody:
+      type: object
+      properties:
+        clientMentioned:
+          type: boolean
+        clientCited:
+          type: boolean
+        sentiment:
+          type: ["string", "null"]
+        accuracyRiskScore:
+          type: ["number", "null"]
+        locationContext:
+          type: ["string", "null"]
+
+    GeoAeoCompetitorCreateBody:
+      type: object
+      properties:
+        name:
+          type: string
+        websiteUrl:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required:
+        - name
+
+    GeoAeoCompetitorUpdateBody:
+      type: object
+      properties:
+        name:
+          type: string
+        websiteUrl:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+
+    GeoAeoCitationCreateBody:
+      type: object
+      properties:
+        snapshotId:
+          type: integer
+        url:
+          type: string
+        sourceName:
+          type: string
+        sourceType:
+          type: string
+        isClientOwned:
+          type: boolean
+        isCompetitorOwned:
+          type: boolean
+        authorityEstimate:
+          type: number
+        notes:
+          type: string
+
+    GeoAeoSourceRecommendationCreateBody:
+      type: object
+      properties:
+        sourceName:
+          type: string
+        sourceUrl:
+          type: string
+        sourceType:
+          type: string
+        reason:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        status:
+          type: string
+          enum: [draft, approved, rejected, done]
+      required:
+        - sourceName
+
+    GeoAeoSourceRecommendationUpdateBody:
+      type: object
+      properties:
+        sourceName:
+          type: string
+        sourceUrl:
+          type: string
+        sourceType:
+          type: string
+        reason:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        status:
+          type: string
+          enum: [draft, approved, rejected, done]
+
+    GeoAeoSchemaFindingCreateBody:
+      type: object
+      properties:
+        pageUrl:
+          type: string
+        schemaType:
+          type: string
+        issueType:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        recommendation:
+          type: string
+        status:
+          type: string
+          enum: [draft, approved, rejected, done]
+      required:
+        - issueType
+
+    GeoAeoSchemaFindingUpdateBody:
+      type: object
+      properties:
+        pageUrl:
+          type: string
+        schemaType:
+          type: string
+        issueType:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        recommendation:
+          type: string
+        status:
+          type: string
+          enum: [draft, approved, rejected, done]
+
+    GeoAeoMonitoringRun:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        auditId:
+          type: integer
+        runMonth:
+          type: string
+          pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+        baselineMonth:
+          type: ["string", "null"]
+          pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+        comparisonMonth:
+          type: string
+          pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+        status:
+          type: string
+          enum: [draft, in_review, approved, archived]
+        baselineScore:
+          type: ["number", "null"]
+        currentScore:
+          type: ["number", "null"]
+        scoreDelta:
+          type: ["number", "null"]
+        baselineSnapshotCount:
+          type: integer
+        currentSnapshotCount:
+          type: integer
+        actionPlanTemplate:
+          type: ["object", "null"]
+          additionalProperties: true
+        reportTemplate:
+          type: ["object", "null"]
+          additionalProperties: true
+        summary:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        approvedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - auditId
+        - runMonth
+        - comparisonMonth
+        - status
+        - baselineSnapshotCount
+        - currentSnapshotCount
+        - createdAt
+        - updatedAt
+
+    GeoAeoMonitoringRunCreateBody:
+      type: object
+      properties:
+        runMonth:
+          type: string
+          pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+        baselineMonth:
+          type: string
+          pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+        comparisonMonth:
+          type: string
+          pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+        baselineScore:
+          type: number
+        currentScore:
+          type: number
+        baselineSnapshotCount:
+          type: integer
+        currentSnapshotCount:
+          type: integer
+        actionPlanTemplate:
+          type: object
+          additionalProperties: true
+        reportTemplate:
+          type: object
+          additionalProperties: true
+        summary:
+          type: string
+        notes:
+          type: string
+      required:
+        - runMonth
+
+    GeoAeoMonitoringRunUpdateBody:
+      type: object
+      properties:
+        runMonth:
+          type: string
+          pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+        baselineMonth:
+          type: string
+          pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+        comparisonMonth:
+          type: string
+          pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+        baselineScore:
+          type: number
+        currentScore:
+          type: number
+        baselineSnapshotCount:
+          type: integer
+        currentSnapshotCount:
+          type: integer
+        actionPlanTemplate:
+          type: object
+          additionalProperties: true
+        reportTemplate:
+          type: object
+          additionalProperties: true
+        summary:
+          type: string
+        notes:
+          type: string
+        status:
+          type: string
+          enum: [draft, in_review, approved, archived]
+
+    GeoAeoFinding:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        auditId:
+          type: integer
+        findingType:
+          type: string
+        severity:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        evidence:
+          type: ["object", "null"]
+          additionalProperties: true
+        recommendation:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [draft, needs_review, approved, rejected, deleted, superseded]
+        approvedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - auditId
+        - findingType
+        - severity
+        - title
+        - status
+        - createdAt
+        - updatedAt
+
+    GeoAeoFindingUpdateBody:
+      type: object
+      properties:
+        findingType:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        recommendation:
+          type: string
+        status:
+          type: string
+          enum: [draft, needs_review, approved, rejected, deleted]
+
+    GeoAeoScoreBody:
+      type: object
+      properties:
+        brandMentionCoverage:
+          type: number
+        citationCoverage:
+          type: number
+        promptIntentCoverage:
+          type: number
+        competitorGapOpportunity:
+          type: number
+        entityClarityScore:
+          type: number
+        schemaReadinessScore:
+          type: number
+        sourceAuthorityReadiness:
+          type: number
+        accuracyRiskScore:
+          type: number
+        score:
+          type: number
+        reason:
+          type: string
+
+    GeoAeoVisibilityScoreResult:
+      type: object
+      properties:
+        score:
+          type: number
+        label:
+          type: string
+        normalizedInputs:
+          type: object
+          additionalProperties: true
+        explanations:
+          type: array
+          items:
+            type: string
+      required:
+        - score
+        - label
+        - normalizedInputs
+        - explanations
+
+    GeoAeoStoredScoreResult:
+      type: object
+      properties:
+        score:
+          type: object
+          additionalProperties: true
+        result:
+          $ref: "#/components/schemas/GeoAeoVisibilityScoreResult"
+      required:
+        - score
+        - result
+
+    GeoAeoAnalysisResult:
+      type: object
+      properties:
+        score:
+          $ref: "#/components/schemas/GeoAeoVisibilityScoreResult"
+        inserted:
+          type: object
+          properties:
+            mentions:
+              type: integer
+            citations:
+              type: integer
+            findings:
+              type: integer
+          required:
+            - mentions
+            - citations
+            - findings
+      required:
+        - score
+        - inserted
+
+    GeoAeoActionPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        auditId:
+          type: integer
+        name:
+          type: string
+        timeHorizonDays:
+          type: integer
+        summary:
+          type: ["string", "null"]
+        status:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - auditId
+        - name
+        - timeHorizonDays
+        - status
+        - createdAt
+        - updatedAt
+
+    GeoAeoActionItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantId:
+          type: integer
+        auditId:
+          type: integer
+        actionPlanId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        category:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        weekNumber:
+          type: integer
+        ownerRole:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [draft, approved, in_progress, done, deferred]
+        relatedFindingId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - auditId
+        - actionPlanId
+        - title
+        - category
+        - priority
+        - weekNumber
+        - status
+        - createdAt
+        - updatedAt
+
+    GeoAeoActionPlanWithItems:
+      type: object
+      properties:
+        plan:
+          $ref: "#/components/schemas/GeoAeoActionPlan"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoAeoActionItem"
+      required:
+        - plan
+        - items
+
+    GeoAeoActionPlanGenerateBody:
+      type: object
+      properties:
+        name:
+          type: string
+        timeHorizonDays:
+          type: integer
+
+    GeoAeoActionItemUpdateBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        weekNumber:
+          type: integer
+        status:
+          type: string
+          enum: [draft, approved, in_progress, done, deferred]
+
+    GeoAeoReportGenerateBody:
+      type: object
+      properties:
+        format:
+          type: string
+          enum: [markdown, csv, json, pdf]
+
+    GeoAeoReportExportBody:
+      type: object
+      properties:
+        format:
+          type: string
+          enum: [markdown, csv, json, pdf]
+
+    GeoAeoReport:
+      allOf:
+        - $ref: "#/components/schemas/Report"
+
+    GeoAeoClientAuditDetail:
+      type: object
+      properties:
+        audit:
+          $ref: "#/components/schemas/GeoAeoAudit"
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoAeoFinding"
+        actionPlan:
+          oneOf:
+            - $ref: "#/components/schemas/GeoAeoActionPlanWithItems"
+            - type: "null"
+        reports:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoAeoReport"
+        monitoringRuns:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoAeoMonitoringRun"
+      required:
+        - audit
+        - findings
+        - actionPlan
+        - reports
+        - monitoringRuns
 
     Plan:
       type: object

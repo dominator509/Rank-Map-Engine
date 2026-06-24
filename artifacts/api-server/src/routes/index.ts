@@ -28,6 +28,7 @@ import reportSchedulesRouter from "./report-schedules.js";
 import analyticsRouter from "./analytics.js";
 import usageRouter from "./usage.js";
 import gdprRouter from "./gdpr.js";
+import geoAeoRouter from "./geo-aeo.js";
 
 const router: IRouter = Router();
 
@@ -74,6 +75,7 @@ router.use(exportRouter);
 router.use(reportSchedulesRouter);
 router.use(analyticsRouter);
 router.use(usageRouter);
+router.use(geoAeoRouter);
 router.use((req, res, next) => {
   if (req.path === "/privacy/export") {
     req.url = "/gdpr/export";

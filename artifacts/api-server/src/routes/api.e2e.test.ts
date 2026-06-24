@@ -28,6 +28,26 @@ class ApiAgent {
     return this.request<T>(path, { method: "POST", body });
   }
 
+  async postText(
+    path: string,
+    body?: unknown,
+  ): Promise<{ status: number; text: string; headers: Headers }> {
+    const headers = new Headers();
+    headers.set("accept", "*/*");
+    if (body !== undefined) headers.set("content-type", "application/json");
+    if (this.cookie) headers.set("cookie", this.cookie);
+    if (this.authorization) headers.set("authorization", this.authorization);
+
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: "POST",
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+
+    this.storeCookies(response.headers);
+    return { status: response.status, text: await response.text(), headers: response.headers };
+  }
+
   postRaw<T = unknown>(
     path: string,
     body: string,
@@ -360,6 +380,180 @@ describeApiE2e("API end-to-end workflows", () => {
       format: "json",
     });
     expect(report.status).toBe(201);
+
+    const geoAudit = expectRecord(
+      (
+        await tenantA.post("/api/geo-aeo/audits", {
+          clientId,
+          projectId,
+          auditName: "E2E GEO AEO Audit",
+          websiteUrl: "https://e2e.example",
+          niche: "SaaS analytics",
+          servicesOrProducts: ["rank tracking", "AI visibility"],
+          targetLocation: "United States",
+          targetAudience: "Marketing teams",
+          businessFacts: {},
+          targetEngines: ["chatgpt", "perplexity"],
+          monitoringEnabled: true,
+          monitoringCadence: "monthly",
+        })
+      ).body,
+    );
+    const geoAuditId = idFrom(geoAudit);
+
+    const geoPrompt = expectRecord(
+      (
+        await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/prompts`, {
+          promptText: "What is the best AI visibility platform for SaaS teams?",
+          intent: "commercial",
+          priority: 90,
+        })
+      ).body,
+    );
+    const geoPromptId = idFrom(geoPrompt);
+
+    const geoSnapshot = expectRecord(
+      (
+        await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/snapshots`, {
+          promptId: geoPromptId,
+          engine: "chatgpt",
+          captureMethod: "manual_paste",
+          answerText:
+            "E2E Client is a strong AI visibility option. See https://e2e.example/ai-visibility for details.",
+          locationContext: "US",
+        })
+      ).body,
+    );
+    const geoSnapshotId = idFrom(geoSnapshot);
+
+    expect(
+      (
+        await tenantA.patch(`/api/geo-aeo/snapshots/${geoSnapshotId}`, {
+          clientMentioned: true,
+          clientCited: true,
+          sentiment: "positive",
+        })
+      ).status,
+    ).toBe(200);
+
+    expect(
+      (
+        await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/competitors`, {
+          name: "E2E Competitor",
+          websiteUrl: "https://competitor.example",
+        })
+      ).status,
+    ).toBe(201);
+
+    const citation = expectRecord(
+      (
+        await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/citations`, {
+          snapshotId: geoSnapshotId,
+          sourceName: "E2E Source",
+          url: "https://e2e.example/ai-visibility",
+          isClientOwned: true,
+        })
+      ).body,
+    );
+    expect(idFrom(citation)).toBeGreaterThan(0);
+
+    expect(
+      (
+        await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/source-recommendations`, {
+          sourceName: "Industry directory",
+          sourceUrl: "https://directory.example/e2e",
+          priority: "medium",
+          status: "draft",
+        })
+      ).status,
+    ).toBe(201);
+
+    expect(
+      (
+        await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/schema-findings`, {
+          pageUrl: "https://e2e.example/ai-visibility",
+          issueType: "Missing FAQPage schema",
+          severity: "medium",
+          status: "draft",
+        })
+      ).status,
+    ).toBe(201);
+
+    const geoAnalysis = await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/analyze`);
+    expect(geoAnalysis.status).toBe(200);
+    expect(expectRecord(geoAnalysis.body).inserted).toBeTruthy();
+
+    const geoFindings = await tenantA.get(`/api/geo-aeo/audits/${geoAuditId}/findings`);
+    expect(geoFindings.status).toBe(200);
+    const geoFindingRows = expectArray(geoFindings.body);
+    if (geoFindingRows[0]) {
+      expect(
+        (
+          await tenantA.patch(`/api/geo-aeo/findings/${idFrom(geoFindingRows[0])}`, {
+            status: "approved",
+          })
+        ).status,
+      ).toBe(200);
+    }
+
+    const geoActionPlan = await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/action-plan/generate`, {
+      name: "E2E GEO AEO action plan",
+      timeHorizonDays: 30,
+    });
+    expect(geoActionPlan.status).toBe(201);
+    const geoActionItems = expectArray(expectRecord(geoActionPlan.body).items);
+    expect(geoActionItems.length).toBeGreaterThan(0);
+    expect(
+      (
+        await tenantA.patch(`/api/geo-aeo/action-items/${idFrom(geoActionItems[0])}`, {
+          status: "approved",
+        })
+      ).status,
+    ).toBe(200);
+
+    const monitoringRun = expectRecord(
+      (
+        await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/monitoring-runs`, {
+          runMonth: "2026-06",
+          baselineMonth: "2026-05",
+          baselineScore: 70,
+          currentScore: 78,
+          baselineSnapshotCount: 1,
+          currentSnapshotCount: 1,
+        })
+      ).body,
+    );
+    const monitoringRunId = idFrom(monitoringRun);
+    expect(monitoringRun.scoreDelta).toBe(8);
+    expect((await tenantA.post(`/api/geo-aeo/monitoring-runs/${monitoringRunId}/approve`)).status).toBe(200);
+
+    const geoPdfReport = expectRecord(
+      (
+        await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/report/generate`, {
+          format: "pdf",
+        })
+      ).body,
+    );
+    const geoPdfReportId = idFrom(geoPdfReport);
+    expect(geoPdfReport.format).toBe("pdf");
+
+    const exportedGeoPdf = await tenantA.postText(`/api/geo-aeo/reports/${geoPdfReportId}/export`, {
+      format: "pdf",
+    });
+    expect(exportedGeoPdf.status).toBe(200);
+    expect(exportedGeoPdf.headers.get("content-type")).toContain("application/pdf");
+    expect(exportedGeoPdf.text.startsWith("%PDF-1.4")).toBe(true);
+
+    expect((await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/approve`)).status).toBe(200);
+    const clientVisibleAudits = await tenantA.get("/api/geo-aeo/client/audits");
+    expect(clientVisibleAudits.status).toBe(200);
+    expect(expectArray(clientVisibleAudits.body).some((audit) => audit.id === geoAuditId)).toBe(true);
+
+    const clientMonitoringRuns = await tenantA.get(
+      `/api/geo-aeo/client/audits/${geoAuditId}/monitoring-runs`,
+    );
+    expect(clientMonitoringRuns.status).toBe(200);
+    expect(expectArray(clientMonitoringRuns.body)).toHaveLength(1);
 
     const billingUsage = await tenantA.get("/api/billing/usage");
     expect(billingUsage.status).toBe(200);

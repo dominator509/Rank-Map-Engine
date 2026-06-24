@@ -1,7 +1,8 @@
 import { db, aiTasksTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import type { GeoAeoAiTaskType } from "@workspace/shared/geo-aeo";
 
-export type AiTaskType = "cluster" | "brief" | "report";
+export type AiTaskType = "cluster" | "brief" | "report" | GeoAeoAiTaskType;
 
 interface AiTaskInput {
   tenantId: number;

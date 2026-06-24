@@ -14,6 +14,7 @@ import {
   Globe,
   BarChart2,
   Activity,
+  FlaskConical,
   LayoutTemplate,
   SlidersHorizontal,
   Clock,
@@ -34,6 +35,7 @@ const NAV_ITEMS: NavItem[] = [
 
 const INSIGHTS_NAV: NavItem[] = [
   { title: "Analytics", icon: BarChart2, href: "/analytics" },
+  { title: "GEO/AEO Visibility", icon: FlaskConical, href: "/geo-aeo" },
   { title: "Rank Tracking", icon: BarChart2, href: "/rankings" },
   { title: "Competitors", icon: Globe, href: "/competitors" },
   { title: "Usage", icon: Activity, href: "/usage" },

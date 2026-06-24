@@ -177,3 +177,129 @@ test("new workspace can register, sign in, and create a client project", async (
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
   await expect(page.locator("#main-content")).toBeInViewport();
 });
+
+test("operator can complete a GEO/AEO manual browser workflow", async ({ page }) => {
+  const unique = Date.now();
+  const email = `browser-geo-aeo-${unique}@rankmap.test`;
+  const password = "BrowserE2E!234";
+  const fullName = "Browser GEO/AEO Owner";
+  const workspaceName = `GEO AEO Workspace ${unique}`;
+  const clientName = `GEO AEO Client ${unique}`;
+  const clientDomain = `geo-aeo-${unique}.example.com`;
+  const projectName = `GEO AEO Project ${unique}`;
+  const geoAuditName = `Browser GEO AEO Audit ${unique}`;
+  const geoCompetitorName = `Browser Competitor ${unique}`;
+  const geoSourceName = `Browser Source ${unique}`;
+
+  await page.goto("/register", { waitUntil: "domcontentloaded" });
+  await page.getByLabel("Full Name").fill(fullName);
+  await page.getByLabel("Agency / Workspace Name").fill(workspaceName);
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Create Account" }).click();
+
+  await expect(page).toHaveURL(/\/login$/);
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Sign In" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await page.getByTestId("link-clients").click();
+  await page.getByRole("button", { name: "Add Client" }).click();
+  await page.getByLabel("Client Name").fill(clientName);
+  await page.getByLabel("Primary Domain").fill(clientDomain);
+  await page.getByLabel("Industry").fill("Software");
+  await page.getByRole("button", { name: "Save Client" }).click();
+  await page.getByRole("link", { name: clientName }).click();
+  await page.getByRole("button", { name: "New Project" }).click();
+  await page.getByLabel("Project Name").fill(projectName);
+  await page.getByRole("button", { name: "Save Project" }).click();
+  await expect(page.getByRole("link", { name: projectName })).toBeVisible();
+
+  await page.getByTestId("link-geo/aeo-visibility").click();
+  await expect(page.getByRole("heading", { name: "GEO/AEO Visibility" })).toBeVisible();
+  await expectNoAccessibilityViolations(page, "#main-content");
+  await page.getByRole("button", { name: "New Audit" }).click();
+
+  const geoDialog = page.getByRole("dialog");
+  await expect(geoDialog.getByRole("heading", { name: "New GEO/AEO Audit" })).toBeVisible();
+  await geoDialog.getByRole("combobox").first().click();
+  await page.getByRole("option", { name: clientName }).click();
+  await geoDialog.getByRole("combobox").nth(1).click();
+  await page.getByRole("option", { name: projectName }).click();
+  await geoDialog.getByLabel("Audit Name").fill(geoAuditName);
+  await geoDialog.getByLabel("Website URL").fill(`https://${clientDomain}`);
+  await geoDialog.getByLabel("Niche").fill("AI visibility software");
+  await geoDialog.getByLabel("Target Location").fill("United States");
+  await geoDialog.getByLabel("Services or Products").fill("AI visibility, rank tracking");
+  await geoDialog.getByLabel("Target Audience").fill("Marketing teams");
+  await geoDialog.getByRole("button", { name: "Create Audit" }).click();
+
+  await expect(page.getByText("GEO/AEO audit created", { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: geoAuditName })).toBeVisible();
+  await expect(page.getByText(`https://${clientDomain}`).first()).toBeVisible();
+
+  await page
+    .getByTestId("geo-aeo-prompt-csv")
+    .fill(
+      "promptText,intent,funnelStage,serviceOrProduct,location,priority\n" +
+        `"What is the best AI visibility platform for SaaS teams?","commercial","decision","AI visibility","US","90"`,
+    );
+  await page.getByTestId("geo-aeo-import-prompts").click();
+  await expect(page.getByText("Prompts imported", { exact: true }).first()).toBeVisible();
+
+  await page
+    .getByTestId("geo-aeo-snapshot-csv")
+    .fill(
+      "promptId,engine,captureMethod,answerText,locationContext\n" +
+        `1,chatgpt,manual_paste,"${clientName} is a strong AI visibility choice. See https://${clientDomain}/ai-visibility for proof.",US`,
+    );
+  await page.getByTestId("geo-aeo-import-snapshots").click();
+  await expect(page.getByText("Snapshots imported", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("1 answer snapshots")).toBeVisible();
+
+  await page.getByRole("button", { name: "Mention" }).click();
+  await expect(page.getByText("Snapshot markings updated", { exact: true }).first()).toBeVisible();
+  await page.getByRole("button", { name: "Cited" }).click();
+  await expect(page.getByText("Snapshot markings updated", { exact: true }).first()).toBeVisible();
+
+  await page.getByPlaceholder("Competitor name").fill(geoCompetitorName);
+  await page.getByPlaceholder("https://competitor.com").fill(`https://competitor-${unique}.example.com`);
+  await page.getByTestId("geo-aeo-add-competitor").click();
+  await expect(page.getByText("Competitor added", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(geoCompetitorName)).toBeVisible();
+
+  await page.getByPlaceholder("Source name").first().fill(geoSourceName);
+  await page.getByPlaceholder("https://source.com/page").fill(`https://${clientDomain}/ai-visibility`);
+  await page.getByTestId("geo-aeo-add-citation").click();
+  await expect(page.getByText("Citation added", { exact: true }).first()).toBeVisible();
+
+  await page.getByPlaceholder("Source name").nth(1).fill("Browser Directory");
+  await page.getByPlaceholder("https://directory.com/profile").fill(`https://directory-${unique}.example.com/profile`);
+  await page.getByTestId("geo-aeo-add-source-recommendation").click();
+  await expect(page.getByText("Source recommendation added", { exact: true }).first()).toBeVisible();
+
+  await page.getByPlaceholder("Missing FAQPage").fill("Missing FAQPage schema");
+  await page.getByPlaceholder("https://site.com/page").fill(`https://${clientDomain}/ai-visibility`);
+  await page.getByTestId("geo-aeo-add-schema-finding").click();
+  await expect(page.getByText("Schema finding added", { exact: true }).first()).toBeVisible();
+
+  await page.getByTestId("geo-aeo-analyze").click();
+  await expect(page.getByText("Analysis complete", { exact: true }).first()).toBeVisible();
+  await page.getByTestId("geo-aeo-action-plan").click();
+  await expect(page.getByText("Action plan generated", { exact: true }).first()).toBeVisible();
+
+  await page.getByLabel("Baseline Month").fill("2026-05");
+  await page.getByLabel("Baseline Score").fill("70");
+  await page.getByLabel("Current Score").fill("78");
+  await page.getByTestId("geo-aeo-add-monitoring-run").click();
+  await expect(page.getByText("Monitoring run created", { exact: true }).first()).toBeVisible();
+  await page.getByTestId("geo-aeo-approve-monitoring-run").click();
+  await expect(page.getByText("Monitoring run approved", { exact: true }).first()).toBeVisible();
+
+  await page.getByTestId("geo-aeo-report-pdf").click();
+  await expect(page.getByText("Report generated", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("geo aeo visibility audit").first()).toBeVisible();
+  await page.getByTestId("geo-aeo-approve-audit").click();
+  await expect(page.getByText("Audit approved", { exact: true }).first()).toBeVisible();
+});

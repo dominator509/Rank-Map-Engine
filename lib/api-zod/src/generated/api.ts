@@ -768,8 +768,13 @@ export const ListReportsResponseItem = zod.object({
   id: zod.number(),
   projectId: zod.number(),
   tenantId: zod.number(),
-  type: zod.enum(["project_summary", "topical_authority", "content_pipeline"]),
-  format: zod.enum(["pdf", "csv", "json"]),
+  type: zod.enum([
+    "project_summary",
+    "topical_authority",
+    "content_pipeline",
+    "geo_aeo_visibility_audit",
+  ]),
+  format: zod.enum(["pdf", "csv", "json", "markdown"]),
   generatedAt: zod.string().nullish(),
   fileUrl: zod.string().nullish(),
   data: zod.object({}).passthrough().nullish(),
@@ -795,8 +800,13 @@ export const GetReportResponse = zod.object({
   id: zod.number(),
   projectId: zod.number(),
   tenantId: zod.number(),
-  type: zod.enum(["project_summary", "topical_authority", "content_pipeline"]),
-  format: zod.enum(["pdf", "csv", "json"]),
+  type: zod.enum([
+    "project_summary",
+    "topical_authority",
+    "content_pipeline",
+    "geo_aeo_visibility_audit",
+  ]),
+  format: zod.enum(["pdf", "csv", "json", "markdown"]),
   generatedAt: zod.string().nullish(),
   fileUrl: zod.string().nullish(),
   data: zod.object({}).passthrough().nullish(),
@@ -807,6 +817,1037 @@ export const DeleteReportParams = zod.object({
   projectId: zod.coerce.number(),
   id: zod.coerce.number(),
 });
+
+export const ListGeoAeoAuditsQueryParams = zod.object({
+  clientId: zod.coerce.number().optional(),
+  projectId: zod.coerce.number().optional(),
+  status: zod.coerce.string().optional(),
+});
+
+export const ListGeoAeoAuditsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  clientId: zod.number(),
+  projectId: zod.number().nullish(),
+  auditName: zod.string(),
+  websiteUrl: zod.string(),
+  niche: zod.string(),
+  servicesOrProducts: zod.array(zod.string()).nullish(),
+  targetLocation: zod.string().nullish(),
+  targetAudience: zod.string().nullish(),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]),
+  monitoringEnabled: zod.boolean(),
+  monitoringCadence: zod.enum(["none", "monthly", "quarterly"]),
+  nextMonitoringRunAt: zod.string().nullish(),
+  businessFacts: zod.record(zod.string(), zod.unknown()).nullish(),
+  visibilityScore: zod.number().nullish(),
+  visibilityLabel: zod.string().nullish(),
+  summary: zod.string().nullish(),
+  createdById: zod.number().nullish(),
+  updatedById: zod.number().nullish(),
+  approvedById: zod.number().nullish(),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListGeoAeoAuditsResponse = zod.array(ListGeoAeoAuditsResponseItem);
+
+export const CreateGeoAeoAuditBody = zod.object({
+  clientId: zod.number(),
+  projectId: zod.number().optional(),
+  auditName: zod.string(),
+  websiteUrl: zod.string(),
+  niche: zod.string(),
+  servicesOrProducts: zod.array(zod.string()),
+  targetLocation: zod.string().optional(),
+  targetAudience: zod.string().optional(),
+  businessFacts: zod.record(zod.string(), zod.unknown()).optional(),
+  targetEngines: zod.array(
+    zod.enum(["chatgpt", "gemini", "perplexity", "google_ai_overviews", "other"]),
+  ),
+  monitoringEnabled: zod.boolean().optional(),
+  monitoringCadence: zod.enum(["none", "monthly", "quarterly"]).optional(),
+  nextMonitoringRunAt: zod.string().optional(),
+});
+
+export const ListApprovedGeoAeoClientAuditsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  clientId: zod.number(),
+  projectId: zod.number().nullish(),
+  auditName: zod.string(),
+  websiteUrl: zod.string(),
+  niche: zod.string(),
+  servicesOrProducts: zod.array(zod.string()).nullish(),
+  targetLocation: zod.string().nullish(),
+  targetAudience: zod.string().nullish(),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]),
+  monitoringEnabled: zod.boolean(),
+  monitoringCadence: zod.enum(["none", "monthly", "quarterly"]),
+  nextMonitoringRunAt: zod.string().nullish(),
+  businessFacts: zod.record(zod.string(), zod.unknown()).nullish(),
+  visibilityScore: zod.number().nullish(),
+  visibilityLabel: zod.string().nullish(),
+  summary: zod.string().nullish(),
+  createdById: zod.number().nullish(),
+  updatedById: zod.number().nullish(),
+  approvedById: zod.number().nullish(),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListApprovedGeoAeoClientAuditsResponse = zod.array(
+  ListApprovedGeoAeoClientAuditsResponseItem,
+);
+
+export const GetApprovedGeoAeoClientAuditParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const getApprovedGeoAeoClientAuditResponseMonitoringRunsItemRunMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const getApprovedGeoAeoClientAuditResponseMonitoringRunsItemBaselineMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const getApprovedGeoAeoClientAuditResponseMonitoringRunsItemComparisonMonthRegExp =
+  new RegExp("^\\d{4}-(0[1-9]|1[0-2])$");
+
+export const GetApprovedGeoAeoClientAuditResponse = zod.object({
+  audit: zod.object({
+    id: zod.number(),
+    tenantId: zod.number(),
+    clientId: zod.number(),
+    projectId: zod.number().nullish(),
+    auditName: zod.string(),
+    websiteUrl: zod.string(),
+    niche: zod.string(),
+    servicesOrProducts: zod.array(zod.string()).nullish(),
+    targetLocation: zod.string().nullish(),
+    targetAudience: zod.string().nullish(),
+    status: zod.enum(["draft", "in_review", "approved", "archived"]),
+    monitoringEnabled: zod.boolean(),
+    monitoringCadence: zod.enum(["none", "monthly", "quarterly"]),
+    nextMonitoringRunAt: zod.string().nullish(),
+    businessFacts: zod.record(zod.string(), zod.unknown()).nullish(),
+    visibilityScore: zod.number().nullish(),
+    visibilityLabel: zod.string().nullish(),
+    summary: zod.string().nullish(),
+    createdById: zod.number().nullish(),
+    updatedById: zod.number().nullish(),
+    approvedById: zod.number().nullish(),
+    approvedAt: zod.string().nullish(),
+    createdAt: zod.string(),
+    updatedAt: zod.string(),
+  }),
+  findings: zod.array(
+    zod.object({
+      id: zod.number(),
+      tenantId: zod.number(),
+      auditId: zod.number(),
+      findingType: zod.string(),
+      severity: zod.string(),
+      title: zod.string(),
+      description: zod.string().nullish(),
+      evidence: zod.record(zod.string(), zod.unknown()).nullish(),
+      recommendation: zod.string().nullish(),
+      status: zod.enum(["draft", "needs_review", "approved", "rejected", "deleted", "superseded"]),
+      approvedAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  actionPlan: zod.union([
+    zod.object({
+      plan: zod.object({
+        id: zod.number(),
+        tenantId: zod.number(),
+        auditId: zod.number(),
+        name: zod.string(),
+        timeHorizonDays: zod.number(),
+        summary: zod.string().nullish(),
+        status: zod.string(),
+        createdAt: zod.string(),
+        updatedAt: zod.string(),
+      }),
+      items: zod.array(
+        zod.object({
+          id: zod.number(),
+          tenantId: zod.number(),
+          auditId: zod.number(),
+          actionPlanId: zod.number(),
+          title: zod.string(),
+          description: zod.string().nullish(),
+          category: zod.string(),
+          priority: zod.enum(["low", "medium", "high", "critical"]),
+          weekNumber: zod.number(),
+          ownerRole: zod.string().nullish(),
+          status: zod.enum(["draft", "approved", "in_progress", "done", "deferred"]),
+          relatedFindingId: zod.number().nullish(),
+          createdAt: zod.string(),
+          updatedAt: zod.string(),
+        }),
+      ),
+    }),
+    zod.null(),
+  ]),
+  reports: zod.array(
+    zod.object({
+      id: zod.number(),
+      projectId: zod.number(),
+      tenantId: zod.number(),
+      type: zod.enum([
+        "project_summary",
+        "topical_authority",
+        "content_pipeline",
+        "geo_aeo_visibility_audit",
+      ]),
+      format: zod.enum(["pdf", "csv", "json", "markdown"]),
+      generatedAt: zod.string().nullish(),
+      fileUrl: zod.string().nullish(),
+      data: zod.object({}).passthrough().nullish(),
+      createdAt: zod.string(),
+    }),
+  ),
+  monitoringRuns: zod.array(
+    zod.object({
+      id: zod.number(),
+      tenantId: zod.number(),
+      auditId: zod.number(),
+      runMonth: zod
+        .string()
+        .regex(getApprovedGeoAeoClientAuditResponseMonitoringRunsItemRunMonthRegExp),
+      baselineMonth: zod
+        .string()
+        .regex(getApprovedGeoAeoClientAuditResponseMonitoringRunsItemBaselineMonthRegExp)
+        .nullish(),
+      comparisonMonth: zod
+        .string()
+        .regex(getApprovedGeoAeoClientAuditResponseMonitoringRunsItemComparisonMonthRegExp),
+      status: zod.enum(["draft", "in_review", "approved", "archived"]),
+      baselineScore: zod.number().nullish(),
+      currentScore: zod.number().nullish(),
+      scoreDelta: zod.number().nullish(),
+      baselineSnapshotCount: zod.number(),
+      currentSnapshotCount: zod.number(),
+      actionPlanTemplate: zod.record(zod.string(), zod.unknown()).nullish(),
+      reportTemplate: zod.record(zod.string(), zod.unknown()).nullish(),
+      summary: zod.string().nullish(),
+      notes: zod.string().nullish(),
+      approvedAt: zod.string().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+});
+
+export const ListApprovedGeoAeoClientMonitoringRunsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const listApprovedGeoAeoClientMonitoringRunsResponseRunMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const listApprovedGeoAeoClientMonitoringRunsResponseBaselineMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const listApprovedGeoAeoClientMonitoringRunsResponseComparisonMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+
+export const ListApprovedGeoAeoClientMonitoringRunsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  runMonth: zod.string().regex(listApprovedGeoAeoClientMonitoringRunsResponseRunMonthRegExp),
+  baselineMonth: zod
+    .string()
+    .regex(listApprovedGeoAeoClientMonitoringRunsResponseBaselineMonthRegExp)
+    .nullish(),
+  comparisonMonth: zod
+    .string()
+    .regex(listApprovedGeoAeoClientMonitoringRunsResponseComparisonMonthRegExp),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]),
+  baselineScore: zod.number().nullish(),
+  currentScore: zod.number().nullish(),
+  scoreDelta: zod.number().nullish(),
+  baselineSnapshotCount: zod.number(),
+  currentSnapshotCount: zod.number(),
+  actionPlanTemplate: zod.record(zod.string(), zod.unknown()).nullish(),
+  reportTemplate: zod.record(zod.string(), zod.unknown()).nullish(),
+  summary: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListApprovedGeoAeoClientMonitoringRunsResponse = zod.array(
+  ListApprovedGeoAeoClientMonitoringRunsResponseItem,
+);
+
+export const GetGeoAeoAuditParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const GetGeoAeoAuditResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  clientId: zod.number(),
+  projectId: zod.number().nullish(),
+  auditName: zod.string(),
+  websiteUrl: zod.string(),
+  niche: zod.string(),
+  servicesOrProducts: zod.array(zod.string()).nullish(),
+  targetLocation: zod.string().nullish(),
+  targetAudience: zod.string().nullish(),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]),
+  monitoringEnabled: zod.boolean(),
+  monitoringCadence: zod.enum(["none", "monthly", "quarterly"]),
+  nextMonitoringRunAt: zod.string().nullish(),
+  businessFacts: zod.record(zod.string(), zod.unknown()).nullish(),
+  visibilityScore: zod.number().nullish(),
+  visibilityLabel: zod.string().nullish(),
+  summary: zod.string().nullish(),
+  createdById: zod.number().nullish(),
+  updatedById: zod.number().nullish(),
+  approvedById: zod.number().nullish(),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const UpdateGeoAeoAuditParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const UpdateGeoAeoAuditBody = zod.object({
+  auditName: zod.string().optional(),
+  websiteUrl: zod.string().optional(),
+  niche: zod.string().optional(),
+  servicesOrProducts: zod.array(zod.string()).optional(),
+  targetLocation: zod.string().nullish(),
+  targetAudience: zod.string().nullish(),
+  businessFacts: zod.record(zod.string(), zod.unknown()).optional(),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]).optional(),
+  summary: zod.string().nullish(),
+  monitoringEnabled: zod.boolean().optional(),
+  monitoringCadence: zod.enum(["none", "monthly", "quarterly"]).optional(),
+  nextMonitoringRunAt: zod.string().nullish(),
+});
+
+export const UpdateGeoAeoAuditResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  clientId: zod.number(),
+  projectId: zod.number().nullish(),
+  auditName: zod.string(),
+  websiteUrl: zod.string(),
+  niche: zod.string(),
+  servicesOrProducts: zod.array(zod.string()).nullish(),
+  targetLocation: zod.string().nullish(),
+  targetAudience: zod.string().nullish(),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]),
+  monitoringEnabled: zod.boolean(),
+  monitoringCadence: zod.enum(["none", "monthly", "quarterly"]),
+  nextMonitoringRunAt: zod.string().nullish(),
+  businessFacts: zod.record(zod.string(), zod.unknown()).nullish(),
+  visibilityScore: zod.number().nullish(),
+  visibilityLabel: zod.string().nullish(),
+  summary: zod.string().nullish(),
+  createdById: zod.number().nullish(),
+  updatedById: zod.number().nullish(),
+  approvedById: zod.number().nullish(),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const DeleteGeoAeoAuditParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ApproveGeoAeoAuditParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ApproveGeoAeoAuditResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  clientId: zod.number(),
+  projectId: zod.number().nullish(),
+  auditName: zod.string(),
+  websiteUrl: zod.string(),
+  niche: zod.string(),
+  servicesOrProducts: zod.array(zod.string()).nullish(),
+  targetLocation: zod.string().nullish(),
+  targetAudience: zod.string().nullish(),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]),
+  monitoringEnabled: zod.boolean(),
+  monitoringCadence: zod.enum(["none", "monthly", "quarterly"]),
+  nextMonitoringRunAt: zod.string().nullish(),
+  businessFacts: zod.record(zod.string(), zod.unknown()).nullish(),
+  visibilityScore: zod.number().nullish(),
+  visibilityLabel: zod.string().nullish(),
+  summary: zod.string().nullish(),
+  createdById: zod.number().nullish(),
+  updatedById: zod.number().nullish(),
+  approvedById: zod.number().nullish(),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const ListGeoAeoPromptsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ListGeoAeoPromptsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  promptSetId: zod.number().nullish(),
+  promptText: zod.string(),
+  normalizedPrompt: zod.string().nullish(),
+  intent: zod.string().nullish(),
+  funnelStage: zod.string().nullish(),
+  serviceOrProduct: zod.string().nullish(),
+  location: zod.string().nullish(),
+  priority: zod.number(),
+  status: zod.string(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListGeoAeoPromptsResponse = zod.array(ListGeoAeoPromptsResponseItem);
+
+export const CreateGeoAeoPromptParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const CreateGeoAeoPromptBody = zod.object({
+  auditId: zod.number(),
+  promptSetId: zod.number().optional(),
+  promptText: zod.string(),
+  intent: zod.string().optional(),
+  funnelStage: zod.string().optional(),
+  serviceOrProduct: zod.string().optional(),
+  location: zod.string().optional(),
+  priority: zod.number().optional(),
+});
+
+export const ImportGeoAeoPromptsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ImportGeoAeoPromptsBody = zod.object({
+  csvText: zod.string(),
+});
+
+export const ListGeoAeoAnswerSnapshotsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ListGeoAeoAnswerSnapshotsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  promptId: zod.number(),
+  promptVariantId: zod.number().nullish(),
+  engine: zod.enum(["chatgpt", "gemini", "perplexity", "google_ai_overviews", "other"]),
+  engineMode: zod.string(),
+  captureMethod: zod.enum(["manual_paste", "csv_import", "mock_adapter", "api_adapter"]),
+  answerText: zod.string(),
+  answerHash: zod.string(),
+  locationContext: zod.string().nullish(),
+  clientMentioned: zod.boolean(),
+  clientCited: zod.boolean(),
+  sentiment: zod.string().nullish(),
+  accuracyRiskScore: zod.number().nullish(),
+  capturedAt: zod.string(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListGeoAeoAnswerSnapshotsResponse = zod.array(ListGeoAeoAnswerSnapshotsResponseItem);
+
+export const CreateGeoAeoAnswerSnapshotParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const CreateGeoAeoAnswerSnapshotBody = zod.object({
+  auditId: zod.number(),
+  promptId: zod.number(),
+  promptVariantId: zod.number().optional(),
+  engine: zod.enum(["chatgpt", "gemini", "perplexity", "google_ai_overviews", "other"]),
+  captureMethod: zod.enum(["manual_paste", "csv_import", "mock_adapter", "api_adapter"]),
+  answerText: zod.string(),
+  capturedAt: zod.string().optional(),
+  locationContext: zod.string().optional(),
+});
+
+export const ImportGeoAeoAnswerSnapshotsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ImportGeoAeoAnswerSnapshotsBody = zod.object({
+  csvText: zod.string(),
+});
+
+export const UpdateGeoAeoAnswerSnapshotParams = zod.object({
+  snapshotId: zod.coerce.number(),
+});
+
+export const UpdateGeoAeoAnswerSnapshotBody = zod.object({
+  clientMentioned: zod.boolean().optional(),
+  clientCited: zod.boolean().optional(),
+  sentiment: zod.string().nullish(),
+  accuracyRiskScore: zod.number().nullish(),
+  locationContext: zod.string().nullish(),
+});
+
+export const UpdateGeoAeoAnswerSnapshotResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  promptId: zod.number(),
+  promptVariantId: zod.number().nullish(),
+  engine: zod.enum(["chatgpt", "gemini", "perplexity", "google_ai_overviews", "other"]),
+  engineMode: zod.string(),
+  captureMethod: zod.enum(["manual_paste", "csv_import", "mock_adapter", "api_adapter"]),
+  answerText: zod.string(),
+  answerHash: zod.string(),
+  locationContext: zod.string().nullish(),
+  clientMentioned: zod.boolean(),
+  clientCited: zod.boolean(),
+  sentiment: zod.string().nullish(),
+  accuracyRiskScore: zod.number().nullish(),
+  capturedAt: zod.string(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const ListGeoAeoCompetitorsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ListGeoAeoCompetitorsResponseItem = zod.object({
+  id: zod.number().optional(),
+  tenantId: zod.number().optional(),
+  auditId: zod.number().optional(),
+  status: zod.string().optional(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+export const ListGeoAeoCompetitorsResponse = zod.array(ListGeoAeoCompetitorsResponseItem);
+
+export const CreateGeoAeoCompetitorParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const CreateGeoAeoCompetitorBody = zod.object({
+  name: zod.string(),
+  websiteUrl: zod.string().optional(),
+  aliases: zod.array(zod.string()).optional(),
+  notes: zod.string().optional(),
+});
+
+export const UpdateGeoAeoCompetitorParams = zod.object({
+  competitorId: zod.coerce.number(),
+});
+
+export const UpdateGeoAeoCompetitorBody = zod.object({
+  name: zod.string().optional(),
+  websiteUrl: zod.string().optional(),
+  aliases: zod.array(zod.string()).optional(),
+  notes: zod.string().optional(),
+});
+
+export const UpdateGeoAeoCompetitorResponse = zod.object({
+  id: zod.number().optional(),
+  tenantId: zod.number().optional(),
+  auditId: zod.number().optional(),
+  status: zod.string().optional(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+
+export const ListGeoAeoCitationsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ListGeoAeoCitationsResponseItem = zod.object({
+  id: zod.number().optional(),
+  tenantId: zod.number().optional(),
+  auditId: zod.number().optional(),
+  status: zod.string().optional(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+export const ListGeoAeoCitationsResponse = zod.array(ListGeoAeoCitationsResponseItem);
+
+export const CreateGeoAeoCitationParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const CreateGeoAeoCitationBody = zod.object({
+  snapshotId: zod.number().optional(),
+  url: zod.string().optional(),
+  sourceName: zod.string().optional(),
+  sourceType: zod.string().optional(),
+  isClientOwned: zod.boolean().optional(),
+  isCompetitorOwned: zod.boolean().optional(),
+  authorityEstimate: zod.number().optional(),
+  notes: zod.string().optional(),
+});
+
+export const DeleteGeoAeoCitationParams = zod.object({
+  citationId: zod.coerce.number(),
+});
+
+export const ListGeoAeoSourceRecommendationsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ListGeoAeoSourceRecommendationsResponseItem = zod.object({
+  id: zod.number().optional(),
+  tenantId: zod.number().optional(),
+  auditId: zod.number().optional(),
+  status: zod.string().optional(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+export const ListGeoAeoSourceRecommendationsResponse = zod.array(
+  ListGeoAeoSourceRecommendationsResponseItem,
+);
+
+export const CreateGeoAeoSourceRecommendationParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const CreateGeoAeoSourceRecommendationBody = zod.object({
+  sourceName: zod.string(),
+  sourceUrl: zod.string().optional(),
+  sourceType: zod.string().optional(),
+  reason: zod.string().optional(),
+  priority: zod.enum(["low", "medium", "high", "critical"]).optional(),
+  status: zod.enum(["draft", "approved", "rejected", "done"]).optional(),
+});
+
+export const UpdateGeoAeoSourceRecommendationParams = zod.object({
+  sourceRecommendationId: zod.coerce.number(),
+});
+
+export const UpdateGeoAeoSourceRecommendationBody = zod.object({
+  sourceName: zod.string().optional(),
+  sourceUrl: zod.string().optional(),
+  sourceType: zod.string().optional(),
+  reason: zod.string().optional(),
+  priority: zod.enum(["low", "medium", "high", "critical"]).optional(),
+  status: zod.enum(["draft", "approved", "rejected", "done"]).optional(),
+});
+
+export const UpdateGeoAeoSourceRecommendationResponse = zod.object({
+  id: zod.number().optional(),
+  tenantId: zod.number().optional(),
+  auditId: zod.number().optional(),
+  status: zod.string().optional(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+
+export const ListGeoAeoSchemaFindingsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ListGeoAeoSchemaFindingsResponseItem = zod.object({
+  id: zod.number().optional(),
+  tenantId: zod.number().optional(),
+  auditId: zod.number().optional(),
+  status: zod.string().optional(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+export const ListGeoAeoSchemaFindingsResponse = zod.array(ListGeoAeoSchemaFindingsResponseItem);
+
+export const CreateGeoAeoSchemaFindingParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const CreateGeoAeoSchemaFindingBody = zod.object({
+  pageUrl: zod.string().optional(),
+  schemaType: zod.string().optional(),
+  issueType: zod.string(),
+  severity: zod.enum(["low", "medium", "high", "critical"]).optional(),
+  recommendation: zod.string().optional(),
+  status: zod.enum(["draft", "approved", "rejected", "done"]).optional(),
+});
+
+export const UpdateGeoAeoSchemaFindingParams = zod.object({
+  schemaFindingId: zod.coerce.number(),
+});
+
+export const UpdateGeoAeoSchemaFindingBody = zod.object({
+  pageUrl: zod.string().optional(),
+  schemaType: zod.string().optional(),
+  issueType: zod.string().optional(),
+  severity: zod.enum(["low", "medium", "high", "critical"]).optional(),
+  recommendation: zod.string().optional(),
+  status: zod.enum(["draft", "approved", "rejected", "done"]).optional(),
+});
+
+export const UpdateGeoAeoSchemaFindingResponse = zod.object({
+  id: zod.number().optional(),
+  tenantId: zod.number().optional(),
+  auditId: zod.number().optional(),
+  status: zod.string().optional(),
+  createdAt: zod.string().optional(),
+  updatedAt: zod.string().optional(),
+});
+
+export const ListGeoAeoMonitoringRunsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const listGeoAeoMonitoringRunsResponseRunMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const listGeoAeoMonitoringRunsResponseBaselineMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const listGeoAeoMonitoringRunsResponseComparisonMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+
+export const ListGeoAeoMonitoringRunsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  runMonth: zod.string().regex(listGeoAeoMonitoringRunsResponseRunMonthRegExp),
+  baselineMonth: zod.string().regex(listGeoAeoMonitoringRunsResponseBaselineMonthRegExp).nullish(),
+  comparisonMonth: zod.string().regex(listGeoAeoMonitoringRunsResponseComparisonMonthRegExp),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]),
+  baselineScore: zod.number().nullish(),
+  currentScore: zod.number().nullish(),
+  scoreDelta: zod.number().nullish(),
+  baselineSnapshotCount: zod.number(),
+  currentSnapshotCount: zod.number(),
+  actionPlanTemplate: zod.record(zod.string(), zod.unknown()).nullish(),
+  reportTemplate: zod.record(zod.string(), zod.unknown()).nullish(),
+  summary: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListGeoAeoMonitoringRunsResponse = zod.array(ListGeoAeoMonitoringRunsResponseItem);
+
+export const CreateGeoAeoMonitoringRunParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const createGeoAeoMonitoringRunBodyRunMonthRegExp = new RegExp("^\\d{4}-(0[1-9]|1[0-2])$");
+export const createGeoAeoMonitoringRunBodyBaselineMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const createGeoAeoMonitoringRunBodyComparisonMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+
+export const CreateGeoAeoMonitoringRunBody = zod.object({
+  runMonth: zod.string().regex(createGeoAeoMonitoringRunBodyRunMonthRegExp),
+  baselineMonth: zod.string().regex(createGeoAeoMonitoringRunBodyBaselineMonthRegExp).optional(),
+  comparisonMonth: zod
+    .string()
+    .regex(createGeoAeoMonitoringRunBodyComparisonMonthRegExp)
+    .optional(),
+  baselineScore: zod.number().optional(),
+  currentScore: zod.number().optional(),
+  baselineSnapshotCount: zod.number().optional(),
+  currentSnapshotCount: zod.number().optional(),
+  actionPlanTemplate: zod.record(zod.string(), zod.unknown()).optional(),
+  reportTemplate: zod.record(zod.string(), zod.unknown()).optional(),
+  summary: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+export const UpdateGeoAeoMonitoringRunParams = zod.object({
+  monitoringRunId: zod.coerce.number(),
+});
+
+export const updateGeoAeoMonitoringRunBodyRunMonthRegExp = new RegExp("^\\d{4}-(0[1-9]|1[0-2])$");
+export const updateGeoAeoMonitoringRunBodyBaselineMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const updateGeoAeoMonitoringRunBodyComparisonMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+
+export const UpdateGeoAeoMonitoringRunBody = zod.object({
+  runMonth: zod.string().regex(updateGeoAeoMonitoringRunBodyRunMonthRegExp).optional(),
+  baselineMonth: zod.string().regex(updateGeoAeoMonitoringRunBodyBaselineMonthRegExp).optional(),
+  comparisonMonth: zod
+    .string()
+    .regex(updateGeoAeoMonitoringRunBodyComparisonMonthRegExp)
+    .optional(),
+  baselineScore: zod.number().optional(),
+  currentScore: zod.number().optional(),
+  baselineSnapshotCount: zod.number().optional(),
+  currentSnapshotCount: zod.number().optional(),
+  actionPlanTemplate: zod.record(zod.string(), zod.unknown()).optional(),
+  reportTemplate: zod.record(zod.string(), zod.unknown()).optional(),
+  summary: zod.string().optional(),
+  notes: zod.string().optional(),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]).optional(),
+});
+
+export const updateGeoAeoMonitoringRunResponseRunMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const updateGeoAeoMonitoringRunResponseBaselineMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const updateGeoAeoMonitoringRunResponseComparisonMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+
+export const UpdateGeoAeoMonitoringRunResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  runMonth: zod.string().regex(updateGeoAeoMonitoringRunResponseRunMonthRegExp),
+  baselineMonth: zod.string().regex(updateGeoAeoMonitoringRunResponseBaselineMonthRegExp).nullish(),
+  comparisonMonth: zod.string().regex(updateGeoAeoMonitoringRunResponseComparisonMonthRegExp),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]),
+  baselineScore: zod.number().nullish(),
+  currentScore: zod.number().nullish(),
+  scoreDelta: zod.number().nullish(),
+  baselineSnapshotCount: zod.number(),
+  currentSnapshotCount: zod.number(),
+  actionPlanTemplate: zod.record(zod.string(), zod.unknown()).nullish(),
+  reportTemplate: zod.record(zod.string(), zod.unknown()).nullish(),
+  summary: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const ApproveGeoAeoMonitoringRunParams = zod.object({
+  monitoringRunId: zod.coerce.number(),
+});
+
+export const approveGeoAeoMonitoringRunResponseRunMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const approveGeoAeoMonitoringRunResponseBaselineMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+export const approveGeoAeoMonitoringRunResponseComparisonMonthRegExp = new RegExp(
+  "^\\d{4}-(0[1-9]|1[0-2])$",
+);
+
+export const ApproveGeoAeoMonitoringRunResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  runMonth: zod.string().regex(approveGeoAeoMonitoringRunResponseRunMonthRegExp),
+  baselineMonth: zod
+    .string()
+    .regex(approveGeoAeoMonitoringRunResponseBaselineMonthRegExp)
+    .nullish(),
+  comparisonMonth: zod.string().regex(approveGeoAeoMonitoringRunResponseComparisonMonthRegExp),
+  status: zod.enum(["draft", "in_review", "approved", "archived"]),
+  baselineScore: zod.number().nullish(),
+  currentScore: zod.number().nullish(),
+  scoreDelta: zod.number().nullish(),
+  baselineSnapshotCount: zod.number(),
+  currentSnapshotCount: zod.number(),
+  actionPlanTemplate: zod.record(zod.string(), zod.unknown()).nullish(),
+  reportTemplate: zod.record(zod.string(), zod.unknown()).nullish(),
+  summary: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const AnalyzeGeoAeoAuditParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const AnalyzeGeoAeoAuditResponse = zod.object({
+  score: zod.object({
+    score: zod.number(),
+    label: zod.string(),
+    normalizedInputs: zod.record(zod.string(), zod.unknown()),
+    explanations: zod.array(zod.string()),
+  }),
+  inserted: zod.object({
+    mentions: zod.number(),
+    citations: zod.number(),
+    findings: zod.number(),
+  }),
+});
+
+export const ScoreGeoAeoAuditParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ScoreGeoAeoAuditBody = zod.object({
+  brandMentionCoverage: zod.number().optional(),
+  citationCoverage: zod.number().optional(),
+  promptIntentCoverage: zod.number().optional(),
+  competitorGapOpportunity: zod.number().optional(),
+  entityClarityScore: zod.number().optional(),
+  schemaReadinessScore: zod.number().optional(),
+  sourceAuthorityReadiness: zod.number().optional(),
+  accuracyRiskScore: zod.number().optional(),
+  score: zod.number().optional(),
+  reason: zod.string().optional(),
+});
+
+export const ListGeoAeoFindingsParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const ListGeoAeoFindingsResponseItem = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  findingType: zod.string(),
+  severity: zod.string(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  evidence: zod.record(zod.string(), zod.unknown()).nullish(),
+  recommendation: zod.string().nullish(),
+  status: zod.enum(["draft", "needs_review", "approved", "rejected", "deleted", "superseded"]),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListGeoAeoFindingsResponse = zod.array(ListGeoAeoFindingsResponseItem);
+
+export const UpdateGeoAeoFindingParams = zod.object({
+  findingId: zod.coerce.number(),
+});
+
+export const UpdateGeoAeoFindingBody = zod.object({
+  findingType: zod.string().optional(),
+  title: zod.string().optional(),
+  description: zod.string().optional(),
+  recommendation: zod.string().optional(),
+  status: zod.enum(["draft", "needs_review", "approved", "rejected", "deleted"]).optional(),
+});
+
+export const UpdateGeoAeoFindingResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  findingType: zod.string(),
+  severity: zod.string(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  evidence: zod.record(zod.string(), zod.unknown()).nullish(),
+  recommendation: zod.string().nullish(),
+  status: zod.enum(["draft", "needs_review", "approved", "rejected", "deleted", "superseded"]),
+  approvedAt: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const GenerateGeoAeoActionPlanParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const GenerateGeoAeoActionPlanBody = zod.object({
+  name: zod.string().optional(),
+  timeHorizonDays: zod.number().optional(),
+});
+
+export const GetGeoAeoActionPlanParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const GetGeoAeoActionPlanResponse = zod.union([
+  zod.object({
+    plan: zod.object({
+      id: zod.number(),
+      tenantId: zod.number(),
+      auditId: zod.number(),
+      name: zod.string(),
+      timeHorizonDays: zod.number(),
+      summary: zod.string().nullish(),
+      status: zod.string(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+    items: zod.array(
+      zod.object({
+        id: zod.number(),
+        tenantId: zod.number(),
+        auditId: zod.number(),
+        actionPlanId: zod.number(),
+        title: zod.string(),
+        description: zod.string().nullish(),
+        category: zod.string(),
+        priority: zod.enum(["low", "medium", "high", "critical"]),
+        weekNumber: zod.number(),
+        ownerRole: zod.string().nullish(),
+        status: zod.enum(["draft", "approved", "in_progress", "done", "deferred"]),
+        relatedFindingId: zod.number().nullish(),
+        createdAt: zod.string(),
+        updatedAt: zod.string(),
+      }),
+    ),
+  }),
+  zod.null(),
+]);
+
+export const UpdateGeoAeoActionItemParams = zod.object({
+  actionItemId: zod.coerce.number(),
+});
+
+export const UpdateGeoAeoActionItemBody = zod.object({
+  title: zod.string().optional(),
+  description: zod.string().optional(),
+  category: zod.string().optional(),
+  priority: zod.enum(["low", "medium", "high", "critical"]).optional(),
+  weekNumber: zod.number().optional(),
+  status: zod.enum(["draft", "approved", "in_progress", "done", "deferred"]).optional(),
+});
+
+export const UpdateGeoAeoActionItemResponse = zod.object({
+  id: zod.number(),
+  tenantId: zod.number(),
+  auditId: zod.number(),
+  actionPlanId: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  category: zod.string(),
+  priority: zod.enum(["low", "medium", "high", "critical"]),
+  weekNumber: zod.number(),
+  ownerRole: zod.string().nullish(),
+  status: zod.enum(["draft", "approved", "in_progress", "done", "deferred"]),
+  relatedFindingId: zod.number().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const GenerateGeoAeoReportParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const GenerateGeoAeoReportBody = zod.object({
+  format: zod.enum(["markdown", "csv", "json", "pdf"]).optional(),
+});
+
+export const ExportGeoAeoReportParams = zod.object({
+  reportId: zod.coerce.number(),
+});
+
+export const ExportGeoAeoReportBody = zod.object({
+  format: zod.enum(["markdown", "csv", "json", "pdf"]).optional(),
+});
+
+export const ExportGeoAeoReportResponse = zod.record(zod.string(), zod.unknown());
 
 export const ListPlansResponseItem = zod.object({
   id: zod.string(),
@@ -1821,8 +2862,13 @@ export const ExportProjectJsonResponse = zod.object({
       id: zod.number(),
       projectId: zod.number(),
       tenantId: zod.number(),
-      type: zod.enum(["project_summary", "topical_authority", "content_pipeline"]),
-      format: zod.enum(["pdf", "csv", "json"]),
+      type: zod.enum([
+        "project_summary",
+        "topical_authority",
+        "content_pipeline",
+        "geo_aeo_visibility_audit",
+      ]),
+      format: zod.enum(["pdf", "csv", "json", "markdown"]),
       generatedAt: zod.string().nullish(),
       fileUrl: zod.string().nullish(),
       data: zod.object({}).passthrough().nullish(),

@@ -23,6 +23,7 @@ import Webhooks from "@/pages/webhooks";
 import Integrations from "@/pages/integrations";
 import Notifications from "@/pages/notifications";
 import Competitors from "@/pages/competitors";
+import GeoAeo from "@/pages/geo-aeo";
 import Rankings from "@/pages/rankings";
 import Analytics from "@/pages/analytics";
 import Usage from "@/pages/usage";
@@ -130,6 +131,11 @@ function AppRoutes() {
       <Route path="/analytics">
         <PL>
           <Analytics />
+        </PL>
+      </Route>
+      <Route path="/geo-aeo">
+        <PL>
+          <GeoAeo />
         </PL>
       </Route>
       <Route path="/usage">

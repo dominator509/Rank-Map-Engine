@@ -19,3 +19,4 @@ export * from "./rankings";
 export * from "./templates";
 export * from "./custom-fields";
 export * from "./report-schedules";
+export * from "./geo-aeo";
