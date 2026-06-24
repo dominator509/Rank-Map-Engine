@@ -143,6 +143,14 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - Tests/checks to run: `corepack pnpm run test:adapter-contract`, `corepack pnpm run test:security`, `corepack pnpm run typecheck`, `corepack pnpm run lint`, `corepack pnpm run test`, `corepack pnpm run build`, and `corepack pnpm run smoke`.
 - Rollback plan: remove the three package script aliases and `scripts/run-smoke.mjs`; keep the underlying e2e/security/test wrappers unchanged.
 
+## Checkpoint - 2026-06-24 Demo Seed Closure
+
+- Current task: close the G3 repeatable demo seed gap found during completion audit.
+- Acceptance criteria targeted: `db:seed` exists, seeds a tenant/client/project-linked GEO/AEO demo audit using mock/manual data only, creates repeatable prompts/snapshots/findings/source/schema/action-plan/monitoring/report data, stores no provider credentials, and can run repeatedly without duplicate demo audits.
+- Files expected to change: root `package.json`, `lib/db/package.json`, `lib/db/scripts/seed-geo-aeo-demo.mjs`, and this status document.
+- Tests/checks to run: apply migrations to a disposable Postgres database, run `corepack pnpm run db:seed` twice, then rerun lint/security/build gates affected by the new script/package wiring.
+- Rollback plan: remove the seed script plus package script wiring and return the G3 seed evidence to an incomplete documented limitation.
+
 ## Phase Checklist
 
 - [x] G0 discovery completed.
@@ -352,6 +360,13 @@ Continue final hardening after adding route tests, service hardening tests, Open
 | `corepack pnpm run test` | Pass | Full Vitest suite passed during final QA command parity: 99 passed, 4 e2e tests skipped by default gates. |
 | `corepack pnpm run build` | Pass | Full workspace build passed during final QA command parity. |
 | `corepack pnpm run smoke` | Pass | New smoke alias ran API e2e and browser e2e sequentially against disposable Postgres databases; both completed successfully. |
+| Disposable Postgres + `corepack pnpm run db:migrate` | Pass | Fresh seed-test database accepted all migrations before the demo seed run. |
+| `corepack pnpm run db:seed` twice | Pass | Repeatable GEO/AEO demo seed created and then reused audit `1` for tenant `1` in the disposable database. |
+| `corepack pnpm exec prettier --check package.json lib/db/package.json lib/db/scripts/seed-geo-aeo-demo.mjs docs/geo-aeo/IMPLEMENTATION_STATUS.md` | Pass | Touched seed/package/status files use Prettier formatting. |
+| `corepack pnpm run lint` | Pass | ESLint completed with zero warnings after adding the demo seed script. |
+| `corepack pnpm run test:security` | Pass | Secret scan passed and high-severity dependency audit gate passed after adding the demo seed script; remaining audit items are 2 low and 3 moderate. |
+| `corepack pnpm run test` | Pass | Full Vitest suite passed after adding the demo seed script: 99 passed, 4 e2e tests skipped by default gates. |
+| `corepack pnpm run build` | Pass | Full workspace build passed after adding the demo seed script. |
 
 ## Known Limitations
 
@@ -372,6 +387,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - OpenAPI and generated client/Zod packages now include GEO/AEO routes; the first frontend surface still uses `customFetch` directly.
 - Repo API and browser e2e wrappers now pass against temporary Postgres databases, including an authenticated GEO/AEO protected browser journey for the manual fallback workflow.
 - The roadmap-named G17 final QA commands are executable through package scripts: `test:security`, `test:adapter-contract`, and `smoke`.
+- `db:seed` now creates a repeatable local GEO/AEO demo audit using mock/manual data only; it is intended for disposable/local databases and does not provision real provider credentials.
 - RTK was not available on PATH in the 2026-06-24 resumed environment, so verification commands in that resumed block ran through plain `corepack pnpm`.
 - The resumed 2026-06-24 rollback increment started from a clean worktree after commit `1907213`.
 - GEO/AEO is not production-ready and does not change the Phase 39 launch no-go status.

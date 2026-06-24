@@ -28,6 +28,7 @@
     "test:live:services": "node ./scripts/check-live-services.mjs",
     "db:generate": "corepack pnpm --filter @workspace/db run generate",
     "db:migrate": "corepack pnpm --filter @workspace/db run migrate",
+    "db:seed": "corepack pnpm --filter @workspace/db run seed",
     "api:route-drift": "node ./scripts/check-api-route-drift.mjs",
     "api:route-drift:check": "node ./scripts/check-api-route-drift.mjs --fail-on-drift",
     "security:secrets": "node ./scripts/check-secrets.mjs",
