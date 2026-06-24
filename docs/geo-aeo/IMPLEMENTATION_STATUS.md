@@ -127,6 +127,14 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - Tests/checks to run: focused GEO/AEO access/route tests, route drift, API spec codegen, API/frontend typecheck, lint, full workspace tests, security gate, browser/API e2e wrappers, and build.
 - Rollback plan: remove the client dashboard authorization helper and route checks, remove the access metadata from the client detail payload/OpenAPI/generated clients, and return the frontend to its prior client-report rendering.
 
+## Checkpoint - 2026-06-24 Report Required Sections
+
+- Current task: close the G14 report completeness gap for prompt matrix and methodology/limitations sections.
+- Acceptance criteria targeted: newly generated GEO/AEO reports store prompt and answer-snapshot evidence; Markdown/PDF exports include a prompt matrix, snapshot evidence, scorecard, findings, action plan, and methodology/limitations; CSV exports include prompt matrix and answer snapshot rows while continuing to neutralize spreadsheet-leading formula cells.
+- Files expected to change: `geo-aeo-service.ts`, service tests, and this status document.
+- Tests/checks to run: focused GEO/AEO service tests, full workspace tests, typecheck, lint, API e2e, browser e2e, security gate, and build.
+- Rollback plan: remove prompt/snapshot/methodology fields from generated report data and remove the new export rows/sections while leaving existing summary/finding/action-plan report export behavior intact.
+
 ## Phase Checklist
 
 - [x] G0 discovery completed.
@@ -320,6 +328,15 @@ Continue final hardening after adding route tests, service hardening tests, Open
 | `corepack pnpm run test:e2e:browser` | Pass | Browser e2e wrapper passed after the client dashboard license gate and download-visibility UI change. |
 | `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
 | `corepack pnpm run build` | Pass | Full workspace build passed after client dashboard license enforcement. |
+| `corepack pnpm exec vitest run artifacts/api-server/src/lib/geo-aeo-service.test.ts` | Pass | GEO/AEO service tests passed after adding prompt matrix, answer snapshot evidence, and methodology/limitations to report exports. |
+| `corepack pnpm run typecheck` | Pass | Full workspace typecheck passed after adding required report sections. |
+| `corepack pnpm run lint` | Pass | ESLint completed with zero warnings after adding required report sections. |
+| `corepack pnpm run test` | Pass | Full Vitest suite passed after report-section expansion: 99 passed, 4 e2e tests skipped by default gates. |
+| `corepack pnpm run api:route-drift:check` | Pass | OpenAPI route drift stayed zero; report-section changes did not add or remove routes. |
+| `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
+| `corepack pnpm run build` | Pass | Full workspace build passed after required report-section expansion. |
+| `corepack pnpm run test:e2e:api` | Pass | API e2e wrapper passed sequentially after an earlier parallel API/browser e2e attempt hit a temporary Postgres startup collision. |
+| `corepack pnpm run test:e2e:browser` | Pass | Browser e2e wrapper passed sequentially after the same temporary Postgres startup collision in the earlier parallel attempt. |
 
 ## Known Limitations
 
@@ -330,6 +347,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - The RankMap frontend has a GEO/AEO Visibility page for operator workflows, primary manual fallback controls, monitoring run controls, and client-role approved audit views.
 - GEO/AEO report generation currently requires a linked project because the existing shared `reports` table requires `projectId`.
 - GEO/AEO report export supports markdown, CSV, JSON, and PDF.
+- Newly generated GEO/AEO reports now include prompt matrix, answer snapshot evidence, AI visibility scorecard, and methodology/limitations sections across Markdown/PDF, with corresponding prompt matrix and snapshot rows in CSV.
 - The frontend surface exposes primary manual fallback controls, monitoring creation/approval, score override, action item creation/editing, edit-in-place for competitors/source recommendations/schema findings, and soft-delete controls for manual competitors/source recommendations/schema findings/action items.
 - Prompt and snapshot CSV imports now have operator-only preview endpoints/UI summaries with valid/invalid/duplicate row counts, and imports reject duplicate prompt text or duplicate prompt/engine/answer-hash snapshots before writing rows.
 - Snapshot CSV imports now create rollbackable import batches; rollback applies to imports written through this batch model and does not retroactively group older snapshot rows that predate the batch migration.

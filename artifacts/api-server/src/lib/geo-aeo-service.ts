@@ -54,6 +54,21 @@ const ENGINE_DISPLAY_NAMES: Record<string, string> = {
 
 type GeoAeoReportFormat = "markdown" | "csv" | "json" | "pdf";
 
+const GEO_AEO_REPORT_METHODOLOGY = {
+  dataSources: [
+    "Manual prompt inventory",
+    "Manual or CSV-imported answer snapshots",
+    "Deterministic RankMap scoring and finding extraction",
+    "Operator-reviewed action plans and manual fallback records",
+  ],
+  limitations: [
+    "Answer-engine output can vary by account, location, time, personalization, and model release.",
+    "Manual/mock snapshots are evidence samples, not a guarantee of future AI recommendations.",
+    "RankMap does not guarantee citations, rankings, traffic, conversions, or revenue.",
+    "Real provider calls remain disabled unless explicitly configured with approved provider credentials.",
+  ],
+};
+
 export type GeoAeoCsvPreviewIssue = {
   row: number;
   reason: string;
@@ -81,7 +96,10 @@ export interface ListGeoAeoAuditsParams {
 }
 
 export async function listGeoAeoAudits(params: ListGeoAeoAuditsParams) {
-  const conditions = [eq(geoAeoAuditsTable.tenantId, params.tenantId), isNull(geoAeoAuditsTable.deletedAt)];
+  const conditions = [
+    eq(geoAeoAuditsTable.tenantId, params.tenantId),
+    isNull(geoAeoAuditsTable.deletedAt),
+  ];
 
   if (params.clientId !== undefined) {
     conditions.push(eq(geoAeoAuditsTable.clientId, params.clientId));
@@ -161,8 +179,10 @@ export async function updateGeoAeoAudit(params: {
   if (params.input.servicesOrProducts !== undefined) {
     updates.servicesOrProducts = params.input.servicesOrProducts;
   }
-  if (params.input.targetLocation !== undefined) updates.targetLocation = params.input.targetLocation;
-  if (params.input.targetAudience !== undefined) updates.targetAudience = params.input.targetAudience;
+  if (params.input.targetLocation !== undefined)
+    updates.targetLocation = params.input.targetLocation;
+  if (params.input.targetAudience !== undefined)
+    updates.targetAudience = params.input.targetAudience;
   if (params.input.businessFacts !== undefined) updates.businessFacts = params.input.businessFacts;
   if (params.input.status !== undefined) {
     updates.status = params.input.status;
@@ -263,7 +283,10 @@ export async function createGeoAeoPrompt(params: {
   return prompt;
 }
 
-export function parseGeoAeoPromptCsv(csvText: string, auditId: number): {
+export function parseGeoAeoPromptCsv(
+  csvText: string,
+  auditId: number,
+): {
   prompts: GeoAeoPromptCreateInput[];
   errors: string[];
 } {
@@ -282,7 +305,9 @@ export function parseGeoAeoPromptCsv(csvText: string, auditId: number): {
     });
 
     if (!parsed.success) {
-      errors.push(`Row ${index + 2}: ${parsed.error.issues.map((issue) => issue.message).join("; ")}`);
+      errors.push(
+        `Row ${index + 2}: ${parsed.error.issues.map((issue) => issue.message).join("; ")}`,
+      );
       return;
     }
 
@@ -428,7 +453,10 @@ export async function createGeoAeoAnswerSnapshot(params: {
   return snapshot;
 }
 
-export function parseGeoAeoSnapshotCsv(csvText: string, auditId: number): {
+export function parseGeoAeoSnapshotCsv(
+  csvText: string,
+  auditId: number,
+): {
   snapshots: GeoAeoSnapshotCreateInput[];
   errors: string[];
 } {
@@ -448,7 +476,9 @@ export function parseGeoAeoSnapshotCsv(csvText: string, auditId: number): {
     });
 
     if (!parsed.success) {
-      errors.push(`Row ${index + 2}: ${parsed.error.issues.map((issue) => issue.message).join("; ")}`);
+      errors.push(
+        `Row ${index + 2}: ${parsed.error.issues.map((issue) => issue.message).join("; ")}`,
+      );
       return;
     }
 
@@ -741,13 +771,15 @@ export async function updateGeoAeoAnswerSnapshot(params: {
   input: GeoAeoSnapshotUpdateInput;
 }) {
   const updates: Partial<typeof geoAeoAnswerSnapshotsTable.$inferInsert> = {};
-  if (params.input.clientMentioned !== undefined) updates.clientMentioned = params.input.clientMentioned;
+  if (params.input.clientMentioned !== undefined)
+    updates.clientMentioned = params.input.clientMentioned;
   if (params.input.clientCited !== undefined) updates.clientCited = params.input.clientCited;
   if (params.input.sentiment !== undefined) updates.sentiment = params.input.sentiment;
   if (params.input.accuracyRiskScore !== undefined) {
     updates.accuracyRiskScore = params.input.accuracyRiskScore;
   }
-  if (params.input.locationContext !== undefined) updates.locationContext = params.input.locationContext;
+  if (params.input.locationContext !== undefined)
+    updates.locationContext = params.input.locationContext;
 
   const [snapshot] = await db
     .update(geoAeoAnswerSnapshotsTable)
@@ -1050,7 +1082,8 @@ export async function updateGeoAeoSchemaFinding(params: {
   if (params.input.schemaType !== undefined) updates.schemaType = params.input.schemaType;
   if (params.input.issueType !== undefined) updates.issueType = params.input.issueType;
   if (params.input.severity !== undefined) updates.severity = params.input.severity;
-  if (params.input.recommendation !== undefined) updates.recommendation = params.input.recommendation;
+  if (params.input.recommendation !== undefined)
+    updates.recommendation = params.input.recommendation;
   if (params.input.status !== undefined) updates.status = params.input.status;
 
   const [findingRecord] = await db
@@ -1166,7 +1199,8 @@ export async function updateGeoAeoMonitoringRun(params: {
   };
   if (params.input.runMonth !== undefined) updates.runMonth = params.input.runMonth;
   if (params.input.baselineMonth !== undefined) updates.baselineMonth = params.input.baselineMonth;
-  if (params.input.comparisonMonth !== undefined) updates.comparisonMonth = params.input.comparisonMonth;
+  if (params.input.comparisonMonth !== undefined)
+    updates.comparisonMonth = params.input.comparisonMonth;
   if (params.input.baselineScore !== undefined) updates.baselineScore = params.input.baselineScore;
   if (params.input.currentScore !== undefined) updates.currentScore = params.input.currentScore;
   if (params.input.baselineSnapshotCount !== undefined) {
@@ -1178,7 +1212,8 @@ export async function updateGeoAeoMonitoringRun(params: {
   if (params.input.actionPlanTemplate !== undefined) {
     updates.actionPlanTemplate = params.input.actionPlanTemplate;
   }
-  if (params.input.reportTemplate !== undefined) updates.reportTemplate = params.input.reportTemplate;
+  if (params.input.reportTemplate !== undefined)
+    updates.reportTemplate = params.input.reportTemplate;
   if (params.input.summary !== undefined) updates.summary = params.input.summary;
   if (params.input.notes !== undefined) updates.notes = params.input.notes;
   if (params.input.status !== undefined) {
@@ -1260,7 +1295,8 @@ export async function updateGeoAeoFinding(params: {
   if (params.input.findingType !== undefined) updates.findingType = params.input.findingType;
   if (params.input.title !== undefined) updates.title = params.input.title;
   if (params.input.description !== undefined) updates.description = params.input.description;
-  if (params.input.recommendation !== undefined) updates.recommendation = params.input.recommendation;
+  if (params.input.recommendation !== undefined)
+    updates.recommendation = params.input.recommendation;
   if (params.input.status !== undefined) {
     updates.status = params.input.status;
     if (params.input.status === "approved") {
@@ -1392,14 +1428,19 @@ export async function analyzeGeoAeoAudit(params: {
   const scoreInputs: GeoAeoScoreInputs = {
     brandMentionCoverage: percent(clientMentionSnapshotIds.size, snapshots.length),
     citationCoverage: percent(clientCitationCount, Math.max(snapshots.length, 1)),
-    promptIntentCoverage: percent(new Set(snapshots.map((snapshot) => snapshot.promptId)).size, prompts.length),
+    promptIntentCoverage: percent(
+      new Set(snapshots.map((snapshot) => snapshot.promptId)).size,
+      prompts.length,
+    ),
     competitorGapOpportunity: competitorMentionSnapshotIds.size
       ? 100 - percent(clientMentionSnapshotIds.size, competitorMentionSnapshotIds.size)
       : 50,
     entityClarityScore: audit.summary || audit.businessFacts ? 70 : 45,
     schemaReadinessScore: 50,
     sourceAuthorityReadiness: Math.min(100, sourceHostCount * 20),
-    accuracyRiskScore: snapshots.some((snapshot) => /incorrect|wrong|outdated|not accurate/i.test(snapshot.answerText))
+    accuracyRiskScore: snapshots.some((snapshot) =>
+      /incorrect|wrong|outdated|not accurate/i.test(snapshot.answerText),
+    )
       ? 50
       : 10,
   };
@@ -1419,7 +1460,12 @@ export async function analyzeGeoAeoAudit(params: {
     await tx
       .update(geoAeoMentionsTable)
       .set({ evidenceSnippet: "[superseded by latest analysis]" })
-      .where(and(eq(geoAeoMentionsTable.tenantId, params.tenantId), eq(geoAeoMentionsTable.auditId, params.auditId)));
+      .where(
+        and(
+          eq(geoAeoMentionsTable.tenantId, params.tenantId),
+          eq(geoAeoMentionsTable.auditId, params.auditId),
+        ),
+      );
 
     await tx
       .update(geoAeoFindingsTable)
@@ -1454,7 +1500,12 @@ export async function analyzeGeoAeoAudit(params: {
         visibilityLabel: scoreResult.label,
         updatedById: params.userId,
       })
-      .where(and(eq(geoAeoAuditsTable.tenantId, params.tenantId), eq(geoAeoAuditsTable.id, params.auditId)));
+      .where(
+        and(
+          eq(geoAeoAuditsTable.tenantId, params.tenantId),
+          eq(geoAeoAuditsTable.id, params.auditId),
+        ),
+      );
   });
 
   return {
@@ -1478,7 +1529,10 @@ export async function calculateAndStoreGeoAeoScore(params: {
 }) {
   const scoreResult = calculateGeoAeoVisibilityScore(params.inputs);
   const storedScore = params.overrideScore ?? scoreResult.score;
-  const storedLabel = params.overrideScore !== undefined ? getGeoAeoScoreLabel(params.overrideScore) : scoreResult.label;
+  const storedLabel =
+    params.overrideScore !== undefined
+      ? getGeoAeoScoreLabel(params.overrideScore)
+      : scoreResult.label;
   const explanations =
     params.overrideScore !== undefined
       ? [`Manual override set the AI Visibility Score to ${params.overrideScore}.`]
@@ -1507,7 +1561,12 @@ export async function calculateAndStoreGeoAeoScore(params: {
       visibilityLabel: storedLabel,
       updatedById: params.userId,
     })
-    .where(and(eq(geoAeoAuditsTable.tenantId, params.tenantId), eq(geoAeoAuditsTable.id, params.auditId)));
+    .where(
+      and(
+        eq(geoAeoAuditsTable.tenantId, params.tenantId),
+        eq(geoAeoAuditsTable.id, params.auditId),
+      ),
+    );
 
   return {
     score,
@@ -1606,7 +1665,10 @@ export async function createGeoAeoActionItem(params: {
   userId: number;
   input: GeoAeoActionItemCreateInput;
 }) {
-  const existingPlan = await getGeoAeoActionPlan({ tenantId: params.tenantId, auditId: params.auditId });
+  const existingPlan = await getGeoAeoActionPlan({
+    tenantId: params.tenantId,
+    auditId: params.auditId,
+  });
   let plan = existingPlan?.plan;
 
   if (!plan) {
@@ -1900,8 +1962,11 @@ interface GeoAeoReportData {
     findingCount: number;
     actionItemCount: number;
   };
+  prompts?: Awaited<ReturnType<typeof listGeoAeoPrompts>>;
+  snapshots?: Awaited<ReturnType<typeof listGeoAeoAnswerSnapshots>>;
   findings: Awaited<ReturnType<typeof listGeoAeoFindings>>;
   actionPlan: Awaited<ReturnType<typeof getGeoAeoActionPlan>>;
+  methodology?: typeof GEO_AEO_REPORT_METHODOLOGY;
 }
 
 async function buildGeoAeoReportData(params: {
@@ -1946,19 +2011,39 @@ async function buildGeoAeoReportData(params: {
       findingCount: findings.length,
       actionItemCount: actionPlan?.items.length ?? 0,
     },
+    prompts,
+    snapshots,
     findings,
     actionPlan,
+    methodology: GEO_AEO_REPORT_METHODOLOGY,
   };
 }
 
 function geoAeoReportToMarkdown(data: GeoAeoReportData): string {
   const findings = data.findings
-    .map((findingRecord) => `- **${findingRecord.severity}** ${findingRecord.title}: ${findingRecord.recommendation ?? ""}`)
+    .map(
+      (findingRecord) =>
+        `- **${findingRecord.severity}** ${findingRecord.title}: ${findingRecord.recommendation ?? ""}`,
+    )
     .join("\n");
   const actionItems =
     data.actionPlan?.items
       .map((item) => `- Week ${item.weekNumber}: ${item.title} (${item.status})`)
       .join("\n") ?? "- No action plan generated yet.";
+  const promptMatrix = geoAeoPromptMatrixRows(data)
+    .map(
+      (row) =>
+        `- ${row.promptText} - ${row.engines || "No snapshots"}; mentioned ${row.clientMentionedCount}/${row.snapshotCount}; cited ${row.clientCitedCount}/${row.snapshotCount}.`,
+    )
+    .join("\n");
+  const snapshotEvidence = (data.snapshots ?? [])
+    .slice(0, 20)
+    .map(
+      (snapshot) =>
+        `- ${snapshot.engine} prompt ${snapshot.promptId}: ${snapshot.clientMentioned ? "mentioned" : "not mentioned"}, ${snapshot.clientCited ? "cited" : "not cited"} (${snapshot.captureMethod})`,
+    )
+    .join("\n");
+  const methodology = data.methodology ?? GEO_AEO_REPORT_METHODOLOGY;
 
   return [
     `# ${data.audit.name} GEO/AEO Visibility Audit`,
@@ -1970,6 +2055,15 @@ function geoAeoReportToMarkdown(data: GeoAeoReportData): string {
     "## Executive Summary",
     `Prompts: ${data.summary.promptCount}; snapshots: ${data.summary.snapshotCount}; findings: ${data.summary.findingCount}.`,
     "",
+    "## AI Visibility Scorecard",
+    `Score: ${data.audit.visibilityScore ?? "Not scored"} ${data.audit.visibilityLabel ?? ""}`,
+    "",
+    "## Prompt Matrix",
+    promptMatrix || "- No prompts captured yet.",
+    "",
+    "## Answer Snapshot Evidence",
+    snapshotEvidence || "- No answer snapshots captured yet.",
+    "",
     "## Findings",
     findings || "- No findings generated yet.",
     "",
@@ -1977,14 +2071,33 @@ function geoAeoReportToMarkdown(data: GeoAeoReportData): string {
     actionItems,
     "",
     "## Methodology and Limitations",
-    "This report is based on manual/mock answer snapshots. RankMap does not guarantee AI recommendations, citations, rankings, traffic, or revenue.",
+    ...methodology.dataSources.map((source) => `- Data source: ${source}`),
+    ...methodology.limitations.map((limitation) => `- Limitation: ${limitation}`),
   ].join("\n");
 }
 
 function geoAeoReportToCsv(data: GeoAeoReportData): string {
+  const methodology = data.methodology ?? GEO_AEO_REPORT_METHODOLOGY;
   const rows = [
     ["section", "title", "status", "detail"],
-    ["summary", "AI Visibility Score", data.audit.visibilityLabel ?? "", String(data.audit.visibilityScore ?? "")],
+    [
+      "summary",
+      "AI Visibility Score",
+      data.audit.visibilityLabel ?? "",
+      String(data.audit.visibilityScore ?? ""),
+    ],
+    ...geoAeoPromptMatrixRows(data).map((row) => [
+      "prompt_matrix",
+      row.promptText,
+      row.status,
+      `intent=${row.intent}; funnel=${row.funnelStage}; service=${row.serviceOrProduct}; location=${row.location}; snapshots=${row.snapshotCount}; engines=${row.engines}; mentioned=${row.clientMentionedCount}; cited=${row.clientCitedCount}`,
+    ]),
+    ...(data.snapshots ?? []).map((snapshot) => [
+      "answer_snapshot",
+      `${snapshot.engine} prompt ${snapshot.promptId}`,
+      snapshot.clientMentioned ? "mentioned" : "not_mentioned",
+      `${snapshot.answerText}; ${snapshot.clientCited ? "cited" : "not_cited"}; ${snapshot.captureMethod}`,
+    ]),
     ...data.findings.map((findingRecord) => [
       "finding",
       findingRecord.title,
@@ -1997,9 +2110,40 @@ function geoAeoReportToCsv(data: GeoAeoReportData): string {
       item.status,
       `week ${item.weekNumber}: ${item.description ?? ""}`,
     ]) ?? []),
+    ...methodology.dataSources.map((source) => ["methodology", "Data source", "", source]),
+    ...methodology.limitations.map((limitation) => ["limitations", "Limitation", "", limitation]),
   ];
 
   return rows.map((row) => row.map(csvCell).join(",")).join("\n");
+}
+
+function geoAeoPromptMatrixRows(data: GeoAeoReportData) {
+  const snapshotsByPromptId = new Map<number, NonNullable<GeoAeoReportData["snapshots"]>>();
+  for (const snapshot of data.snapshots ?? []) {
+    const existing = snapshotsByPromptId.get(snapshot.promptId) ?? [];
+    existing.push(snapshot);
+    snapshotsByPromptId.set(snapshot.promptId, existing);
+  }
+
+  return (data.prompts ?? []).map((prompt) => {
+    const promptSnapshots = snapshotsByPromptId.get(prompt.id) ?? [];
+    const engines = Array.from(new Set(promptSnapshots.map((snapshot) => snapshot.engine))).join(
+      ", ",
+    );
+
+    return {
+      promptText: prompt.promptText,
+      status: prompt.status,
+      intent: prompt.intent ?? "",
+      funnelStage: prompt.funnelStage ?? "",
+      serviceOrProduct: prompt.serviceOrProduct ?? "",
+      location: prompt.location ?? "",
+      snapshotCount: promptSnapshots.length,
+      engines,
+      clientMentionedCount: promptSnapshots.filter((snapshot) => snapshot.clientMentioned).length,
+      clientCitedCount: promptSnapshots.filter((snapshot) => snapshot.clientCited).length,
+    };
+  });
 }
 
 function geoAeoReportToPdf(data: GeoAeoReportData): string {
@@ -2032,7 +2176,8 @@ function geoAeoReportToPdf(data: GeoAeoReportData): string {
       `/Contents ${contentObjectId} 0 R`,
       ">>",
     ].join(" ");
-    objects[contentObjectId] = `<< /Length ${Buffer.byteLength(stream, "ascii")} >>\nstream\n${stream}\nendstream`;
+    objects[contentObjectId] =
+      `<< /Length ${Buffer.byteLength(stream, "ascii")} >>\nstream\n${stream}\nendstream`;
   }
 
   objects[pagesObjectId] =
@@ -2123,7 +2268,9 @@ function chunkArray<T>(items: T[], size: number): T[][] {
 
 function csvCell(value: string): string {
   const neutralizedValue = neutralizeCsvCell(value);
-  return /[",\n\r]/.test(neutralizedValue) ? `"${neutralizedValue.replace(/"/g, '""')}"` : neutralizedValue;
+  return /[",\n\r]/.test(neutralizedValue)
+    ? `"${neutralizedValue.replace(/"/g, '""')}"`
+    : neutralizedValue;
 }
 
 function toAnswerSnapshotInsert(
@@ -2179,23 +2326,63 @@ function buildFindingRows(params: {
   const rows: (typeof geoAeoFindingsTable.$inferInsert)[] = [];
 
   if ((params.scoreInputs.brandMentionCoverage ?? 0) < 60) {
-    rows.push(finding(params, "brand_not_mentioned", "high", "Brand is underrepresented in answer snapshots", "Increase AI-citable brand/entity clarity across priority pages and sources."));
+    rows.push(
+      finding(
+        params,
+        "brand_not_mentioned",
+        "high",
+        "Brand is underrepresented in answer snapshots",
+        "Increase AI-citable brand/entity clarity across priority pages and sources.",
+      ),
+    );
   }
 
   if ((params.scoreInputs.citationCoverage ?? 0) < 50) {
-    rows.push(finding(params, "brand_not_cited", "high", "Client-owned sources are rarely cited", "Strengthen authoritative source pages and ensure service pages answer target questions directly."));
+    rows.push(
+      finding(
+        params,
+        "brand_not_cited",
+        "high",
+        "Client-owned sources are rarely cited",
+        "Strengthen authoritative source pages and ensure service pages answer target questions directly.",
+      ),
+    );
   }
 
   if (params.competitorMentionCount > params.clientMentionCount) {
-    rows.push(finding(params, "competitor_dominates", "medium", "Competitors appear more often than the client", "Create comparison, proof, and service pages that answer the questions where competitors currently appear."));
+    rows.push(
+      finding(
+        params,
+        "competitor_dominates",
+        "medium",
+        "Competitors appear more often than the client",
+        "Create comparison, proof, and service pages that answer the questions where competitors currently appear.",
+      ),
+    );
   }
 
   if (params.citationCount === 0) {
-    rows.push(finding(params, "source_gap", "medium", "No citation URLs were found in snapshots", "Add source tracking and improve pages likely to be used as AI answer citations."));
+    rows.push(
+      finding(
+        params,
+        "source_gap",
+        "medium",
+        "No citation URLs were found in snapshots",
+        "Add source tracking and improve pages likely to be used as AI answer citations.",
+      ),
+    );
   }
 
   if (params.score < 60) {
-    rows.push(finding(params, "entity_clarity_gap", "medium", "AI visibility score indicates entity clarity risk", "Clarify who the business serves, where it operates, and what proof supports recommendations."));
+    rows.push(
+      finding(
+        params,
+        "entity_clarity_gap",
+        "medium",
+        "AI visibility score indicates entity clarity risk",
+        "Clarify who the business serves, where it operates, and what proof supports recommendations.",
+      ),
+    );
   }
 
   return rows;
@@ -2227,9 +2414,17 @@ function extractBrandTerms(websiteUrl: string, auditName: string): string[] {
 
 function hostWithoutWww(value: string): string {
   try {
-    return new URL(value.startsWith("http") ? value : `https://${value}`).hostname.replace(/^www\./, "");
+    return new URL(value.startsWith("http") ? value : `https://${value}`).hostname.replace(
+      /^www\./,
+      "",
+    );
   } catch {
-    return value.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0] ?? value;
+    return (
+      value
+        .replace(/^https?:\/\//, "")
+        .replace(/^www\./, "")
+        .split("/")[0] ?? value
+    );
   }
 }
 
@@ -2296,7 +2491,8 @@ function buildActionItems(params: {
       auditId: params.auditId,
       actionPlanId: params.actionPlanId,
       title: "Review AI visibility snapshots and identify source gaps",
-      description: "Use manual snapshots to confirm where the client is mentioned, cited, or missing.",
+      description:
+        "Use manual snapshots to confirm where the client is mentioned, cited, or missing.",
       category: "measurement",
       priority: "medium",
       weekNumber: 1,

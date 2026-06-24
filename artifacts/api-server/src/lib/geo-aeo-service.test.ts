@@ -286,7 +286,7 @@ describe("GEO/AEO service hardening", () => {
             niche: "Local services",
             projectId: 9,
             visibilityScore: 75,
-            visibilityLabel: "=HYPERLINK(\"https://attacker.test\")",
+            visibilityLabel: '=HYPERLINK("https://attacker.test")',
           },
           summary: {
             promptCount: 1,
@@ -294,12 +294,34 @@ describe("GEO/AEO service hardening", () => {
             findingCount: 1,
             actionItemCount: 1,
           },
+          prompts: [
+            {
+              id: 7,
+              promptText: "=Ask about us",
+              status: "approved",
+              intent: "comparison",
+              funnelStage: "consideration",
+              serviceOrProduct: "Visibility",
+              location: "US",
+            },
+          ],
+          snapshots: [
+            {
+              id: 8,
+              promptId: 7,
+              engine: "chatgpt",
+              captureMethod: "manual_paste",
+              answerText: "+Snapshot formula",
+              clientMentioned: true,
+              clientCited: false,
+            },
+          ],
           findings: [
             {
               id: 1,
               title: "+SUM(1,2)",
               status: "approved",
-              recommendation: "@IMPORTXML(\"https://attacker.test\")",
+              recommendation: '@IMPORTXML("https://attacker.test")',
             },
           ],
           actionPlan: {
@@ -326,9 +348,14 @@ describe("GEO/AEO service hardening", () => {
 
     expect(exported?.contentType).toBe("text/csv");
     expect(exported?.body).toContain("'=HYPERLINK");
+    expect(exported?.body).toContain("'=Ask about us");
+    expect(exported?.body).toContain("'+Snapshot formula");
     expect(exported?.body).toContain("'+SUM(1,2)");
     expect(exported?.body).toContain("'@IMPORTXML");
     expect(exported?.body).toContain("'-CMD");
+    expect(exported?.body).toContain("prompt_matrix");
+    expect(exported?.body).toContain("answer_snapshot");
+    expect(exported?.body).toContain("limitations");
     expect(exported?.body).not.toContain("\n=2+2");
   });
 
@@ -354,6 +381,28 @@ describe("GEO/AEO service hardening", () => {
             findingCount: 1,
             actionItemCount: 1,
           },
+          prompts: [
+            {
+              id: 7,
+              promptText: "Who recommends PDF Audit?",
+              status: "approved",
+              intent: "recommendation",
+              funnelStage: "consideration",
+              serviceOrProduct: "Local services",
+              location: "US",
+            },
+          ],
+          snapshots: [
+            {
+              id: 8,
+              promptId: 7,
+              engine: "perplexity",
+              captureMethod: "manual_paste",
+              answerText: "PDF Audit appears in the answer.",
+              clientMentioned: true,
+              clientCited: true,
+            },
+          ],
           findings: [
             {
               id: 1,
@@ -378,6 +427,8 @@ describe("GEO/AEO service hardening", () => {
     expect(exported?.filename).toBe("geo-aeo-report-56.pdf");
     expect(exported?.body.startsWith("%PDF-1.4")).toBe(true);
     expect(exported?.body).toContain("PDF Audit GEO/AEO Visibility Audit");
+    expect(exported?.body).toContain("Prompt Matrix");
+    expect(exported?.body).toContain("Methodology and Limitations");
     expect(exported?.body).toContain("%%EOF");
   });
 
