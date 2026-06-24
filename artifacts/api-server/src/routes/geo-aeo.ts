@@ -69,6 +69,8 @@ import {
   listGeoAeoSourceRecommendations,
   parseGeoAeoPromptCsv,
   parseGeoAeoSnapshotCsv,
+  previewGeoAeoPromptCsv,
+  previewGeoAeoSnapshotCsv,
   softDeleteGeoAeoActionItem,
   softDeleteGeoAeoCitation,
   softDeleteGeoAeoCompetitor,
@@ -283,6 +285,38 @@ router.post(
 );
 
 router.post(
+  "/geo-aeo/audits/:auditId/prompts/import/preview",
+  requireAuth,
+  requireRole(GEO_AEO_OPERATOR_ROLES),
+  async (req, res): Promise<void> => {
+    const auditId = parseId(req.params.auditId);
+    if (auditId === null) {
+      res.status(400).json({ error: "Invalid auditId" });
+      return;
+    }
+
+    const parsed = geoAeoPromptImportCsvSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid input", details: parsed.error.issues });
+      return;
+    }
+
+    const { tenantId } = req.session.user!;
+    if (!(await getTenantScopedGeoAeoAudit(auditId, tenantId))) {
+      res.status(404).json({ error: "Audit not found" });
+      return;
+    }
+
+    const preview = await previewGeoAeoPromptCsv({
+      tenantId,
+      auditId,
+      csvText: parsed.data.csvText,
+    });
+    res.json(preview);
+  },
+);
+
+router.post(
   "/geo-aeo/audits/:auditId/prompts/import",
   requireAuth,
   requireRole(GEO_AEO_OPERATOR_ROLES),
@@ -302,6 +336,22 @@ router.post(
     const { tenantId, id: userId } = req.session.user!;
     if (!(await getTenantScopedGeoAeoAudit(auditId, tenantId))) {
       res.status(404).json({ error: "Audit not found" });
+      return;
+    }
+
+    const preview = await previewGeoAeoPromptCsv({
+      tenantId,
+      auditId,
+      csvText: parsed.data.csvText,
+    });
+    if (preview.invalidRows > 0 || preview.duplicateRows > 0) {
+      res.status(400).json({
+        error: "Invalid CSV",
+        details: [...preview.invalid, ...preview.duplicates].map(
+          (issue) => `Row ${issue.row}: ${issue.reason}`,
+        ),
+        preview,
+      });
       return;
     }
 
@@ -398,6 +448,38 @@ router.post(
 );
 
 router.post(
+  "/geo-aeo/audits/:auditId/snapshots/import-csv/preview",
+  requireAuth,
+  requireRole(GEO_AEO_OPERATOR_ROLES),
+  async (req, res): Promise<void> => {
+    const auditId = parseId(req.params.auditId);
+    if (auditId === null) {
+      res.status(400).json({ error: "Invalid auditId" });
+      return;
+    }
+
+    const parsed = geoAeoSnapshotImportCsvSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid input", details: parsed.error.issues });
+      return;
+    }
+
+    const { tenantId } = req.session.user!;
+    if (!(await getTenantScopedGeoAeoAudit(auditId, tenantId))) {
+      res.status(404).json({ error: "Audit not found" });
+      return;
+    }
+
+    const preview = await previewGeoAeoSnapshotCsv({
+      tenantId,
+      auditId,
+      csvText: parsed.data.csvText,
+    });
+    res.json(preview);
+  },
+);
+
+router.post(
   "/geo-aeo/audits/:auditId/snapshots/import-csv",
   requireAuth,
   requireRole(GEO_AEO_OPERATOR_ROLES),
@@ -417,6 +499,22 @@ router.post(
     const { tenantId, id: userId } = req.session.user!;
     if (!(await getTenantScopedGeoAeoAudit(auditId, tenantId))) {
       res.status(404).json({ error: "Audit not found" });
+      return;
+    }
+
+    const preview = await previewGeoAeoSnapshotCsv({
+      tenantId,
+      auditId,
+      csvText: parsed.data.csvText,
+    });
+    if (preview.invalidRows > 0 || preview.duplicateRows > 0) {
+      res.status(400).json({
+        error: "Invalid CSV",
+        details: [...preview.invalid, ...preview.duplicates].map(
+          (issue) => `Row ${issue.row}: ${issue.reason}`,
+        ),
+        preview,
+      });
       return;
     }
 

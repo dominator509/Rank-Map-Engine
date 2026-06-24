@@ -89,6 +89,73 @@ describe("GEO/AEO service hardening", () => {
     dbState.selectRows = [];
   });
 
+  it("previews prompt CSV rows with invalid and duplicate counts", async () => {
+    dbState.selectRows = [
+      [{ id: 5, normalizedPrompt: "who cites us?", promptText: "Who cites us?" }],
+    ];
+    const { previewGeoAeoPromptCsv } = await import("./geo-aeo-service.js");
+
+    const preview = await previewGeoAeoPromptCsv({
+      tenantId: 7,
+      auditId: 101,
+      csvText:
+        "promptText,priority\n" +
+        "Who cites us?,50\n" +
+        "What sources mention us?,60\n" +
+        "What sources mention us?,70\n" +
+        ",80",
+    });
+
+    expect(preview).toEqual({
+      totalRows: 4,
+      validRows: 1,
+      invalidRows: 1,
+      duplicateRows: 2,
+      invalid: [{ row: 5, reason: "Required" }],
+      duplicates: [
+        { row: 2, reason: "Duplicate prompt text already exists in this audit." },
+        { row: 4, reason: "Duplicate prompt text already appears on row 3." },
+      ],
+    });
+  });
+
+  it("previews snapshot CSV rows with missing prompt and duplicate counts", async () => {
+    dbState.selectRows = [
+      [{ id: 11 }],
+      [
+        {
+          promptId: 11,
+          engine: "chatgpt",
+          answerHash: "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+        },
+      ],
+    ];
+    const { previewGeoAeoSnapshotCsv } = await import("./geo-aeo-service.js");
+
+    const preview = await previewGeoAeoSnapshotCsv({
+      tenantId: 7,
+      auditId: 101,
+      csvText:
+        "promptId,engine,captureMethod,answerText\n" +
+        "11,chatgpt,csv_import,hello\n" +
+        "11,perplexity,csv_import,new answer\n" +
+        "11,perplexity,csv_import,new answer\n" +
+        "12,chatgpt,csv_import,missing prompt",
+    });
+
+    expect(preview).toEqual({
+      totalRows: 4,
+      validRows: 1,
+      invalidRows: 1,
+      duplicateRows: 2,
+      invalid: [{ row: 5, reason: "Prompt 12 was not found in this audit." }],
+      duplicates: [
+        { row: 2, reason: "Duplicate snapshot already exists in this audit." },
+        { row: 4, reason: "Duplicate snapshot already appears on row 3." },
+      ],
+    });
+  });
+
   it("stores audit approval metadata when approving an audit", async () => {
     const { updateGeoAeoAudit } = await import("./geo-aeo-service.js");
     const approvedAtBeforeCall = Date.now();

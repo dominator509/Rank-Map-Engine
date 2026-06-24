@@ -53,6 +53,20 @@ const ENGINE_DISPLAY_NAMES: Record<string, string> = {
 
 type GeoAeoReportFormat = "markdown" | "csv" | "json" | "pdf";
 
+export type GeoAeoCsvPreviewIssue = {
+  row: number;
+  reason: string;
+};
+
+export type GeoAeoCsvImportPreview = {
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  duplicateRows: number;
+  invalid: GeoAeoCsvPreviewIssue[];
+  duplicates: GeoAeoCsvPreviewIssue[];
+};
+
 export interface ListGeoAeoAuditsParams {
   tenantId: number;
   clientId?: number;
@@ -272,6 +286,87 @@ export function parseGeoAeoPromptCsv(csvText: string, auditId: number): {
   return { prompts, errors };
 }
 
+export async function previewGeoAeoPromptCsv(params: {
+  tenantId: number;
+  auditId: number;
+  csvText: string;
+}): Promise<GeoAeoCsvImportPreview> {
+  const existingPrompts = await db
+    .select({
+      id: geoAeoPromptsTable.id,
+      normalizedPrompt: geoAeoPromptsTable.normalizedPrompt,
+      promptText: geoAeoPromptsTable.promptText,
+    })
+    .from(geoAeoPromptsTable)
+    .where(
+      and(
+        eq(geoAeoPromptsTable.tenantId, params.tenantId),
+        eq(geoAeoPromptsTable.auditId, params.auditId),
+        isNull(geoAeoPromptsTable.deletedAt),
+      ),
+    );
+
+  const existingNormalized = new Set(
+    existingPrompts.map((prompt) => prompt.normalizedPrompt ?? normalizePrompt(prompt.promptText)),
+  );
+  const seenNormalized = new Map<string, number>();
+  const invalid: GeoAeoCsvPreviewIssue[] = [];
+  const duplicates: GeoAeoCsvPreviewIssue[] = [];
+
+  parseCsvObjects(params.csvText).forEach((row, index) => {
+    const rowNumber = index + 2;
+    const parsed = geoAeoPromptCreateSchema.safeParse({
+      auditId: params.auditId,
+      promptText: row.promptText || row.prompt || row.question,
+      intent: emptyToUndefined(row.intent),
+      funnelStage: emptyToUndefined(row.funnelStage),
+      serviceOrProduct: emptyToUndefined(row.serviceOrProduct),
+      location: emptyToUndefined(row.location),
+      priority: row.priority ? Number(row.priority) : undefined,
+    });
+
+    if (!parsed.success) {
+      invalid.push({
+        row: rowNumber,
+        reason: parsed.error.issues.map((issue) => issue.message).join("; "),
+      });
+      return;
+    }
+
+    const normalizedPrompt = normalizePrompt(parsed.data.promptText);
+    const firstSeenRow = seenNormalized.get(normalizedPrompt);
+    if (firstSeenRow !== undefined) {
+      duplicates.push({
+        row: rowNumber,
+        reason: `Duplicate prompt text already appears on row ${firstSeenRow}.`,
+      });
+      return;
+    }
+    if (existingNormalized.has(normalizedPrompt)) {
+      duplicates.push({
+        row: rowNumber,
+        reason: "Duplicate prompt text already exists in this audit.",
+      });
+      return;
+    }
+
+    seenNormalized.set(normalizedPrompt, rowNumber);
+  });
+
+  const totalRows = parseCsvObjects(params.csvText).length;
+  const duplicateRows = duplicates.length;
+  const invalidRows = invalid.length;
+
+  return {
+    totalRows,
+    validRows: Math.max(totalRows - invalidRows - duplicateRows, 0),
+    invalidRows,
+    duplicateRows,
+    invalid,
+    duplicates,
+  };
+}
+
 export async function createGeoAeoPrompts(params: {
   tenantId: number;
   userId: number;
@@ -355,6 +450,115 @@ export function parseGeoAeoSnapshotCsv(csvText: string, auditId: number): {
   });
 
   return { snapshots, errors };
+}
+
+export async function previewGeoAeoSnapshotCsv(params: {
+  tenantId: number;
+  auditId: number;
+  csvText: string;
+}): Promise<GeoAeoCsvImportPreview> {
+  const [existingPrompts, existingSnapshots] = await Promise.all([
+    db
+      .select({ id: geoAeoPromptsTable.id })
+      .from(geoAeoPromptsTable)
+      .where(
+        and(
+          eq(geoAeoPromptsTable.tenantId, params.tenantId),
+          eq(geoAeoPromptsTable.auditId, params.auditId),
+          isNull(geoAeoPromptsTable.deletedAt),
+        ),
+      ),
+    db
+      .select({
+        promptId: geoAeoAnswerSnapshotsTable.promptId,
+        engine: geoAeoAnswerSnapshotsTable.engine,
+        answerHash: geoAeoAnswerSnapshotsTable.answerHash,
+      })
+      .from(geoAeoAnswerSnapshotsTable)
+      .where(
+        and(
+          eq(geoAeoAnswerSnapshotsTable.tenantId, params.tenantId),
+          eq(geoAeoAnswerSnapshotsTable.auditId, params.auditId),
+          isNull(geoAeoAnswerSnapshotsTable.deletedAt),
+        ),
+      ),
+  ]);
+
+  const promptIds = new Set(existingPrompts.map((prompt) => prompt.id));
+  const existingSnapshotKeys = new Set(
+    existingSnapshots.map((snapshot) =>
+      snapshotDuplicateKey(snapshot.promptId, snapshot.engine, snapshot.answerHash),
+    ),
+  );
+  const seenSnapshotKeys = new Map<string, number>();
+  const invalid: GeoAeoCsvPreviewIssue[] = [];
+  const duplicates: GeoAeoCsvPreviewIssue[] = [];
+
+  parseCsvObjects(params.csvText).forEach((row, index) => {
+    const rowNumber = index + 2;
+    const parsed = geoAeoSnapshotCreateSchema.safeParse({
+      auditId: params.auditId,
+      promptId: row.promptId ? Number(row.promptId) : undefined,
+      promptVariantId: row.promptVariantId ? Number(row.promptVariantId) : undefined,
+      engine: row.engine,
+      captureMethod: row.captureMethod || "csv_import",
+      answerText: row.answerText || row.answer,
+      capturedAt: emptyToUndefined(row.capturedAt),
+      locationContext: emptyToUndefined(row.locationContext),
+    });
+
+    if (!parsed.success) {
+      invalid.push({
+        row: rowNumber,
+        reason: parsed.error.issues.map((issue) => issue.message).join("; "),
+      });
+      return;
+    }
+
+    if (!promptIds.has(parsed.data.promptId)) {
+      invalid.push({
+        row: rowNumber,
+        reason: `Prompt ${parsed.data.promptId} was not found in this audit.`,
+      });
+      return;
+    }
+
+    const key = snapshotDuplicateKey(
+      parsed.data.promptId,
+      parsed.data.engine,
+      createAnswerHash(parsed.data.answerText),
+    );
+    const firstSeenRow = seenSnapshotKeys.get(key);
+    if (firstSeenRow !== undefined) {
+      duplicates.push({
+        row: rowNumber,
+        reason: `Duplicate snapshot already appears on row ${firstSeenRow}.`,
+      });
+      return;
+    }
+    if (existingSnapshotKeys.has(key)) {
+      duplicates.push({
+        row: rowNumber,
+        reason: "Duplicate snapshot already exists in this audit.",
+      });
+      return;
+    }
+
+    seenSnapshotKeys.set(key, rowNumber);
+  });
+
+  const totalRows = parseCsvObjects(params.csvText).length;
+  const duplicateRows = duplicates.length;
+  const invalidRows = invalid.length;
+
+  return {
+    totalRows,
+    validRows: Math.max(totalRows - invalidRows - duplicateRows, 0),
+    invalidRows,
+    duplicateRows,
+    invalid,
+    duplicates,
+  };
 }
 
 export async function createGeoAeoAnswerSnapshots(params: {
@@ -1779,11 +1983,19 @@ function toAnswerSnapshotInsert(
     engineMode: input.captureMethod === "csv_import" ? "consumer_manual" : "consumer_manual",
     captureMethod: input.captureMethod,
     answerText: input.answerText,
-    answerHash: createHash("sha256").update(input.answerText).digest("hex"),
+    answerHash: createAnswerHash(input.answerText),
     locationContext: input.locationContext ?? null,
     capturedAt: input.capturedAt ? new Date(input.capturedAt) : new Date(),
     createdById: userId,
   };
+}
+
+function createAnswerHash(answerText: string): string {
+  return createHash("sha256").update(answerText).digest("hex");
+}
+
+function snapshotDuplicateKey(promptId: number, engine: string, answerHash: string): string {
+  return `${promptId}:${engine}:${answerHash}`;
 }
 
 function normalizePrompt(promptText: string): string {

@@ -11,10 +11,12 @@ const serviceMocks = vi.hoisted(() => ({
   createGeoAeoPrompt: vi.fn(),
   createGeoAeoPrompts: vi.fn(),
   parseGeoAeoPromptCsv: vi.fn(),
+  previewGeoAeoPromptCsv: vi.fn(),
   listGeoAeoAnswerSnapshots: vi.fn(),
   createGeoAeoAnswerSnapshot: vi.fn(),
   createGeoAeoAnswerSnapshots: vi.fn(),
   parseGeoAeoSnapshotCsv: vi.fn(),
+  previewGeoAeoSnapshotCsv: vi.fn(),
   updateGeoAeoAnswerSnapshot: vi.fn(),
   listGeoAeoCompetitors: vi.fn(),
   createGeoAeoCompetitor: vi.fn(),
@@ -145,6 +147,22 @@ beforeEach(() => {
     contentType: "text/markdown",
     report: { id: 301 },
   });
+  serviceMocks.previewGeoAeoPromptCsv.mockResolvedValue({
+    totalRows: 1,
+    validRows: 1,
+    invalidRows: 0,
+    duplicateRows: 0,
+    invalid: [],
+    duplicates: [],
+  });
+  serviceMocks.previewGeoAeoSnapshotCsv.mockResolvedValue({
+    totalRows: 1,
+    validRows: 1,
+    invalidRows: 0,
+    duplicateRows: 0,
+    invalid: [],
+    duplicates: [],
+  });
   serviceMocks.createGeoAeoCitation.mockResolvedValue({
     id: 401,
     auditId: 101,
@@ -211,6 +229,98 @@ describe("GEO/AEO route security and approval boundaries", () => {
 
       expect(response.status).toBe(403);
       expect(serviceMocks.parseGeoAeoSnapshotCsv).not.toHaveBeenCalled();
+    } finally {
+      await close();
+    }
+  });
+
+  it("previews prompt imports without creating prompts", async () => {
+    const { baseUrl, close } = await bootGeoAeoRoute();
+    try {
+      const forbidden = await fetch(`${baseUrl}/geo-aeo/audits/101/prompts/import/preview`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-role": "client" },
+        body: JSON.stringify({ csvText: "promptText\nWho cites us?" }),
+      });
+
+      expect(forbidden.status).toBe(403);
+      expect(serviceMocks.previewGeoAeoPromptCsv).not.toHaveBeenCalled();
+
+      const preview = await fetch(`${baseUrl}/geo-aeo/audits/101/prompts/import/preview`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-role": "agency_admin" },
+        body: JSON.stringify({ csvText: "promptText\nWho cites us?" }),
+      });
+
+      expect(preview.status).toBe(200);
+      expect(await preview.json()).toEqual({
+        totalRows: 1,
+        validRows: 1,
+        invalidRows: 0,
+        duplicateRows: 0,
+        invalid: [],
+        duplicates: [],
+      });
+      expect(serviceMocks.previewGeoAeoPromptCsv).toHaveBeenCalledWith({
+        tenantId: 7,
+        auditId: 101,
+        csvText: "promptText\nWho cites us?",
+      });
+      expect(serviceMocks.createGeoAeoPrompts).not.toHaveBeenCalled();
+    } finally {
+      await close();
+    }
+  });
+
+  it("previews snapshot imports without creating snapshots", async () => {
+    const { baseUrl, close } = await bootGeoAeoRoute();
+    try {
+      const preview = await fetch(`${baseUrl}/geo-aeo/audits/101/snapshots/import-csv/preview`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-role": "agency_admin" },
+        body: JSON.stringify({
+          csvText: "promptId,engine,captureMethod,answerText\n1,chatgpt,csv_import,x",
+        }),
+      });
+
+      expect(preview.status).toBe(200);
+      expect(serviceMocks.previewGeoAeoSnapshotCsv).toHaveBeenCalledWith({
+        tenantId: 7,
+        auditId: 101,
+        csvText: "promptId,engine,captureMethod,answerText\n1,chatgpt,csv_import,x",
+      });
+      expect(serviceMocks.createGeoAeoAnswerSnapshots).not.toHaveBeenCalled();
+    } finally {
+      await close();
+    }
+  });
+
+  it("rejects duplicate prompt imports using the preview gate", async () => {
+    const { baseUrl, close } = await bootGeoAeoRoute();
+    serviceMocks.previewGeoAeoPromptCsv.mockResolvedValueOnce({
+      totalRows: 1,
+      validRows: 0,
+      invalidRows: 0,
+      duplicateRows: 1,
+      invalid: [],
+      duplicates: [{ row: 2, reason: "Duplicate prompt text already exists in this audit." }],
+    });
+    try {
+      const response = await fetch(`${baseUrl}/geo-aeo/audits/101/prompts/import`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-role": "agency_admin" },
+        body: JSON.stringify({ csvText: "promptText\nWho cites us?" }),
+      });
+
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual(
+        expect.objectContaining({
+          error: "Invalid CSV",
+          details: ["Row 2: Duplicate prompt text already exists in this audit."],
+        }),
+      );
+      expect(serviceMocks.parseGeoAeoPromptCsv).not.toHaveBeenCalled();
+      expect(serviceMocks.createGeoAeoPrompts).not.toHaveBeenCalled();
     } finally {
       await close();
     }

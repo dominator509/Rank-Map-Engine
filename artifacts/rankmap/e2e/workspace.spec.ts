@@ -245,6 +245,8 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
       "promptText,intent,funnelStage,serviceOrProduct,location,priority\n" +
         `"What is the best AI visibility platform for SaaS teams?","commercial","decision","AI visibility","US","90"`,
     );
+  await page.getByTestId("geo-aeo-preview-prompts").click();
+  await expect(page.getByTestId("geo-aeo-import-preview-summary").getByText("1 valid")).toBeVisible();
   await page.getByTestId("geo-aeo-import-prompts").click();
   await expect(page.getByText("Prompts imported", { exact: true }).first()).toBeVisible();
 
@@ -254,6 +256,8 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
       "promptId,engine,captureMethod,answerText,locationContext\n" +
         `1,chatgpt,manual_paste,"${clientName} is a strong AI visibility choice. See https://${clientDomain}/ai-visibility for proof.",US`,
     );
+  await page.getByTestId("geo-aeo-preview-snapshots").click();
+  await expect(page.getByTestId("geo-aeo-import-preview-summary").getByText("1 valid")).toBeVisible();
   await page.getByTestId("geo-aeo-import-snapshots").click();
   await expect(page.getByText("Snapshots imported", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("1 answer snapshots")).toBeVisible();

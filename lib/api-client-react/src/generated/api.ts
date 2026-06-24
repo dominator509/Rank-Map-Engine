@@ -74,6 +74,7 @@ import type {
   GeoAeoCompetitorCreateBody,
   GeoAeoCompetitorUpdateBody,
   GeoAeoCsvImportBody,
+  GeoAeoCsvImportPreview,
   GeoAeoFinding,
   GeoAeoFindingUpdateBody,
   GeoAeoManualRecord,
@@ -4374,6 +4375,85 @@ export const useImportGeoAeoPrompts = <TError = ErrorType<unknown>, TContext = u
   return useMutation(getImportGeoAeoPromptsMutationOptions(options));
 };
 
+export const getPreviewGeoAeoPromptsImportUrl = (auditId: number) => {
+  return `/api/geo-aeo/audits/${auditId}/prompts/import/preview`;
+};
+
+export const previewGeoAeoPromptsImport = async (
+  auditId: number,
+  geoAeoCsvImportBody: GeoAeoCsvImportBody,
+  options?: RequestInit,
+): Promise<GeoAeoCsvImportPreview> => {
+  return customFetch<GeoAeoCsvImportPreview>(getPreviewGeoAeoPromptsImportUrl(auditId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(geoAeoCsvImportBody),
+  });
+};
+
+export const getPreviewGeoAeoPromptsImportMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof previewGeoAeoPromptsImport>>,
+    TError,
+    { auditId: number; data: BodyType<GeoAeoCsvImportBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof previewGeoAeoPromptsImport>>,
+  TError,
+  { auditId: number; data: BodyType<GeoAeoCsvImportBody> },
+  TContext
+> => {
+  const mutationKey = ["previewGeoAeoPromptsImport"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof previewGeoAeoPromptsImport>>,
+    { auditId: number; data: BodyType<GeoAeoCsvImportBody> }
+  > = (props) => {
+    const { auditId, data } = props ?? {};
+
+    return previewGeoAeoPromptsImport(auditId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PreviewGeoAeoPromptsImportMutationResult = NonNullable<
+  Awaited<ReturnType<typeof previewGeoAeoPromptsImport>>
+>;
+export type PreviewGeoAeoPromptsImportMutationBody = BodyType<GeoAeoCsvImportBody>;
+export type PreviewGeoAeoPromptsImportMutationError = ErrorType<unknown>;
+
+export const usePreviewGeoAeoPromptsImport = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof previewGeoAeoPromptsImport>>,
+    TError,
+    { auditId: number; data: BodyType<GeoAeoCsvImportBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof previewGeoAeoPromptsImport>>,
+  TError,
+  { auditId: number; data: BodyType<GeoAeoCsvImportBody> },
+  TContext
+> => {
+  return useMutation(getPreviewGeoAeoPromptsImportMutationOptions(options));
+};
+
 export const getListGeoAeoAnswerSnapshotsUrl = (auditId: number) => {
   return `/api/geo-aeo/audits/${auditId}/snapshots`;
 };
@@ -4595,6 +4675,85 @@ export const useImportGeoAeoAnswerSnapshots = <
   TContext
 > => {
   return useMutation(getImportGeoAeoAnswerSnapshotsMutationOptions(options));
+};
+
+export const getPreviewGeoAeoAnswerSnapshotsImportUrl = (auditId: number) => {
+  return `/api/geo-aeo/audits/${auditId}/snapshots/import-csv/preview`;
+};
+
+export const previewGeoAeoAnswerSnapshotsImport = async (
+  auditId: number,
+  geoAeoCsvImportBody: GeoAeoCsvImportBody,
+  options?: RequestInit,
+): Promise<GeoAeoCsvImportPreview> => {
+  return customFetch<GeoAeoCsvImportPreview>(getPreviewGeoAeoAnswerSnapshotsImportUrl(auditId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(geoAeoCsvImportBody),
+  });
+};
+
+export const getPreviewGeoAeoAnswerSnapshotsImportMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof previewGeoAeoAnswerSnapshotsImport>>,
+    TError,
+    { auditId: number; data: BodyType<GeoAeoCsvImportBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof previewGeoAeoAnswerSnapshotsImport>>,
+  TError,
+  { auditId: number; data: BodyType<GeoAeoCsvImportBody> },
+  TContext
+> => {
+  const mutationKey = ["previewGeoAeoAnswerSnapshotsImport"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof previewGeoAeoAnswerSnapshotsImport>>,
+    { auditId: number; data: BodyType<GeoAeoCsvImportBody> }
+  > = (props) => {
+    const { auditId, data } = props ?? {};
+
+    return previewGeoAeoAnswerSnapshotsImport(auditId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PreviewGeoAeoAnswerSnapshotsImportMutationResult = NonNullable<
+  Awaited<ReturnType<typeof previewGeoAeoAnswerSnapshotsImport>>
+>;
+export type PreviewGeoAeoAnswerSnapshotsImportMutationBody = BodyType<GeoAeoCsvImportBody>;
+export type PreviewGeoAeoAnswerSnapshotsImportMutationError = ErrorType<unknown>;
+
+export const usePreviewGeoAeoAnswerSnapshotsImport = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof previewGeoAeoAnswerSnapshotsImport>>,
+    TError,
+    { auditId: number; data: BodyType<GeoAeoCsvImportBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof previewGeoAeoAnswerSnapshotsImport>>,
+  TError,
+  { auditId: number; data: BodyType<GeoAeoCsvImportBody> },
+  TContext
+> => {
+  return useMutation(getPreviewGeoAeoAnswerSnapshotsImportMutationOptions(options));
 };
 
 export const getUpdateGeoAeoAnswerSnapshotUrl = (snapshotId: number) => {

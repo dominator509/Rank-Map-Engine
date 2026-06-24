@@ -1316,6 +1316,26 @@ paths:
               schema:
                 $ref: "#/components/schemas/GeoAeoPromptImportResult"
 
+  /geo-aeo/audits/{auditId}/prompts/import/preview:
+    post:
+      operationId: previewGeoAeoPromptsImport
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoCsvImportBody"
+      responses:
+        "200":
+          description: Previewed prompt CSV import rows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoCsvImportPreview"
+
   /geo-aeo/audits/{auditId}/snapshots:
     get:
       operationId: listGeoAeoAnswerSnapshots
@@ -1369,6 +1389,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GeoAeoSnapshotImportResult"
+
+  /geo-aeo/audits/{auditId}/snapshots/import-csv/preview:
+    post:
+      operationId: previewGeoAeoAnswerSnapshotsImport
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoCsvImportBody"
+      responses:
+        "200":
+          description: Previewed answer snapshot CSV import rows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoCsvImportPreview"
 
   /geo-aeo/snapshots/{snapshotId}:
     patch:
@@ -4692,6 +4732,44 @@ components:
           type: string
       required:
         - csvText
+
+    GeoAeoCsvPreviewIssue:
+      type: object
+      properties:
+        row:
+          type: integer
+        reason:
+          type: string
+      required:
+        - row
+        - reason
+
+    GeoAeoCsvImportPreview:
+      type: object
+      properties:
+        totalRows:
+          type: integer
+        validRows:
+          type: integer
+        invalidRows:
+          type: integer
+        duplicateRows:
+          type: integer
+        invalid:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoAeoCsvPreviewIssue"
+        duplicates:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoAeoCsvPreviewIssue"
+      required:
+        - totalRows
+        - validRows
+        - invalidRows
+        - duplicateRows
+        - invalid
+        - duplicates
 
     GeoAeoPromptImportResult:
       type: object

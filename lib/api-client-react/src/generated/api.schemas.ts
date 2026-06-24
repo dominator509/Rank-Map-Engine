@@ -755,6 +755,20 @@ export interface GeoAeoCsvImportBody {
   csvText: string;
 }
 
+export interface GeoAeoCsvPreviewIssue {
+  row: number;
+  reason: string;
+}
+
+export interface GeoAeoCsvImportPreview {
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  duplicateRows: number;
+  invalid: GeoAeoCsvPreviewIssue[];
+  duplicates: GeoAeoCsvPreviewIssue[];
+}
+
 export interface GeoAeoPromptImportResult {
   imported: number;
   prompts: GeoAeoPrompt[];

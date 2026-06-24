@@ -2,11 +2,11 @@
 
 ## Current GEO/AEO Phase
 
-G16 - Monthly Monitoring Scaffold
+G17 - Final Hardening and Smoke
 
 ## Current Task
 
-Continue final hardening after adding route tests, service hardening tests, OpenAPI/codegen coverage, route-drift parity, dependency security upgrades, manual fallback API surfaces, and the monthly monitoring scaffold for manual recurring GEO/AEO progress runs.
+Continue final hardening after adding route tests, service hardening tests, OpenAPI/codegen coverage, route-drift parity, dependency security upgrades, manual fallback API surfaces, the monthly monitoring scaffold, protected browser coverage, and operator import-preview safeguards.
 
 ## Discovery Note
 
@@ -103,6 +103,14 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - Tests/checks to run: focused GEO/AEO tests, route drift, API spec codegen, API/frontend typecheck, lint, browser e2e wrapper, full workspace tests, security gate, and build.
 - Rollback plan: remove the new soft-delete service helpers/routes/OpenAPI operations/generated clients and the UI trash controls while leaving add/edit/approve flows intact.
 
+## Checkpoint - 2026-06-24 Import Preview and Duplicate Detection
+
+- Current task: close the prompt/snapshot CSV preview gap called out in G6/G7 without enabling real answer-engine integrations.
+- Acceptance criteria targeted: operators can preview prompt and snapshot CSV files before import; preview responses show total, valid, invalid, and duplicate row counts plus row-level issue details; duplicate prompt text and duplicate snapshot prompt/engine/answer-hash rows are rejected before import; snapshot previews validate prompt IDs against the tenant-scoped audit; client-role users remain blocked; OpenAPI/generated clients include the preview operations; the protected browser workflow proves preview-before-import behavior.
+- Files expected to change: `geo-aeo-service.ts`, `geo-aeo.ts` routes, route/service tests, OpenAPI spec and generated clients, `artifacts/rankmap/src/pages/geo-aeo.tsx`, `artifacts/rankmap/e2e/workspace.spec.ts`, and this status document.
+- Tests/checks to run: focused GEO/AEO tests, route drift, API spec codegen, API/frontend typecheck, lint, browser e2e wrapper, full workspace tests, security gate, and build.
+- Rollback plan: remove the preview service helpers/routes/OpenAPI operations/generated clients and the UI preview controls while leaving the existing all-or-nothing CSV imports intact.
+
 ## Phase Checklist
 
 - [x] G0 discovery completed.
@@ -127,6 +135,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - [x] Operator score override and manual-record edit controls exposed in the GEO/AEO page.
 - [x] Manual action item creation/editing exposed in the GEO/AEO page.
 - [x] Manual competitor/source/schema/action item soft-delete exposed in the GEO/AEO page.
+- [x] Prompt/snapshot CSV import preview and duplicate gates added.
 - [ ] G17 final security hardening and smoke in progress.
 
 ## Tests/Checks Run
@@ -261,6 +270,17 @@ Continue final hardening after adding route tests, service hardening tests, Open
 | `corepack pnpm run test` | Pass | Full Vitest suite passed after manual delete controls: 83 passed, 4 e2e tests skipped by default gates. |
 | `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
 | `corepack pnpm run build` | Pass | Full workspace build passed after manual delete controls. |
+| `corepack pnpm --filter @workspace/api-spec run codegen` | Pass | Regenerated API client/Zod packages after adding prompt and snapshot CSV import preview operations. |
+| `corepack pnpm run api:route-drift:check` | Pass | OpenAPI route drift stayed zero after documenting preview routes. |
+| `corepack pnpm exec vitest run artifacts/api-server/src/lib/geo-aeo-service.test.ts artifacts/api-server/src/routes/geo-aeo.test.ts` | Pass | 21 focused GEO/AEO route/service tests passed after adding preview counts and duplicate import gates. |
+| `corepack pnpm --filter @workspace/api-server run typecheck` | Pass | API server typecheck passed after adding preview service/route logic. |
+| `corepack pnpm --filter @workspace/rankmap run typecheck` | Pass | RankMap frontend typecheck passed after adding preview controls and summaries. |
+| `corepack pnpm run lint` | Pass | ESLint completed with zero warnings after adding import preview controls. |
+| `corepack pnpm run test` | Pass | Full Vitest suite passed after import preview and duplicate gates: 88 passed, 4 e2e tests skipped by default gates. |
+| `corepack pnpm run test:e2e:browser` | Pass | Browser e2e wrapper passed after extending the protected GEO/AEO workflow to preview prompt and snapshot CSV imports before writing. Initial run exposed a strict locator assertion conflict between toast/live-region text; rerun passed after targeting the preview summary panel. |
+| `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
+| `corepack pnpm run build` | Pass | Full workspace build passed after import preview and duplicate gates. |
+| `corepack pnpm run test:e2e:api` | Pass | API e2e wrapper passed against a temporary Postgres database after the import preview increment. |
 
 ## Known Limitations
 
@@ -272,6 +292,8 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - GEO/AEO report generation currently requires a linked project because the existing shared `reports` table requires `projectId`.
 - GEO/AEO report export supports markdown, CSV, JSON, and PDF.
 - The frontend surface exposes primary manual fallback controls, monitoring creation/approval, score override, action item creation/editing, edit-in-place for competitors/source recommendations/schema findings, and soft-delete controls for manual competitors/source recommendations/schema findings/action items.
+- Prompt and snapshot CSV imports now have operator-only preview endpoints/UI summaries with valid/invalid/duplicate row counts, and imports reject duplicate prompt text or duplicate prompt/engine/answer-hash snapshots before writing rows.
+- Snapshot import rollback/delete import remains unimplemented; snapshot rows can be corrected through existing update flows, but there is no batch import rollback model yet.
 - Client-role GEO/AEO views are tenant-scoped and approved-only, but the current user schema has no per-client contact assignment model, so row-level client-contact scoping would require a future data-model addition.
 - OpenAPI and generated client/Zod packages now include GEO/AEO routes; the first frontend surface still uses `customFetch` directly.
 - Repo API and browser e2e wrappers now pass against temporary Postgres databases, including an authenticated GEO/AEO protected browser journey for the manual fallback workflow.

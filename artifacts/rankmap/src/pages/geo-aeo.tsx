@@ -34,6 +34,7 @@ import {
   FlaskConical,
   Play,
   PlusCircle,
+  Search,
   ShieldCheck,
   Trash2,
   Upload,
@@ -164,6 +165,20 @@ type GeoAeoMonitoringRun = {
   approvedAt?: string | null;
 };
 
+type GeoAeoCsvPreviewIssue = {
+  row: number;
+  reason: string;
+};
+
+type GeoAeoCsvImportPreview = {
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  duplicateRows: number;
+  invalid: GeoAeoCsvPreviewIssue[];
+  duplicates: GeoAeoCsvPreviewIssue[];
+};
+
 type ClientAuditDetail = {
   audit: GeoAeoAudit;
   findings: GeoAeoFinding[];
@@ -220,6 +235,29 @@ function ScoreCard({ audit }: { audit: GeoAeoAudit }) {
   );
 }
 
+function CsvPreviewSummary({ preview }: { preview: GeoAeoCsvImportPreview }) {
+  const issues = [...preview.invalid, ...preview.duplicates].slice(0, 3);
+
+  return (
+    <div className="rounded-md border bg-muted/30 p-3 text-sm" data-testid="geo-aeo-import-preview-summary">
+      <div className="flex flex-wrap gap-2">
+        <Badge variant="outline">{preview.validRows} valid</Badge>
+        <Badge variant="outline">{preview.invalidRows} invalid</Badge>
+        <Badge variant="outline">{preview.duplicateRows} duplicate</Badge>
+      </div>
+      {issues.length > 0 && (
+        <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+          {issues.map((issue) => (
+            <li key={`${issue.row}-${issue.reason}`}>
+              Row {issue.row}: {issue.reason}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -239,6 +277,8 @@ export default function GeoAeo() {
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [promptCsv, setPromptCsv] = useState("");
   const [snapshotCsv, setSnapshotCsv] = useState("");
+  const [promptImportPreview, setPromptImportPreview] = useState<GeoAeoCsvImportPreview | null>(null);
+  const [snapshotImportPreview, setSnapshotImportPreview] = useState<GeoAeoCsvImportPreview | null>(null);
   const [competitorName, setCompetitorName] = useState("");
   const [competitorUrl, setCompetitorUrl] = useState("");
   const [citationSourceName, setCitationSourceName] = useState("");
@@ -470,6 +510,21 @@ export default function GeoAeo() {
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
 
+  const previewPromptImport = useMutation<GeoAeoCsvImportPreview>({
+    mutationFn: () =>
+      customFetch<GeoAeoCsvImportPreview>(`/api/geo-aeo/audits/${auditId}/prompts/import/preview`, {
+        method: "POST",
+        body: JSON.stringify({ csvText: promptCsv }),
+      }),
+    onSuccess: (preview) => {
+      setPromptImportPreview(preview);
+      toast({
+        title: `Prompt preview: ${preview.validRows} valid, ${preview.invalidRows} invalid, ${preview.duplicateRows} duplicate`,
+      });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
   const importPrompts = useMutation({
     mutationFn: () =>
       customFetch(`/api/geo-aeo/audits/${auditId}/prompts/import`, {
@@ -478,8 +533,27 @@ export default function GeoAeo() {
       }),
     onSuccess: () => {
       setPromptCsv("");
+      setPromptImportPreview(null);
       queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "prompts"] });
       toast({ title: "Prompts imported" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
+  const previewSnapshotImport = useMutation<GeoAeoCsvImportPreview>({
+    mutationFn: () =>
+      customFetch<GeoAeoCsvImportPreview>(
+        `/api/geo-aeo/audits/${auditId}/snapshots/import-csv/preview`,
+        {
+          method: "POST",
+          body: JSON.stringify({ csvText: snapshotCsv }),
+        },
+      ),
+    onSuccess: (preview) => {
+      setSnapshotImportPreview(preview);
+      toast({
+        title: `Snapshot preview: ${preview.validRows} valid, ${preview.invalidRows} invalid, ${preview.duplicateRows} duplicate`,
+      });
     },
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
@@ -492,6 +566,7 @@ export default function GeoAeo() {
       }),
     onSuccess: () => {
       setSnapshotCsv("");
+      setSnapshotImportPreview(null);
       queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "snapshots"] });
       toast({ title: "Snapshots imported" });
     },
@@ -1161,18 +1236,34 @@ export default function GeoAeo() {
                       <Textarea
                         data-testid="geo-aeo-prompt-csv"
                         value={promptCsv}
-                        onChange={(event) => setPromptCsv(event.target.value)}
+                        onChange={(event) => {
+                          setPromptCsv(event.target.value);
+                          setPromptImportPreview(null);
+                        }}
                         className="min-h-28"
                       />
-                      <Button
-                        data-testid="geo-aeo-import-prompts"
-                        size="sm"
-                        onClick={() => importPrompts.mutate()}
-                        disabled={!promptCsv || importPrompts.isPending}
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Import Prompts
-                      </Button>
+                      {promptImportPreview && <CsvPreviewSummary preview={promptImportPreview} />}
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          data-testid="geo-aeo-preview-prompts"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => previewPromptImport.mutate()}
+                          disabled={!promptCsv || previewPromptImport.isPending}
+                        >
+                          <Search className="mr-2 h-4 w-4" />
+                          Preview
+                        </Button>
+                        <Button
+                          data-testid="geo-aeo-import-prompts"
+                          size="sm"
+                          onClick={() => importPrompts.mutate()}
+                          disabled={!promptCsv || importPrompts.isPending}
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Import Prompts
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                   <Card>
@@ -1184,18 +1275,34 @@ export default function GeoAeo() {
                       <Textarea
                         data-testid="geo-aeo-snapshot-csv"
                         value={snapshotCsv}
-                        onChange={(event) => setSnapshotCsv(event.target.value)}
+                        onChange={(event) => {
+                          setSnapshotCsv(event.target.value);
+                          setSnapshotImportPreview(null);
+                        }}
                         className="min-h-28"
                       />
-                      <Button
-                        data-testid="geo-aeo-import-snapshots"
-                        size="sm"
-                        onClick={() => importSnapshots.mutate()}
-                        disabled={!snapshotCsv || importSnapshots.isPending}
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Import Snapshots
-                      </Button>
+                      {snapshotImportPreview && <CsvPreviewSummary preview={snapshotImportPreview} />}
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          data-testid="geo-aeo-preview-snapshots"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => previewSnapshotImport.mutate()}
+                          disabled={!snapshotCsv || previewSnapshotImport.isPending}
+                        >
+                          <Search className="mr-2 h-4 w-4" />
+                          Preview
+                        </Button>
+                        <Button
+                          data-testid="geo-aeo-import-snapshots"
+                          size="sm"
+                          onClick={() => importSnapshots.mutate()}
+                          disabled={!snapshotCsv || importSnapshots.isPending}
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Import Snapshots
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>

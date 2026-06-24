@@ -1242,6 +1242,33 @@ export const ImportGeoAeoPromptsBody = zod.object({
   csvText: zod.string(),
 });
 
+export const PreviewGeoAeoPromptsImportParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const PreviewGeoAeoPromptsImportBody = zod.object({
+  csvText: zod.string(),
+});
+
+export const PreviewGeoAeoPromptsImportResponse = zod.object({
+  totalRows: zod.number(),
+  validRows: zod.number(),
+  invalidRows: zod.number(),
+  duplicateRows: zod.number(),
+  invalid: zod.array(
+    zod.object({
+      row: zod.number(),
+      reason: zod.string(),
+    }),
+  ),
+  duplicates: zod.array(
+    zod.object({
+      row: zod.number(),
+      reason: zod.string(),
+    }),
+  ),
+});
+
 export const ListGeoAeoAnswerSnapshotsParams = zod.object({
   auditId: zod.coerce.number(),
 });
@@ -1289,6 +1316,33 @@ export const ImportGeoAeoAnswerSnapshotsParams = zod.object({
 
 export const ImportGeoAeoAnswerSnapshotsBody = zod.object({
   csvText: zod.string(),
+});
+
+export const PreviewGeoAeoAnswerSnapshotsImportParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const PreviewGeoAeoAnswerSnapshotsImportBody = zod.object({
+  csvText: zod.string(),
+});
+
+export const PreviewGeoAeoAnswerSnapshotsImportResponse = zod.object({
+  totalRows: zod.number(),
+  validRows: zod.number(),
+  invalidRows: zod.number(),
+  duplicateRows: zod.number(),
+  invalid: zod.array(
+    zod.object({
+      row: zod.number(),
+      reason: zod.string(),
+    }),
+  ),
+  duplicates: zod.array(
+    zod.object({
+      row: zod.number(),
+      reason: zod.string(),
+    }),
+  ),
 });
 
 export const UpdateGeoAeoAnswerSnapshotParams = zod.object({
