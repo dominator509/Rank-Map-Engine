@@ -1369,6 +1369,10 @@ export const UpdateGeoAeoCompetitorResponse = zod.object({
   updatedAt: zod.string().optional(),
 });
 
+export const DeleteGeoAeoCompetitorParams = zod.object({
+  competitorId: zod.coerce.number(),
+});
+
 export const ListGeoAeoCitationsParams = zod.object({
   auditId: zod.coerce.number(),
 });
@@ -1453,6 +1457,10 @@ export const UpdateGeoAeoSourceRecommendationResponse = zod.object({
   updatedAt: zod.string().optional(),
 });
 
+export const DeleteGeoAeoSourceRecommendationParams = zod.object({
+  sourceRecommendationId: zod.coerce.number(),
+});
+
 export const ListGeoAeoSchemaFindingsParams = zod.object({
   auditId: zod.coerce.number(),
 });
@@ -1500,6 +1508,10 @@ export const UpdateGeoAeoSchemaFindingResponse = zod.object({
   status: zod.string().optional(),
   createdAt: zod.string().optional(),
   updatedAt: zod.string().optional(),
+});
+
+export const DeleteGeoAeoSchemaFindingParams = zod.object({
+  schemaFindingId: zod.coerce.number(),
 });
 
 export const ListGeoAeoMonitoringRunsParams = zod.object({
@@ -1842,6 +1854,10 @@ export const UpdateGeoAeoActionItemResponse = zod.object({
   relatedFindingId: zod.number().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
+});
+
+export const DeleteGeoAeoActionItemParams = zod.object({
+  actionItemId: zod.coerce.number(),
 });
 
 export const GenerateGeoAeoReportParams = zod.object({

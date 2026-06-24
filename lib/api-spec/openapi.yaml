@@ -1451,6 +1451,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GeoAeoManualRecord"
+    delete:
+      operationId: deleteGeoAeoCompetitor
+      tags: [geo-aeo]
+      parameters:
+        - name: competitorId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted competitor
 
   /geo-aeo/audits/{auditId}/citations:
     get:
@@ -1557,6 +1569,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GeoAeoManualRecord"
+    delete:
+      operationId: deleteGeoAeoSourceRecommendation
+      tags: [geo-aeo]
+      parameters:
+        - name: sourceRecommendationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted source recommendation
 
   /geo-aeo/audits/{auditId}/schema-findings:
     get:
@@ -1615,6 +1639,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GeoAeoManualRecord"
+    delete:
+      operationId: deleteGeoAeoSchemaFinding
+      tags: [geo-aeo]
+      parameters:
+        - name: schemaFindingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted schema finding
 
   /geo-aeo/audits/{auditId}/monitoring-runs:
     get:
@@ -1845,6 +1881,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GeoAeoActionItem"
+    delete:
+      operationId: deleteGeoAeoActionItem
+      tags: [geo-aeo]
+      parameters:
+        - name: actionItemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted action item
 
   /geo-aeo/audits/{auditId}/report/generate:
     post:

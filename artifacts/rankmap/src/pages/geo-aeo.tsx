@@ -576,6 +576,16 @@ export default function GeoAeo() {
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
 
+  const deleteCompetitor = useMutation({
+    mutationFn: (competitorId: number) =>
+      customFetch(`/api/geo-aeo/competitors/${competitorId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      invalidateManualFallback();
+      toast({ title: "Competitor removed" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
   const createCitation = useMutation({
     mutationFn: () =>
       customFetch(`/api/geo-aeo/audits/${auditId}/citations`, {
@@ -657,6 +667,16 @@ export default function GeoAeo() {
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
 
+  const deleteSourceRecommendation = useMutation({
+    mutationFn: (sourceRecommendationId: number) =>
+      customFetch(`/api/geo-aeo/source-recommendations/${sourceRecommendationId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      invalidateManualFallback();
+      toast({ title: "Source recommendation removed" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
   const createSchemaFinding = useMutation({
     mutationFn: () =>
       customFetch(`/api/geo-aeo/audits/${auditId}/schema-findings`, {
@@ -705,6 +725,16 @@ export default function GeoAeo() {
       });
       invalidateManualFallback();
       toast({ title: "Schema finding updated" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
+  const deleteSchemaFinding = useMutation({
+    mutationFn: (schemaFindingId: number) =>
+      customFetch(`/api/geo-aeo/schema-findings/${schemaFindingId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      invalidateManualFallback();
+      toast({ title: "Schema finding removed" });
     },
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
@@ -816,6 +846,16 @@ export default function GeoAeo() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "action-plan"] });
       toast({ title: "Action item updated" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
+  const deleteActionItem = useMutation({
+    mutationFn: (actionItemId: number) =>
+      customFetch(`/api/geo-aeo/action-items/${actionItemId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "action-plan"] });
+      toast({ title: "Action item removed" });
     },
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
@@ -1377,21 +1417,32 @@ export default function GeoAeo() {
                                 placeholder="https://competitor.com"
                                 aria-label="Competitor URL"
                               />
-                              <Button
-                                data-testid="geo-aeo-save-competitor"
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  updateCompetitor.mutate({
-                                    competitorId: competitor.id,
-                                    name: draft.name,
-                                    websiteUrl: draft.websiteUrl,
-                                  })
-                                }
-                                disabled={!draft.name || updateCompetitor.isPending}
-                              >
-                                Save
-                              </Button>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Button
+                                  data-testid="geo-aeo-save-competitor"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    updateCompetitor.mutate({
+                                      competitorId: competitor.id,
+                                      name: draft.name,
+                                      websiteUrl: draft.websiteUrl,
+                                    })
+                                  }
+                                  disabled={!draft.name || updateCompetitor.isPending}
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => deleteCompetitor.mutate(competitor.id)}
+                                  disabled={deleteCompetitor.isPending}
+                                  aria-label="Remove competitor"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           );
                         })}
@@ -1534,6 +1585,15 @@ export default function GeoAeo() {
                                 >
                                   Save
                                 </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => deleteSourceRecommendation.mutate(source.id)}
+                                  disabled={deleteSourceRecommendation.isPending}
+                                  aria-label="Remove source recommendation"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
                           );
@@ -1631,6 +1691,15 @@ export default function GeoAeo() {
                                   disabled={!draft.issueType || updateSchemaFinding.isPending}
                                 >
                                   Save
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => deleteSchemaFinding.mutate(schemaFinding.id)}
+                                  disabled={deleteSchemaFinding.isPending}
+                                  aria-label="Remove schema finding"
+                                >
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>
@@ -1920,6 +1989,15 @@ export default function GeoAeo() {
                                 Approve
                               </Button>
                             )}
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => deleteActionItem.mutate(item.id)}
+                              disabled={deleteActionItem.isPending}
+                              aria-label="Remove action item"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                       );

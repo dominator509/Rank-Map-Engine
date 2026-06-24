@@ -22,12 +22,15 @@ const serviceMocks = vi.hoisted(() => ({
   listGeoAeoCitations: vi.fn(),
   createGeoAeoCitation: vi.fn(),
   softDeleteGeoAeoCitation: vi.fn(),
+  softDeleteGeoAeoCompetitor: vi.fn(),
   listGeoAeoSourceRecommendations: vi.fn(),
   createGeoAeoSourceRecommendation: vi.fn(),
   updateGeoAeoSourceRecommendation: vi.fn(),
+  softDeleteGeoAeoSourceRecommendation: vi.fn(),
   listGeoAeoSchemaFindings: vi.fn(),
   createGeoAeoSchemaFinding: vi.fn(),
   updateGeoAeoSchemaFinding: vi.fn(),
+  softDeleteGeoAeoSchemaFinding: vi.fn(),
   listGeoAeoMonitoringRuns: vi.fn(),
   listApprovedGeoAeoMonitoringRuns: vi.fn(),
   createGeoAeoMonitoringRun: vi.fn(),
@@ -40,6 +43,7 @@ const serviceMocks = vi.hoisted(() => ({
   getGeoAeoActionPlan: vi.fn(),
   createGeoAeoActionItem: vi.fn(),
   updateGeoAeoActionItem: vi.fn(),
+  softDeleteGeoAeoActionItem: vi.fn(),
   generateGeoAeoReport: vi.fn(),
   exportGeoAeoReport: vi.fn(),
   updateGeoAeoAudit: vi.fn(),
@@ -168,6 +172,10 @@ beforeEach(() => {
     plan: { id: 601, auditId: 101, status: "draft" },
     item: { id: 602, auditId: 101, title: "Manual action item", status: "draft" },
   });
+  serviceMocks.softDeleteGeoAeoCompetitor.mockResolvedValue({ id: 701, auditId: 101 });
+  serviceMocks.softDeleteGeoAeoSourceRecommendation.mockResolvedValue({ id: 702, auditId: 101 });
+  serviceMocks.softDeleteGeoAeoSchemaFinding.mockResolvedValue({ id: 703, auditId: 101 });
+  serviceMocks.softDeleteGeoAeoActionItem.mockResolvedValue({ id: 704, auditId: 101 });
 });
 
 afterEach(() => {
@@ -459,6 +467,64 @@ describe("GEO/AEO route security and approval boundaries", () => {
           action: "geo_aeo.action_item.created",
           resourceType: "geo_aeo_action_item",
           resourceId: 602,
+        }),
+      );
+    } finally {
+      await close();
+    }
+  });
+
+  it("blocks clients from deleting manual records and audits operator soft deletes", async () => {
+    const { baseUrl, close } = await bootGeoAeoRoute();
+    try {
+      const forbidden = await fetch(`${baseUrl}/geo-aeo/competitors/701`, {
+        method: "DELETE",
+        headers: { "x-role": "client" },
+      });
+
+      expect(forbidden.status).toBe(403);
+      expect(serviceMocks.softDeleteGeoAeoCompetitor).not.toHaveBeenCalled();
+
+      const deletions = await Promise.all([
+        fetch(`${baseUrl}/geo-aeo/competitors/701`, { method: "DELETE" }),
+        fetch(`${baseUrl}/geo-aeo/source-recommendations/702`, { method: "DELETE" }),
+        fetch(`${baseUrl}/geo-aeo/schema-findings/703`, { method: "DELETE" }),
+        fetch(`${baseUrl}/geo-aeo/action-items/704`, { method: "DELETE" }),
+      ]);
+
+      expect(deletions.map((response) => response.status)).toEqual([204, 204, 204, 204]);
+      expect(serviceMocks.softDeleteGeoAeoCompetitor).toHaveBeenCalledWith({
+        tenantId: 7,
+        competitorId: 701,
+        userId: 11,
+      });
+      expect(serviceMocks.softDeleteGeoAeoSourceRecommendation).toHaveBeenCalledWith({
+        tenantId: 7,
+        sourceRecommendationId: 702,
+        userId: 11,
+      });
+      expect(serviceMocks.softDeleteGeoAeoSchemaFinding).toHaveBeenCalledWith({
+        tenantId: 7,
+        schemaFindingId: 703,
+        userId: 11,
+      });
+      expect(serviceMocks.softDeleteGeoAeoActionItem).toHaveBeenCalledWith({
+        tenantId: 7,
+        actionItemId: 704,
+        userId: 11,
+      });
+      expect(accessMocks.auditGeoAeoEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "geo_aeo.competitor.deleted",
+          resourceType: "geo_aeo_competitor",
+          resourceId: 701,
+        }),
+      );
+      expect(accessMocks.auditGeoAeoEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "geo_aeo.action_item.deleted",
+          resourceType: "geo_aeo_action_item",
+          resourceId: 704,
         }),
       );
     } finally {

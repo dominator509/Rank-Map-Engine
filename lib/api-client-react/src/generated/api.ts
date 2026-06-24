@@ -4898,6 +4898,82 @@ export const useUpdateGeoAeoCompetitor = <
   return useMutation(getUpdateGeoAeoCompetitorMutationOptions(options));
 };
 
+export const getDeleteGeoAeoCompetitorUrl = (competitorId: number) => {
+  return `/api/geo-aeo/competitors/${competitorId}`;
+};
+
+export const deleteGeoAeoCompetitor = async (
+  competitorId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteGeoAeoCompetitorUrl(competitorId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteGeoAeoCompetitorMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGeoAeoCompetitor>>,
+    TError,
+    { competitorId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteGeoAeoCompetitor>>,
+  TError,
+  { competitorId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteGeoAeoCompetitor"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteGeoAeoCompetitor>>,
+    { competitorId: number }
+  > = (props) => {
+    const { competitorId } = props ?? {};
+
+    return deleteGeoAeoCompetitor(competitorId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteGeoAeoCompetitorMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteGeoAeoCompetitor>>
+>;
+
+export type DeleteGeoAeoCompetitorMutationError = ErrorType<unknown>;
+
+export const useDeleteGeoAeoCompetitor = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGeoAeoCompetitor>>,
+    TError,
+    { competitorId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteGeoAeoCompetitor>>,
+  TError,
+  { competitorId: number },
+  TContext
+> => {
+  return useMutation(getDeleteGeoAeoCompetitorMutationOptions(options));
+};
+
 export const getListGeoAeoCitationsUrl = (auditId: number) => {
   return `/api/geo-aeo/audits/${auditId}/citations`;
 };
@@ -5347,6 +5423,82 @@ export const useUpdateGeoAeoSourceRecommendation = <
   return useMutation(getUpdateGeoAeoSourceRecommendationMutationOptions(options));
 };
 
+export const getDeleteGeoAeoSourceRecommendationUrl = (sourceRecommendationId: number) => {
+  return `/api/geo-aeo/source-recommendations/${sourceRecommendationId}`;
+};
+
+export const deleteGeoAeoSourceRecommendation = async (
+  sourceRecommendationId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteGeoAeoSourceRecommendationUrl(sourceRecommendationId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteGeoAeoSourceRecommendationMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGeoAeoSourceRecommendation>>,
+    TError,
+    { sourceRecommendationId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteGeoAeoSourceRecommendation>>,
+  TError,
+  { sourceRecommendationId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteGeoAeoSourceRecommendation"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteGeoAeoSourceRecommendation>>,
+    { sourceRecommendationId: number }
+  > = (props) => {
+    const { sourceRecommendationId } = props ?? {};
+
+    return deleteGeoAeoSourceRecommendation(sourceRecommendationId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteGeoAeoSourceRecommendationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteGeoAeoSourceRecommendation>>
+>;
+
+export type DeleteGeoAeoSourceRecommendationMutationError = ErrorType<unknown>;
+
+export const useDeleteGeoAeoSourceRecommendation = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGeoAeoSourceRecommendation>>,
+    TError,
+    { sourceRecommendationId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteGeoAeoSourceRecommendation>>,
+  TError,
+  { sourceRecommendationId: number },
+  TContext
+> => {
+  return useMutation(getDeleteGeoAeoSourceRecommendationMutationOptions(options));
+};
+
 export const getListGeoAeoSchemaFindingsUrl = (auditId: number) => {
   return `/api/geo-aeo/audits/${auditId}/schema-findings`;
 };
@@ -5568,6 +5720,82 @@ export const useUpdateGeoAeoSchemaFinding = <
   TContext
 > => {
   return useMutation(getUpdateGeoAeoSchemaFindingMutationOptions(options));
+};
+
+export const getDeleteGeoAeoSchemaFindingUrl = (schemaFindingId: number) => {
+  return `/api/geo-aeo/schema-findings/${schemaFindingId}`;
+};
+
+export const deleteGeoAeoSchemaFinding = async (
+  schemaFindingId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteGeoAeoSchemaFindingUrl(schemaFindingId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteGeoAeoSchemaFindingMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGeoAeoSchemaFinding>>,
+    TError,
+    { schemaFindingId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteGeoAeoSchemaFinding>>,
+  TError,
+  { schemaFindingId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteGeoAeoSchemaFinding"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteGeoAeoSchemaFinding>>,
+    { schemaFindingId: number }
+  > = (props) => {
+    const { schemaFindingId } = props ?? {};
+
+    return deleteGeoAeoSchemaFinding(schemaFindingId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteGeoAeoSchemaFindingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteGeoAeoSchemaFinding>>
+>;
+
+export type DeleteGeoAeoSchemaFindingMutationError = ErrorType<unknown>;
+
+export const useDeleteGeoAeoSchemaFinding = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGeoAeoSchemaFinding>>,
+    TError,
+    { schemaFindingId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteGeoAeoSchemaFinding>>,
+  TError,
+  { schemaFindingId: number },
+  TContext
+> => {
+  return useMutation(getDeleteGeoAeoSchemaFindingMutationOptions(options));
 };
 
 export const getListGeoAeoMonitoringRunsUrl = (auditId: number) => {
@@ -6457,6 +6685,82 @@ export const useUpdateGeoAeoActionItem = <
   TContext
 > => {
   return useMutation(getUpdateGeoAeoActionItemMutationOptions(options));
+};
+
+export const getDeleteGeoAeoActionItemUrl = (actionItemId: number) => {
+  return `/api/geo-aeo/action-items/${actionItemId}`;
+};
+
+export const deleteGeoAeoActionItem = async (
+  actionItemId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteGeoAeoActionItemUrl(actionItemId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteGeoAeoActionItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGeoAeoActionItem>>,
+    TError,
+    { actionItemId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteGeoAeoActionItem>>,
+  TError,
+  { actionItemId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteGeoAeoActionItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteGeoAeoActionItem>>,
+    { actionItemId: number }
+  > = (props) => {
+    const { actionItemId } = props ?? {};
+
+    return deleteGeoAeoActionItem(actionItemId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteGeoAeoActionItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteGeoAeoActionItem>>
+>;
+
+export type DeleteGeoAeoActionItemMutationError = ErrorType<unknown>;
+
+export const useDeleteGeoAeoActionItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGeoAeoActionItem>>,
+    TError,
+    { actionItemId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteGeoAeoActionItem>>,
+  TError,
+  { actionItemId: number },
+  TContext
+> => {
+  return useMutation(getDeleteGeoAeoActionItemMutationOptions(options));
 };
 
 export const getGenerateGeoAeoReportUrl = (auditId: number) => {

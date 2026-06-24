@@ -69,7 +69,11 @@ import {
   listGeoAeoSourceRecommendations,
   parseGeoAeoPromptCsv,
   parseGeoAeoSnapshotCsv,
+  softDeleteGeoAeoActionItem,
   softDeleteGeoAeoCitation,
+  softDeleteGeoAeoCompetitor,
+  softDeleteGeoAeoSchemaFinding,
+  softDeleteGeoAeoSourceRecommendation,
   softDeleteGeoAeoAudit,
   updateGeoAeoAnswerSnapshot,
   updateGeoAeoAudit,
@@ -589,6 +593,38 @@ router.patch(
   },
 );
 
+router.delete(
+  "/geo-aeo/competitors/:competitorId",
+  requireAuth,
+  requireRole(GEO_AEO_OPERATOR_ROLES),
+  async (req, res): Promise<void> => {
+    const competitorId = parseId(req.params.competitorId);
+    if (competitorId === null) {
+      res.status(400).json({ error: "Invalid competitorId" });
+      return;
+    }
+
+    const { tenantId, id: userId } = req.session.user!;
+    const competitor = await softDeleteGeoAeoCompetitor({ tenantId, competitorId, userId });
+    if (!competitor) {
+      res.status(404).json({ error: "Competitor not found" });
+      return;
+    }
+
+    await auditGeoAeoEvent({
+      tenantId,
+      userId,
+      action: "geo_aeo.competitor.deleted",
+      resourceType: "geo_aeo_competitor",
+      resourceId: competitor.id,
+      metadata: { auditId: competitor.auditId },
+      req,
+    });
+
+    res.status(204).send();
+  },
+);
+
 router.get(
   "/geo-aeo/audits/:auditId/citations",
   requireAuth,
@@ -787,6 +823,42 @@ router.patch(
   },
 );
 
+router.delete(
+  "/geo-aeo/source-recommendations/:sourceRecommendationId",
+  requireAuth,
+  requireRole(GEO_AEO_OPERATOR_ROLES),
+  async (req, res): Promise<void> => {
+    const sourceRecommendationId = parseId(req.params.sourceRecommendationId);
+    if (sourceRecommendationId === null) {
+      res.status(400).json({ error: "Invalid sourceRecommendationId" });
+      return;
+    }
+
+    const { tenantId, id: userId } = req.session.user!;
+    const recommendation = await softDeleteGeoAeoSourceRecommendation({
+      tenantId,
+      sourceRecommendationId,
+      userId,
+    });
+    if (!recommendation) {
+      res.status(404).json({ error: "Source recommendation not found" });
+      return;
+    }
+
+    await auditGeoAeoEvent({
+      tenantId,
+      userId,
+      action: "geo_aeo.source_recommendation.deleted",
+      resourceType: "geo_aeo_source_recommendation",
+      resourceId: recommendation.id,
+      metadata: { auditId: recommendation.auditId },
+      req,
+    });
+
+    res.status(204).send();
+  },
+);
+
 router.get(
   "/geo-aeo/audits/:auditId/schema-findings",
   requireAuth,
@@ -891,6 +963,42 @@ router.patch(
     });
 
     res.json(schemaFinding);
+  },
+);
+
+router.delete(
+  "/geo-aeo/schema-findings/:schemaFindingId",
+  requireAuth,
+  requireRole(GEO_AEO_OPERATOR_ROLES),
+  async (req, res): Promise<void> => {
+    const schemaFindingId = parseId(req.params.schemaFindingId);
+    if (schemaFindingId === null) {
+      res.status(400).json({ error: "Invalid schemaFindingId" });
+      return;
+    }
+
+    const { tenantId, id: userId } = req.session.user!;
+    const schemaFinding = await softDeleteGeoAeoSchemaFinding({
+      tenantId,
+      schemaFindingId,
+      userId,
+    });
+    if (!schemaFinding) {
+      res.status(404).json({ error: "Schema finding not found" });
+      return;
+    }
+
+    await auditGeoAeoEvent({
+      tenantId,
+      userId,
+      action: "geo_aeo.schema_finding.deleted",
+      resourceType: "geo_aeo_schema_finding",
+      resourceId: schemaFinding.id,
+      metadata: { auditId: schemaFinding.auditId },
+      req,
+    });
+
+    res.status(204).send();
   },
 );
 
@@ -1378,6 +1486,38 @@ router.patch(
     });
 
     res.json(item);
+  },
+);
+
+router.delete(
+  "/geo-aeo/action-items/:actionItemId",
+  requireAuth,
+  requireRole(GEO_AEO_OPERATOR_ROLES),
+  async (req, res): Promise<void> => {
+    const actionItemId = parseId(req.params.actionItemId);
+    if (actionItemId === null) {
+      res.status(400).json({ error: "Invalid actionItemId" });
+      return;
+    }
+
+    const { tenantId, id: userId } = req.session.user!;
+    const item = await softDeleteGeoAeoActionItem({ tenantId, actionItemId, userId });
+    if (!item) {
+      res.status(404).json({ error: "Action item not found" });
+      return;
+    }
+
+    await auditGeoAeoEvent({
+      tenantId,
+      userId,
+      action: "geo_aeo.action_item.deleted",
+      resourceType: "geo_aeo_action_item",
+      resourceId: item.id,
+      metadata: { auditId: item.auditId },
+      req,
+    });
+
+    res.status(204).send();
   },
 );
 

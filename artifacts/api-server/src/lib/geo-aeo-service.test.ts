@@ -303,4 +303,23 @@ describe("GEO/AEO service hardening", () => {
       updatedById: 12,
     });
   });
+
+  it("stores soft-delete metadata for manual action items", async () => {
+    const { softDeleteGeoAeoActionItem } = await import("./geo-aeo-service.js");
+    const deletedAtBeforeCall = Date.now();
+    dbState.updateReturningRows.push([{ id: 89, auditId: 44 }]);
+
+    const deleted = await softDeleteGeoAeoActionItem({
+      tenantId: 7,
+      actionItemId: 89,
+      userId: 12,
+    });
+
+    expect(deleted).toEqual({ id: 89, auditId: 44 });
+    expect(dbState.updateSet).toMatchObject({ updatedById: 12 });
+    expect(dbState.updateSet?.deletedAt).toBeInstanceOf(Date);
+    expect((dbState.updateSet?.deletedAt as Date).getTime()).toBeGreaterThanOrEqual(
+      deletedAtBeforeCall,
+    );
+  });
 });

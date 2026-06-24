@@ -465,6 +465,26 @@ export async function updateGeoAeoCompetitor(params: {
   return competitor ?? null;
 }
 
+export async function softDeleteGeoAeoCompetitor(params: {
+  tenantId: number;
+  competitorId: number;
+  userId: number;
+}) {
+  const [competitor] = await db
+    .update(geoAeoCompetitorsTable)
+    .set({ deletedAt: new Date() })
+    .where(
+      and(
+        eq(geoAeoCompetitorsTable.tenantId, params.tenantId),
+        eq(geoAeoCompetitorsTable.id, params.competitorId),
+        isNull(geoAeoCompetitorsTable.deletedAt),
+      ),
+    )
+    .returning({ id: geoAeoCompetitorsTable.id, auditId: geoAeoCompetitorsTable.auditId });
+
+  return competitor ?? null;
+}
+
 export async function listGeoAeoCitations(params: { tenantId: number; auditId: number }) {
   return db
     .select()
@@ -594,6 +614,29 @@ export async function updateGeoAeoSourceRecommendation(params: {
   return recommendation ?? null;
 }
 
+export async function softDeleteGeoAeoSourceRecommendation(params: {
+  tenantId: number;
+  sourceRecommendationId: number;
+  userId: number;
+}) {
+  const [recommendation] = await db
+    .update(geoAeoSourceRecommendationsTable)
+    .set({ deletedAt: new Date(), updatedById: params.userId })
+    .where(
+      and(
+        eq(geoAeoSourceRecommendationsTable.tenantId, params.tenantId),
+        eq(geoAeoSourceRecommendationsTable.id, params.sourceRecommendationId),
+        isNull(geoAeoSourceRecommendationsTable.deletedAt),
+      ),
+    )
+    .returning({
+      id: geoAeoSourceRecommendationsTable.id,
+      auditId: geoAeoSourceRecommendationsTable.auditId,
+    });
+
+  return recommendation ?? null;
+}
+
 export async function listGeoAeoSchemaFindings(params: { tenantId: number; auditId: number }) {
   return db
     .select()
@@ -660,6 +703,26 @@ export async function updateGeoAeoSchemaFinding(params: {
       ),
     )
     .returning();
+
+  return findingRecord ?? null;
+}
+
+export async function softDeleteGeoAeoSchemaFinding(params: {
+  tenantId: number;
+  schemaFindingId: number;
+  userId: number;
+}) {
+  const [findingRecord] = await db
+    .update(geoAeoSchemaFindingsTable)
+    .set({ deletedAt: new Date(), updatedById: params.userId })
+    .where(
+      and(
+        eq(geoAeoSchemaFindingsTable.tenantId, params.tenantId),
+        eq(geoAeoSchemaFindingsTable.id, params.schemaFindingId),
+        isNull(geoAeoSchemaFindingsTable.deletedAt),
+      ),
+    )
+    .returning({ id: geoAeoSchemaFindingsTable.id, auditId: geoAeoSchemaFindingsTable.auditId });
 
   return findingRecord ?? null;
 }
@@ -1365,6 +1428,26 @@ export async function updateGeoAeoActionItem(params: {
       ),
     )
     .returning();
+
+  return item ?? null;
+}
+
+export async function softDeleteGeoAeoActionItem(params: {
+  tenantId: number;
+  actionItemId: number;
+  userId: number;
+}) {
+  const [item] = await db
+    .update(geoAeoActionItemsTable)
+    .set({ deletedAt: new Date(), updatedById: params.userId })
+    .where(
+      and(
+        eq(geoAeoActionItemsTable.tenantId, params.tenantId),
+        eq(geoAeoActionItemsTable.id, params.actionItemId),
+        isNull(geoAeoActionItemsTable.deletedAt),
+      ),
+    )
+    .returning({ id: geoAeoActionItemsTable.id, auditId: geoAeoActionItemsTable.auditId });
 
   return item ?? null;
 }
