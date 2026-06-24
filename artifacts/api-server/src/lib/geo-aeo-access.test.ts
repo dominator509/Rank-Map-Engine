@@ -72,6 +72,60 @@ describe("GEO/AEO access helpers", () => {
     });
   });
 
+  it("allows operators to inspect client dashboard data without consuming a client license gate", async () => {
+    const { authorizeGeoAeoClientDashboardAccess } = await import("./geo-aeo-access.js");
+
+    const access = await authorizeGeoAeoClientDashboardAccess({
+      tenantId: 7,
+      role: "agency_admin",
+    });
+
+    expect(access).toEqual({
+      allowed: true,
+      permission: "geoAeo.viewClientDashboard",
+      clientView: false,
+      downloadsAllowed: false,
+      licensePlan: null,
+    });
+  });
+
+  it("blocks client dashboard access without an AI visibility license", async () => {
+    const { authorizeGeoAeoClientDashboardAccess } = await import("./geo-aeo-access.js");
+    dbState.selectRows.push([{ plan: "solo" }]);
+
+    const access = await authorizeGeoAeoClientDashboardAccess({
+      tenantId: 7,
+      role: "client",
+    });
+
+    expect(access).toEqual({
+      allowed: false,
+      status: 403,
+      error:
+        "GEO/AEO client dashboard requires geoAeo.viewClientDashboard and an AI visibility license.",
+      permission: "geoAeo.viewClientDashboard",
+      licensePlan: "solo",
+    });
+  });
+
+  it("allows licensed client dashboard access and report downloads", async () => {
+    const { authorizeGeoAeoClientDashboardAccess } = await import("./geo-aeo-access.js");
+    dbState.selectRows.push([{ plan: "enterprise" }]);
+
+    const access = await authorizeGeoAeoClientDashboardAccess({
+      tenantId: 7,
+      role: "client",
+    });
+
+    expect(access).toEqual({
+      allowed: true,
+      permission: "geoAeo.viewClientDashboard",
+      clientView: true,
+      downloadsAllowed: true,
+      licensePlan: "enterprise",
+    });
+  });
+
   it("blocks client report exports without a download license", async () => {
     const { authorizeGeoAeoReportExport } = await import("./geo-aeo-access.js");
     dbState.selectRows.push(

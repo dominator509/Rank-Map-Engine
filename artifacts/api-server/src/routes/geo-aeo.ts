@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import {
   geoAeoAuditCreateSchema,
@@ -31,6 +31,7 @@ import {
   assertTenantScopedClient,
   assertTenantScopedProject,
   auditGeoAeoEvent,
+  authorizeGeoAeoClientDashboardAccess,
   authorizeGeoAeoReportExport,
   GEO_AEO_APPROVER_ROLES,
   GEO_AEO_OPERATOR_ROLES,
@@ -106,6 +107,17 @@ function parseId(value: string | string[] | undefined): number | null {
   return id;
 }
 
+async function getClientDashboardAccessOrRespond(req: Request, res: Response) {
+  const { tenantId, role } = req.session.user!;
+  const access = await authorizeGeoAeoClientDashboardAccess({ tenantId, role });
+  if (!access.allowed) {
+    res.status(access.status).json({ error: access.error });
+    return null;
+  }
+
+  return access;
+}
+
 router.get(
   "/geo-aeo/audits",
   requireAuth,
@@ -135,6 +147,9 @@ router.get(
   requireRole(GEO_AEO_VIEW_ROLES),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
+    const access = await getClientDashboardAccessOrRespond(req, res);
+    if (!access) return;
+
     const audits = await listApprovedGeoAeoClientAudits({ tenantId });
     res.json(audits);
   },
@@ -152,13 +167,24 @@ router.get(
     }
 
     const { tenantId } = req.session.user!;
+    const access = await getClientDashboardAccessOrRespond(req, res);
+    if (!access) return;
+
     const detail = await getApprovedGeoAeoClientAuditDetail({ tenantId, auditId });
     if (!detail) {
       res.status(404).json({ error: "Audit not found" });
       return;
     }
 
-    res.json(detail);
+    res.json({
+      ...detail,
+      access: {
+        permission: access.permission,
+        clientView: access.clientView,
+        downloadsAllowed: access.downloadsAllowed,
+        licensePlan: access.licensePlan,
+      },
+    });
   },
 );
 
@@ -174,6 +200,9 @@ router.get(
     }
 
     const { tenantId } = req.session.user!;
+    const access = await getClientDashboardAccessOrRespond(req, res);
+    if (!access) return;
+
     const detail = await getApprovedGeoAeoClientAuditDetail({ tenantId, auditId });
     if (!detail) {
       res.status(404).json({ error: "Audit not found" });

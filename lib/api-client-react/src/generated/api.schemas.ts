@@ -1369,12 +1369,27 @@ export interface GeoAeoReportExportBody {
 
 export type GeoAeoReport = Report;
 
+export type GeoAeoClientDashboardAccessPermission =
+  (typeof GeoAeoClientDashboardAccessPermission)[keyof typeof GeoAeoClientDashboardAccessPermission];
+
+export const GeoAeoClientDashboardAccessPermission = {
+  geoAeoviewClientDashboard: "geoAeo.viewClientDashboard",
+} as const;
+
+export interface GeoAeoClientDashboardAccess {
+  permission: GeoAeoClientDashboardAccessPermission;
+  clientView: boolean;
+  downloadsAllowed: boolean;
+  licensePlan: string | null;
+}
+
 export interface GeoAeoClientAuditDetail {
   audit: GeoAeoAudit;
   findings: GeoAeoFinding[];
   actionPlan: GeoAeoActionPlanWithItems | null;
   reports: GeoAeoReport[];
   monitoringRuns: GeoAeoMonitoringRun[];
+  access: GeoAeoClientDashboardAccess;
 }
 
 export type PlanName = (typeof PlanName)[keyof typeof PlanName];

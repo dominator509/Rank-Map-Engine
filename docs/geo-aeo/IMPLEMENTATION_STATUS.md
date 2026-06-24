@@ -119,6 +119,14 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - Tests/checks to run: `db:generate`, focused GEO/AEO route/service tests, route drift, API spec codegen, DB/API/frontend typecheck, lint, browser e2e wrapper, full workspace tests, security gate, and build.
 - Rollback plan: remove the import-batch table/columns/migration, batch service helpers/routes/OpenAPI operations/generated clients, and UI rollback controls while returning snapshot CSV imports to direct bulk insert behavior.
 
+## Checkpoint - 2026-06-24 Client Dashboard License Gate
+
+- Current task: close the G15 server-side license enforcement gap for client-facing GEO/AEO dashboard views and downloads.
+- Acceptance criteria targeted: client-role users require `geoAeo.viewClientDashboard` plus an agency/enterprise AI visibility license before approved dashboard data is returned; operator roles can still inspect approved client views; client detail responses expose download availability; disallowed clients see a permission-denied state instead of an empty dashboard.
+- Files expected to change: `geo-aeo-access.ts`, `geo-aeo.ts` routes, access/route tests, OpenAPI spec and generated clients, `artifacts/rankmap/src/pages/geo-aeo.tsx`, and this status document.
+- Tests/checks to run: focused GEO/AEO access/route tests, route drift, API spec codegen, API/frontend typecheck, lint, full workspace tests, security gate, browser/API e2e wrappers, and build.
+- Rollback plan: remove the client dashboard authorization helper and route checks, remove the access metadata from the client detail payload/OpenAPI/generated clients, and return the frontend to its prior client-report rendering.
+
 ## Phase Checklist
 
 - [x] G0 discovery completed.
@@ -302,6 +310,16 @@ Continue final hardening after adding route tests, service hardening tests, Open
 | `corepack pnpm run test:e2e:api` | Pass | API e2e wrapper passed against a temporary Postgres database after the rollback migration and route changes. |
 | `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
 | `corepack pnpm run build` | Pass | Full workspace build passed after snapshot import rollback. |
+| `corepack pnpm exec vitest run artifacts/api-server/src/lib/geo-aeo-access.test.ts artifacts/api-server/src/routes/geo-aeo.test.ts` | Pass | 22 focused GEO/AEO access/route tests passed after adding the client dashboard license gate. |
+| `corepack pnpm run typecheck` | Pass | Full workspace typecheck passed after client dashboard license enforcement and access metadata updates. |
+| `corepack pnpm run lint` | Pass | ESLint completed with zero warnings after client dashboard license enforcement. |
+| `corepack pnpm run api:route-drift:check` | Pass | OpenAPI route drift stayed zero after documenting client dashboard license-denied responses. |
+| `corepack pnpm --filter @workspace/api-spec run codegen` | Pass | Regenerated API client/Zod packages after adding client dashboard access metadata. |
+| `corepack pnpm run test` | Pass | Full Vitest suite passed after client dashboard license enforcement: 99 passed, 4 e2e tests skipped by default gates. |
+| `corepack pnpm run test:e2e:api` | Pass | API e2e wrapper passed against a temporary Postgres database after the client dashboard license gate. |
+| `corepack pnpm run test:e2e:browser` | Pass | Browser e2e wrapper passed after the client dashboard license gate and download-visibility UI change. |
+| `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
+| `corepack pnpm run build` | Pass | Full workspace build passed after client dashboard license enforcement. |
 
 ## Known Limitations
 
@@ -316,6 +334,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - Prompt and snapshot CSV imports now have operator-only preview endpoints/UI summaries with valid/invalid/duplicate row counts, and imports reject duplicate prompt text or duplicate prompt/engine/answer-hash snapshots before writing rows.
 - Snapshot CSV imports now create rollbackable import batches; rollback applies to imports written through this batch model and does not retroactively group older snapshot rows that predate the batch migration.
 - GEO/AEO report export now enforces the explicit `geoAeo.exportReports` gate before generating a download. Operators export by GEO/AEO operator role; client-role downloads additionally require an approved audit-backed report and an agency/enterprise tenant download license.
+- Client-role GEO/AEO dashboard reads now enforce `geoAeo.viewClientDashboard` plus an agency/enterprise AI visibility license server-side; licensed client detail responses include `downloadsAllowed` so the UI can show report downloads only when allowed.
 - Client-role GEO/AEO views are tenant-scoped and approved-only, but the current user schema has no per-client contact assignment model, so row-level client-contact scoping would require a future data-model addition.
 - OpenAPI and generated client/Zod packages now include GEO/AEO routes; the first frontend surface still uses `customFetch` directly.
 - Repo API and browser e2e wrappers now pass against temporary Postgres databases, including an authenticated GEO/AEO protected browser journey for the manual fallback workflow.

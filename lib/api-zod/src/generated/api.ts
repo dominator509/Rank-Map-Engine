@@ -1039,6 +1039,12 @@ export const GetApprovedGeoAeoClientAuditResponse = zod.object({
       updatedAt: zod.string(),
     }),
   ),
+  access: zod.object({
+    permission: zod.enum(["geoAeo.viewClientDashboard"]),
+    clientView: zod.boolean(),
+    downloadsAllowed: zod.boolean(),
+    licensePlan: zod.string().nullable(),
+  }),
 });
 
 export const ListApprovedGeoAeoClientMonitoringRunsParams = zod.object({

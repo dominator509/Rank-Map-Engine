@@ -3685,7 +3685,7 @@ export const getListApprovedGeoAeoClientAuditsQueryKey = () => {
 
 export const getListApprovedGeoAeoClientAuditsQueryOptions = <
   TData = Awaited<ReturnType<typeof listApprovedGeoAeoClientAudits>>,
-  TError = ErrorType<unknown>,
+  TError = ErrorType<ErrorResponse>,
 >(options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof listApprovedGeoAeoClientAudits>>,
@@ -3712,11 +3712,11 @@ export const getListApprovedGeoAeoClientAuditsQueryOptions = <
 export type ListApprovedGeoAeoClientAuditsQueryResult = NonNullable<
   Awaited<ReturnType<typeof listApprovedGeoAeoClientAudits>>
 >;
-export type ListApprovedGeoAeoClientAuditsQueryError = ErrorType<unknown>;
+export type ListApprovedGeoAeoClientAuditsQueryError = ErrorType<ErrorResponse>;
 
 export function useListApprovedGeoAeoClientAudits<
   TData = Awaited<ReturnType<typeof listApprovedGeoAeoClientAudits>>,
-  TError = ErrorType<unknown>,
+  TError = ErrorType<ErrorResponse>,
 >(options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof listApprovedGeoAeoClientAudits>>,

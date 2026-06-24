@@ -17,8 +17,9 @@ export const GEO_AEO_VIEW_ROLES = ["agency_admin", "agency_user", "client", "sup
 export const GEO_AEO_OPERATOR_ROLES = ["agency_admin", "agency_user", "super_admin"];
 export const GEO_AEO_APPROVER_ROLES = ["agency_admin", "super_admin"];
 export const GEO_AEO_REPORT_EXPORT_PERMISSION = "geoAeo.exportReports";
+export const GEO_AEO_CLIENT_DASHBOARD_PERMISSION = "geoAeo.viewClientDashboard";
 
-const GEO_AEO_REPORT_DOWNLOAD_PLANS = new Set(["agency", "enterprise"]);
+const GEO_AEO_LICENSED_CLIENT_PLANS = new Set(["agency", "enterprise"]);
 
 export interface GeoAeoAuditAccess {
   id: number;
@@ -59,12 +60,73 @@ export type GeoAeoReportExportAccess =
       licensePlan?: string | null;
     };
 
+export type GeoAeoClientDashboardAccess =
+  | {
+      allowed: true;
+      permission: typeof GEO_AEO_CLIENT_DASHBOARD_PERMISSION;
+      clientView: boolean;
+      downloadsAllowed: boolean;
+      licensePlan: string | null;
+    }
+  | {
+      allowed: false;
+      status: 403;
+      error: string;
+      permission: typeof GEO_AEO_CLIENT_DASHBOARD_PERMISSION;
+      licensePlan: string | null;
+    };
+
 function getGeoAeoReportAuditId(data: unknown): number | null {
   if (!data || typeof data !== "object") return null;
   const audit = (data as { audit?: unknown }).audit;
   if (!audit || typeof audit !== "object") return null;
   const id = (audit as { id?: unknown }).id;
   return typeof id === "number" && Number.isInteger(id) && id > 0 ? id : null;
+}
+
+async function getTenantPlan(tenantId: number): Promise<string> {
+  const [tenant] = await db
+    .select({ plan: tenantsTable.plan })
+    .from(tenantsTable)
+    .where(eq(tenantsTable.id, tenantId))
+    .limit(1);
+
+  return tenant?.plan ?? "solo";
+}
+
+export async function authorizeGeoAeoClientDashboardAccess(params: {
+  tenantId: number;
+  role: string;
+}): Promise<GeoAeoClientDashboardAccess> {
+  if (GEO_AEO_OPERATOR_ROLES.includes(params.role)) {
+    return {
+      allowed: true,
+      permission: GEO_AEO_CLIENT_DASHBOARD_PERMISSION,
+      clientView: false,
+      downloadsAllowed: false,
+      licensePlan: null,
+    };
+  }
+
+  const licensePlan = await getTenantPlan(params.tenantId);
+  if (params.role !== "client" || !GEO_AEO_LICENSED_CLIENT_PLANS.has(licensePlan)) {
+    return {
+      allowed: false,
+      status: 403,
+      error:
+        "GEO/AEO client dashboard requires geoAeo.viewClientDashboard and an AI visibility license.",
+      permission: GEO_AEO_CLIENT_DASHBOARD_PERMISSION,
+      licensePlan,
+    };
+  }
+
+  return {
+    allowed: true,
+    permission: GEO_AEO_CLIENT_DASHBOARD_PERMISSION,
+    clientView: true,
+    downloadsAllowed: true,
+    licensePlan,
+  };
 }
 
 export async function authorizeGeoAeoReportExport(params: {
@@ -117,14 +179,9 @@ export async function authorizeGeoAeoReportExport(params: {
     };
   }
 
-  const [tenant] = await db
-    .select({ plan: tenantsTable.plan })
-    .from(tenantsTable)
-    .where(eq(tenantsTable.id, params.tenantId))
-    .limit(1);
-  const licensePlan = tenant?.plan ?? "solo";
+  const licensePlan = await getTenantPlan(params.tenantId);
 
-  if (!GEO_AEO_REPORT_DOWNLOAD_PLANS.has(licensePlan)) {
+  if (!GEO_AEO_LICENSED_CLIENT_PLANS.has(licensePlan)) {
     return {
       allowed: false,
       status: 403,

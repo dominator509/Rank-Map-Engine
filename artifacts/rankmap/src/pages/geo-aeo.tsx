@@ -197,6 +197,12 @@ type ClientAuditDetail = {
   actionPlan: GeoAeoActionPlan | null;
   reports: GeoAeoReport[];
   monitoringRuns?: GeoAeoMonitoringRun[];
+  access?: {
+    permission: string;
+    clientView: boolean;
+    downloadsAllowed: boolean;
+    licensePlan: string | null;
+  };
 };
 
 const ENGINES = ["chatgpt", "gemini", "perplexity", "google_ai_overviews"] as const;
@@ -237,7 +243,9 @@ function ScoreCard({ audit }: { audit: GeoAeoAudit }) {
         <CardDescription>AI Visibility Score</CardDescription>
         <CardTitle className="flex items-end gap-2 text-4xl">
           {audit.visibilityScore ?? "-"}
-          {audit.visibilityLabel && <span className="pb-1 text-sm font-medium">{audit.visibilityLabel}</span>}
+          {audit.visibilityLabel && (
+            <span className="pb-1 text-sm font-medium">{audit.visibilityLabel}</span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="text-sm text-muted-foreground">
@@ -251,7 +259,10 @@ function CsvPreviewSummary({ preview }: { preview: GeoAeoCsvImportPreview }) {
   const issues = [...preview.invalid, ...preview.duplicates].slice(0, 3);
 
   return (
-    <div className="rounded-md border bg-muted/30 p-3 text-sm" data-testid="geo-aeo-import-preview-summary">
+    <div
+      className="rounded-md border bg-muted/30 p-3 text-sm"
+      data-testid="geo-aeo-import-preview-summary"
+    >
       <div className="flex flex-wrap gap-2">
         <Badge variant="outline">{preview.validRows} valid</Badge>
         <Badge variant="outline">{preview.invalidRows} invalid</Badge>
@@ -289,8 +300,12 @@ export default function GeoAeo() {
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [promptCsv, setPromptCsv] = useState("");
   const [snapshotCsv, setSnapshotCsv] = useState("");
-  const [promptImportPreview, setPromptImportPreview] = useState<GeoAeoCsvImportPreview | null>(null);
-  const [snapshotImportPreview, setSnapshotImportPreview] = useState<GeoAeoCsvImportPreview | null>(null);
+  const [promptImportPreview, setPromptImportPreview] = useState<GeoAeoCsvImportPreview | null>(
+    null,
+  );
+  const [snapshotImportPreview, setSnapshotImportPreview] = useState<GeoAeoCsvImportPreview | null>(
+    null,
+  );
   const [competitorName, setCompetitorName] = useState("");
   const [competitorUrl, setCompetitorUrl] = useState("");
   const [citationSourceName, setCitationSourceName] = useState("");
@@ -312,7 +327,9 @@ export default function GeoAeo() {
   const [actionItemWeek, setActionItemWeek] = useState("1");
   const [overrideScore, setOverrideScore] = useState("");
   const [overrideReason, setOverrideReason] = useState("");
-  const [competitorDrafts, setCompetitorDrafts] = useState<Record<number, { name: string; websiteUrl: string }>>({});
+  const [competitorDrafts, setCompetitorDrafts] = useState<
+    Record<number, { name: string; websiteUrl: string }>
+  >({});
   const [sourceDrafts, setSourceDrafts] = useState<
     Record<number, { sourceName: string; sourceUrl: string; status: string }>
   >({});
@@ -452,17 +469,27 @@ export default function GeoAeo() {
   const invalidateAudit = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits"] });
     queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId] });
-    queryClient.invalidateQueries({ queryKey: ["/api/projects", selectedAudit?.projectId, "reports", "geo-aeo"] });
+    queryClient.invalidateQueries({
+      queryKey: ["/api/projects", selectedAudit?.projectId, "reports", "geo-aeo"],
+    });
   };
 
   const invalidateManualFallback = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "snapshots"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "snapshot-imports"] });
+    queryClient.invalidateQueries({
+      queryKey: ["/api/geo-aeo/audits", auditId, "snapshot-imports"],
+    });
     queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "competitors"] });
     queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "citations"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "source-recommendations"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "schema-findings"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "monitoring-runs"] });
+    queryClient.invalidateQueries({
+      queryKey: ["/api/geo-aeo/audits", auditId, "source-recommendations"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["/api/geo-aeo/audits", auditId, "schema-findings"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["/api/geo-aeo/audits", auditId, "monitoring-runs"],
+    });
     queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/client/audits", auditId] });
   };
 
@@ -484,14 +511,19 @@ export default function GeoAeo() {
     });
 
   const analyzeAudit = useMutation({
-    mutationFn: () => simpleAuditMutation(`/api/geo-aeo/audits/${auditId}/analyze`, "Analysis complete"),
+    mutationFn: () =>
+      simpleAuditMutation(`/api/geo-aeo/audits/${auditId}/analyze`, "Analysis complete"),
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
 
   const generateActionPlan = useMutation({
     mutationFn: () =>
-      simpleAuditMutation(`/api/geo-aeo/audits/${auditId}/action-plan/generate`, "Action plan generated"),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "action-plan"] }),
+      simpleAuditMutation(
+        `/api/geo-aeo/audits/${auditId}/action-plan/generate`,
+        "Action plan generated",
+      ),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "action-plan"] }),
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
 
@@ -660,7 +692,15 @@ export default function GeoAeo() {
   });
 
   const updateCompetitor = useMutation({
-    mutationFn: ({ competitorId, name, websiteUrl }: { competitorId: number; name: string; websiteUrl: string }) =>
+    mutationFn: ({
+      competitorId,
+      name,
+      websiteUrl,
+    }: {
+      competitorId: number;
+      name: string;
+      websiteUrl: string;
+    }) =>
       customFetch(`/api/geo-aeo/competitors/${competitorId}`, {
         method: "PATCH",
         body: JSON.stringify({
@@ -773,7 +813,9 @@ export default function GeoAeo() {
 
   const deleteSourceRecommendation = useMutation({
     mutationFn: (sourceRecommendationId: number) =>
-      customFetch(`/api/geo-aeo/source-recommendations/${sourceRecommendationId}`, { method: "DELETE" }),
+      customFetch(`/api/geo-aeo/source-recommendations/${sourceRecommendationId}`, {
+        method: "DELETE",
+      }),
     onSuccess: () => {
       invalidateManualFallback();
       toast({ title: "Source recommendation removed" });
@@ -1001,7 +1043,11 @@ export default function GeoAeo() {
   const visibleReports = isClientUser ? clientDetail.data?.reports : projectReports.data;
   const visibleFindings = isClientUser ? clientDetail.data?.findings : findings.data;
   const visibleActionPlan = isClientUser ? clientDetail.data?.actionPlan : actionPlan.data;
-  const visibleMonitoringRuns = isClientUser ? clientDetail.data?.monitoringRuns : monitoringRuns.data;
+  const visibleMonitoringRuns = isClientUser
+    ? clientDetail.data?.monitoringRuns
+    : monitoringRuns.data;
+  const clientDashboardError =
+    isClientUser && clientAudits.isError ? (clientAudits.error as Error).message : null;
 
   return (
     <div className="flex-1 overflow-y-auto p-8">
@@ -1030,7 +1076,12 @@ export default function GeoAeo() {
                   <div className="grid gap-4 py-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Client</Label>
-                      <Select name="clientId" required value={selectedClientId} onValueChange={setSelectedClientId}>
+                      <Select
+                        name="clientId"
+                        required
+                        value={selectedClientId}
+                        onValueChange={setSelectedClientId}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select client" />
                         </SelectTrigger>
@@ -1052,7 +1103,10 @@ export default function GeoAeo() {
                         <SelectContent>
                           <SelectItem value="none">No linked project</SelectItem>
                           {(projects.data ?? [])
-                            .filter((project) => !selectedClientId || project.clientId === Number(selectedClientId))
+                            .filter(
+                              (project) =>
+                                !selectedClientId || project.clientId === Number(selectedClientId),
+                            )
                             .map((project) => (
                               <SelectItem key={project.id} value={String(project.id)}>
                                 {project.name}
@@ -1067,7 +1121,12 @@ export default function GeoAeo() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="websiteUrl">Website URL</Label>
-                      <Input id="websiteUrl" name="websiteUrl" required placeholder="https://example.com" />
+                      <Input
+                        id="websiteUrl"
+                        name="websiteUrl"
+                        required
+                        placeholder="https://example.com"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="niche">Niche</Label>
@@ -1105,7 +1164,16 @@ export default function GeoAeo() {
             </CardHeader>
             <CardContent className="space-y-2">
               {isLoadingAudits ? (
-                Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-16" />)
+                Array.from({ length: 4 }).map((_, index) => (
+                  <Skeleton key={index} className="h-16" />
+                ))
+              ) : clientDashboardError ? (
+                <div
+                  data-testid="geo-aeo-client-dashboard-denied"
+                  className="rounded-lg border border-destructive/40 p-6 text-sm text-destructive"
+                >
+                  {clientDashboardError}
+                </div>
               ) : !audits?.length ? (
                 <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
                   No GEO/AEO audits yet.
@@ -1117,14 +1185,18 @@ export default function GeoAeo() {
                     type="button"
                     onClick={() => setSelectedAuditId(audit.id)}
                     className={`w-full rounded-md border p-3 text-left transition-colors ${
-                      selectedAudit?.id === audit.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+                      selectedAudit?.id === audit.id
+                        ? "border-primary bg-primary/5"
+                        : "hover:bg-muted/50"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="font-medium">{audit.auditName}</span>
                       <StatusBadge status={audit.status} />
                     </div>
-                    <div className="mt-1 truncate text-xs text-muted-foreground">{audit.websiteUrl}</div>
+                    <div className="mt-1 truncate text-xs text-muted-foreground">
+                      {audit.websiteUrl}
+                    </div>
                   </button>
                 ))
               )}
@@ -1163,7 +1235,9 @@ export default function GeoAeo() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">Score Override</CardTitle>
-                    <CardDescription>Manual score changes require an operator reason and are audited.</CardDescription>
+                    <CardDescription>
+                      Manual score changes require an operator reason and are audited.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-3 md:grid-cols-[160px_1fr_auto] md:items-end">
                     <div className="space-y-2">
@@ -1259,7 +1333,10 @@ export default function GeoAeo() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-base">Prompt CSV</CardTitle>
-                      <CardDescription>Columns: promptText, intent, funnelStage, serviceOrProduct, location, priority</CardDescription>
+                      <CardDescription>
+                        Columns: promptText, intent, funnelStage, serviceOrProduct, location,
+                        priority
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <Textarea
@@ -1298,7 +1375,10 @@ export default function GeoAeo() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-base">Snapshot CSV</CardTitle>
-                      <CardDescription>Columns: promptId, engine, captureMethod, answerText, capturedAt, locationContext</CardDescription>
+                      <CardDescription>
+                        Columns: promptId, engine, captureMethod, answerText, capturedAt,
+                        locationContext
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <Textarea
@@ -1310,7 +1390,9 @@ export default function GeoAeo() {
                         }}
                         className="min-h-28"
                       />
-                      {snapshotImportPreview && <CsvPreviewSummary preview={snapshotImportPreview} />}
+                      {snapshotImportPreview && (
+                        <CsvPreviewSummary preview={snapshotImportPreview} />
+                      )}
                       <div className="flex flex-wrap gap-2">
                         <Button
                           data-testid="geo-aeo-preview-snapshots"
@@ -1370,7 +1452,9 @@ export default function GeoAeo() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-base">Snapshot Marking</CardTitle>
-                      <CardDescription>Flag pasted answers for client mentions and client-owned citations.</CardDescription>
+                      <CardDescription>
+                        Flag pasted answers for client mentions and client-owned citations.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {!snapshots.data?.length ? (
@@ -1382,7 +1466,9 @@ export default function GeoAeo() {
                           <div key={snapshot.id} className="rounded-lg border p-3">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                               <div>
-                                <div className="font-medium capitalize">{snapshot.engine.replace(/_/g, " ")}</div>
+                                <div className="font-medium capitalize">
+                                  {snapshot.engine.replace(/_/g, " ")}
+                                </div>
                                 <div className="text-xs text-muted-foreground">
                                   {new Date(snapshot.capturedAt).toLocaleString()}
                                   {snapshot.locationContext ? ` · ${snapshot.locationContext}` : ""}
@@ -1431,7 +1517,9 @@ export default function GeoAeo() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-base">Monitoring Runs</CardTitle>
-                      <CardDescription>Manual monthly progress records stay draft until approved.</CardDescription>
+                      <CardDescription>
+                        Manual monthly progress records stay draft until approved.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid gap-3 sm:grid-cols-2">
@@ -1494,7 +1582,10 @@ export default function GeoAeo() {
                           </div>
                         ) : (
                           monitoringRuns.data.map((run) => (
-                            <div key={run.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3">
+                            <div
+                              key={run.id}
+                              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
+                            >
                               <div>
                                 <div className="font-medium">{run.runMonth}</div>
                                 <div className="text-sm text-muted-foreground">
@@ -1559,7 +1650,10 @@ export default function GeoAeo() {
                             websiteUrl: competitor.websiteUrl ?? "",
                           };
                           return (
-                            <div key={competitor.id} className="space-y-2 rounded-md border p-2 text-sm">
+                            <div
+                              key={competitor.id}
+                              className="space-y-2 rounded-md border p-2 text-sm"
+                            >
                               <Input
                                 value={draft.name}
                                 onChange={(event) =>
@@ -1640,10 +1734,17 @@ export default function GeoAeo() {
                       </Button>
                       <div className="space-y-2">
                         {(citations.data ?? []).slice(0, 5).map((citation) => (
-                          <div key={citation.id} className="flex items-center justify-between gap-2 rounded-md border p-2 text-sm">
+                          <div
+                            key={citation.id}
+                            className="flex items-center justify-between gap-2 rounded-md border p-2 text-sm"
+                          >
                             <div className="min-w-0">
-                              <div className="truncate font-medium">{citation.sourceName || citation.url}</div>
-                              {citation.url && <div className="truncate text-muted-foreground">{citation.url}</div>}
+                              <div className="truncate font-medium">
+                                {citation.sourceName || citation.url}
+                              </div>
+                              {citation.url && (
+                                <div className="truncate text-muted-foreground">{citation.url}</div>
+                              )}
                             </div>
                             <Button
                               size="icon"
@@ -1691,7 +1792,10 @@ export default function GeoAeo() {
                             status: source.status ?? "draft",
                           };
                           return (
-                            <div key={source.id} className="space-y-2 rounded-md border p-2 text-sm">
+                            <div
+                              key={source.id}
+                              className="space-y-2 rounded-md border p-2 text-sm"
+                            >
                               <Input
                                 value={draft.sourceName}
                                 onChange={(event) =>
@@ -1723,7 +1827,10 @@ export default function GeoAeo() {
                                     }))
                                   }
                                 >
-                                  <SelectTrigger className="h-9 w-32" aria-label="Source target status">
+                                  <SelectTrigger
+                                    className="h-9 w-32"
+                                    aria-label="Source target status"
+                                  >
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -1745,7 +1852,9 @@ export default function GeoAeo() {
                                       status: draft.status,
                                     })
                                   }
-                                  disabled={!draft.sourceName || updateSourceRecommendation.isPending}
+                                  disabled={
+                                    !draft.sourceName || updateSourceRecommendation.isPending
+                                  }
                                 >
                                   Save
                                 </Button>
@@ -1798,7 +1907,10 @@ export default function GeoAeo() {
                             status: schemaFinding.status ?? "draft",
                           };
                           return (
-                            <div key={schemaFinding.id} className="space-y-2 rounded-md border p-2 text-sm">
+                            <div
+                              key={schemaFinding.id}
+                              className="space-y-2 rounded-md border p-2 text-sm"
+                            >
                               <Input
                                 value={draft.issueType}
                                 onChange={(event) =>
@@ -1830,7 +1942,10 @@ export default function GeoAeo() {
                                     }))
                                   }
                                 >
-                                  <SelectTrigger className="h-9 w-32" aria-label="Schema finding status">
+                                  <SelectTrigger
+                                    className="h-9 w-32"
+                                    aria-label="Schema finding status"
+                                  >
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -1890,12 +2005,18 @@ export default function GeoAeo() {
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <div className="font-medium">{finding.title}</div>
-                            <div className="mt-1 text-sm text-muted-foreground">{finding.recommendation}</div>
+                            <div className="mt-1 text-sm text-muted-foreground">
+                              {finding.recommendation}
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <StatusBadge status={finding.status} />
                             {!isClientUser && finding.status !== "approved" && (
-                              <Button size="sm" variant="outline" onClick={() => approveFinding.mutate(finding.id)}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => approveFinding.mutate(finding.id)}
+                              >
                                 <CheckCircle2 className="mr-2 h-4 w-4" />
                                 Approve
                               </Button>
@@ -2004,8 +2125,12 @@ export default function GeoAeo() {
                           <div key={item.id} className="rounded-lg border p-4">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                               <div>
-                                <div className="font-medium">Week {item.weekNumber}: {item.title}</div>
-                                <div className="mt-1 text-sm text-muted-foreground">{item.description}</div>
+                                <div className="font-medium">
+                                  Week {item.weekNumber}: {item.title}
+                                </div>
+                                <div className="mt-1 text-sm text-muted-foreground">
+                                  {item.description}
+                                </div>
                               </div>
                               <StatusBadge status={item.status} />
                             </div>
@@ -2148,7 +2273,11 @@ export default function GeoAeo() {
                               Save
                             </Button>
                             {item.status !== "approved" && (
-                              <Button size="sm" variant="outline" onClick={() => approveActionItem.mutate(item.id)}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => approveActionItem.mutate(item.id)}
+                              >
                                 <CheckCircle2 className="mr-2 h-4 w-4" />
                                 Approve
                               </Button>
@@ -2182,7 +2311,10 @@ export default function GeoAeo() {
                       </div>
                     ) : (
                       visibleMonitoringRuns.map((run) => (
-                        <div key={run.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
+                        <div
+                          key={run.id}
+                          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4"
+                        >
                           <div>
                             <div className="font-medium">{run.runMonth}</div>
                             <div className="text-sm text-muted-foreground">
@@ -2211,18 +2343,25 @@ export default function GeoAeo() {
                     </div>
                   ) : (
                     visibleReports.map((report) => (
-                      <div key={report.id} className="flex items-center justify-between gap-3 rounded-lg border p-4">
+                      <div
+                        key={report.id}
+                        className="flex items-center justify-between gap-3 rounded-lg border p-4"
+                      >
                         <div>
                           <div className="font-medium">{report.type.replace(/_/g, " ")}</div>
                           <div className="text-sm text-muted-foreground">
-                            {report.generatedAt ? new Date(report.generatedAt).toLocaleString() : report.format}
+                            {report.generatedAt
+                              ? new Date(report.generatedAt).toLocaleString()
+                              : report.format}
                           </div>
                         </div>
-                        {!isClientUser && (
+                        {(!isClientUser || clientDetail.data?.access?.downloadsAllowed) && (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => exportReport.mutate({ reportId: report.id, format: report.format })}
+                            onClick={() =>
+                              exportReport.mutate({ reportId: report.id, format: report.format })
+                            }
                           >
                             <Download className="mr-2 h-4 w-4" />
                             Download

@@ -1165,6 +1165,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/GeoAeoAudit"
+        "403":
+          description: GEO/AEO client dashboard denied by role or license
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /geo-aeo/client/audits/{auditId}:
     get:
@@ -1181,6 +1187,12 @@ paths:
                 $ref: "#/components/schemas/GeoAeoClientAuditDetail"
         "404":
           description: Audit not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: GEO/AEO client dashboard denied by role or license
           content:
             application/json:
               schema:
@@ -1203,6 +1215,12 @@ paths:
                   $ref: "#/components/schemas/GeoAeoMonitoringRun"
         "404":
           description: Audit not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: GEO/AEO client dashboard denied by role or license
           content:
             application/json:
               schema:
@@ -5591,12 +5609,34 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/GeoAeoMonitoringRun"
+        access:
+          $ref: "#/components/schemas/GeoAeoClientDashboardAccess"
       required:
         - audit
         - findings
         - actionPlan
         - reports
         - monitoringRuns
+        - access
+
+    GeoAeoClientDashboardAccess:
+      type: object
+      properties:
+        permission:
+          type: string
+          enum: [geoAeo.viewClientDashboard]
+        clientView:
+          type: boolean
+        downloadsAllowed:
+          type: boolean
+        licensePlan:
+          type: string
+          nullable: true
+      required:
+        - permission
+        - clientView
+        - downloadsAllowed
+        - licensePlan
 
     Plan:
       type: object

@@ -58,6 +58,7 @@ const accessMocks = vi.hoisted(() => ({
   assertTenantScopedClient: vi.fn(),
   assertTenantScopedProject: vi.fn(),
   auditGeoAeoEvent: vi.fn(),
+  authorizeGeoAeoClientDashboardAccess: vi.fn(),
   authorizeGeoAeoReportExport: vi.fn(),
   getTenantScopedGeoAeoAudit: vi.fn(),
   getTenantScopedGeoAeoPrompt: vi.fn(),
@@ -148,6 +149,13 @@ beforeEach(() => {
     permission: "geoAeo.exportReports",
     clientDownload: false,
     licensePlan: null,
+  });
+  accessMocks.authorizeGeoAeoClientDashboardAccess.mockResolvedValue({
+    allowed: true,
+    permission: "geoAeo.viewClientDashboard",
+    clientView: true,
+    downloadsAllowed: true,
+    licensePlan: "agency",
   });
   serviceMocks.updateGeoAeoAudit.mockResolvedValue({
     id: 101,
@@ -249,7 +257,38 @@ describe("GEO/AEO route security and approval boundaries", () => {
       expect(await response.json()).toEqual([
         { id: 101, auditName: "Approved Audit", status: "approved" },
       ]);
+      expect(accessMocks.authorizeGeoAeoClientDashboardAccess).toHaveBeenCalledWith({
+        tenantId: 7,
+        role: "client",
+      });
       expect(serviceMocks.listApprovedGeoAeoClientAudits).toHaveBeenCalledWith({ tenantId: 7 });
+    } finally {
+      await close();
+    }
+  });
+
+  it("blocks client-dashboard reads when the tenant license does not allow GEO/AEO", async () => {
+    const { baseUrl, close } = await bootGeoAeoRoute();
+    try {
+      accessMocks.authorizeGeoAeoClientDashboardAccess.mockResolvedValueOnce({
+        allowed: false,
+        status: 403,
+        error:
+          "GEO/AEO client dashboard requires geoAeo.viewClientDashboard and an AI visibility license.",
+        permission: "geoAeo.viewClientDashboard",
+        licensePlan: "solo",
+      });
+
+      const response = await fetch(`${baseUrl}/geo-aeo/client/audits`, {
+        headers: { "x-role": "client" },
+      });
+
+      expect(response.status).toBe(403);
+      await expect(response.json()).resolves.toEqual({
+        error:
+          "GEO/AEO client dashboard requires geoAeo.viewClientDashboard and an AI visibility license.",
+      });
+      expect(serviceMocks.listApprovedGeoAeoClientAudits).not.toHaveBeenCalled();
     } finally {
       await close();
     }
