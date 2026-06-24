@@ -173,6 +173,18 @@ type ClientAuditDetail = {
 };
 
 const ENGINES = ["chatgpt", "gemini", "perplexity", "google_ai_overviews"] as const;
+const ACTION_CATEGORIES = [
+  "entity_clarity",
+  "website_content",
+  "faq_schema",
+  "service_page",
+  "location_page",
+  "source_citation",
+  "review_proof",
+  "competitor_gap",
+  "measurement",
+  "manual_review",
+] as const;
 
 function StatusBadge({ status }: { status: string }) {
   const tone =
@@ -241,6 +253,11 @@ export default function GeoAeo() {
   const [monitoringBaselineMonth, setMonitoringBaselineMonth] = useState("");
   const [monitoringBaselineScore, setMonitoringBaselineScore] = useState("");
   const [monitoringCurrentScore, setMonitoringCurrentScore] = useState("");
+  const [actionItemTitle, setActionItemTitle] = useState("");
+  const [actionItemDescription, setActionItemDescription] = useState("");
+  const [actionItemCategory, setActionItemCategory] = useState("manual_review");
+  const [actionItemPriority, setActionItemPriority] = useState("medium");
+  const [actionItemWeek, setActionItemWeek] = useState("1");
   const [overrideScore, setOverrideScore] = useState("");
   const [overrideReason, setOverrideReason] = useState("");
   const [competitorDrafts, setCompetitorDrafts] = useState<Record<number, { name: string; websiteUrl: string }>>({});
@@ -249,6 +266,19 @@ export default function GeoAeo() {
   >({});
   const [schemaDrafts, setSchemaDrafts] = useState<
     Record<number, { issueType: string; pageUrl: string; status: string }>
+  >({});
+  const [actionItemDrafts, setActionItemDrafts] = useState<
+    Record<
+      number,
+      {
+        title: string;
+        description: string;
+        category: string;
+        priority: string;
+        weekNumber: string;
+        status: string;
+      }
+    >
   >({});
 
   const operatorAudits = useQuery<GeoAeoAudit[]>({
@@ -403,6 +433,31 @@ export default function GeoAeo() {
     mutationFn: () =>
       simpleAuditMutation(`/api/geo-aeo/audits/${auditId}/action-plan/generate`, "Action plan generated"),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "action-plan"] }),
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
+  const createActionItem = useMutation({
+    mutationFn: () =>
+      customFetch(`/api/geo-aeo/audits/${auditId}/action-items`, {
+        method: "POST",
+        body: JSON.stringify({
+          title: actionItemTitle,
+          description: actionItemDescription || undefined,
+          category: actionItemCategory,
+          priority: actionItemPriority,
+          weekNumber: Number(actionItemWeek),
+          status: "draft",
+        }),
+      }),
+    onSuccess: () => {
+      setActionItemTitle("");
+      setActionItemDescription("");
+      setActionItemCategory("manual_review");
+      setActionItemPriority("medium");
+      setActionItemWeek("1");
+      queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "action-plan"] });
+      toast({ title: "Action item added" });
+    },
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
 
@@ -720,6 +775,47 @@ export default function GeoAeo() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "action-plan"] });
       toast({ title: "Action approved" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
+  const updateActionItem = useMutation({
+    mutationFn: ({
+      actionItemId,
+      title,
+      description,
+      category,
+      priority,
+      weekNumber,
+      status,
+    }: {
+      actionItemId: number;
+      title: string;
+      description: string;
+      category: string;
+      priority: string;
+      weekNumber: string;
+      status: string;
+    }) =>
+      customFetch(`/api/geo-aeo/action-items/${actionItemId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          title,
+          description: description || undefined,
+          category,
+          priority,
+          weekNumber: Number(weekNumber),
+          status,
+        }),
+      }),
+    onSuccess: (_data, variables) => {
+      setActionItemDrafts((drafts) => {
+        const next = { ...drafts };
+        delete next[variables.actionItemId];
+        return next;
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/geo-aeo/audits", auditId, "action-plan"] });
+      toast({ title: "Action item updated" });
     },
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
@@ -1584,28 +1680,250 @@ export default function GeoAeo() {
                   <CardTitle className="text-base">Action Plan</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {!isClientUser && (
+                    <div className="space-y-3 rounded-lg border p-3">
+                      <div className="grid gap-3 lg:grid-cols-[1fr_130px_130px_100px_auto] lg:items-end">
+                        <div className="space-y-2">
+                          <Label htmlFor="geoAeoActionItemTitle">Title</Label>
+                          <Input
+                            id="geoAeoActionItemTitle"
+                            data-testid="geo-aeo-action-item-title"
+                            value={actionItemTitle}
+                            onChange={(event) => setActionItemTitle(event.target.value)}
+                            placeholder="Add FAQ answers for service pages"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Category</Label>
+                          <Select value={actionItemCategory} onValueChange={setActionItemCategory}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ACTION_CATEGORIES.map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category.replace(/_/g, " ")}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Priority</Label>
+                          <Select value={actionItemPriority} onValueChange={setActionItemPriority}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                              <SelectItem value="critical">Critical</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="geoAeoActionItemWeek">Week</Label>
+                          <Input
+                            id="geoAeoActionItemWeek"
+                            type="number"
+                            min="1"
+                            max="4"
+                            value={actionItemWeek}
+                            onChange={(event) => setActionItemWeek(event.target.value)}
+                          />
+                        </div>
+                        <Button
+                          data-testid="geo-aeo-add-action-item"
+                          size="sm"
+                          onClick={() => createActionItem.mutate()}
+                          disabled={!actionItemTitle || createActionItem.isPending}
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          Add Item
+                        </Button>
+                      </div>
+                      <Textarea
+                        value={actionItemDescription}
+                        onChange={(event) => setActionItemDescription(event.target.value)}
+                        placeholder="Optional implementation notes"
+                        className="min-h-20"
+                      />
+                    </div>
+                  )}
                   {!visibleActionPlan?.items.length ? (
                     <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
                       No action items available.
                     </div>
                   ) : (
-                    visibleActionPlan.items.map((item) => (
-                      <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
-                        <div>
-                          <div className="font-medium">Week {item.weekNumber}: {item.title}</div>
-                          <div className="mt-1 text-sm text-muted-foreground">{item.description}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <StatusBadge status={item.status} />
-                          {!isClientUser && item.status !== "approved" && (
-                            <Button size="sm" variant="outline" onClick={() => approveActionItem.mutate(item.id)}>
-                              <CheckCircle2 className="mr-2 h-4 w-4" />
-                              Approve
+                    visibleActionPlan.items.map((item) => {
+                      const draft = actionItemDrafts[item.id] ?? {
+                        title: item.title,
+                        description: item.description ?? "",
+                        category: item.category,
+                        priority: item.priority,
+                        weekNumber: String(item.weekNumber),
+                        status: item.status,
+                      };
+
+                      if (isClientUser) {
+                        return (
+                          <div key={item.id} className="rounded-lg border p-4">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <div>
+                                <div className="font-medium">Week {item.weekNumber}: {item.title}</div>
+                                <div className="mt-1 text-sm text-muted-foreground">{item.description}</div>
+                              </div>
+                              <StatusBadge status={item.status} />
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={item.id} className="space-y-3 rounded-lg border p-4">
+                          <div className="grid gap-3 lg:grid-cols-[1fr_130px_130px_100px_130px] lg:items-end">
+                            <div className="space-y-2">
+                              <Label>Title</Label>
+                              <Input
+                                data-testid="geo-aeo-existing-action-title"
+                                value={draft.title}
+                                onChange={(event) =>
+                                  setActionItemDrafts((drafts) => ({
+                                    ...drafts,
+                                    [item.id]: { ...draft, title: event.target.value },
+                                  }))
+                                }
+                                aria-label="Action item title"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Category</Label>
+                              <Select
+                                value={draft.category}
+                                onValueChange={(category) =>
+                                  setActionItemDrafts((drafts) => ({
+                                    ...drafts,
+                                    [item.id]: { ...draft, category },
+                                  }))
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ACTION_CATEGORIES.map((category) => (
+                                    <SelectItem key={category} value={category}>
+                                      {category.replace(/_/g, " ")}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Priority</Label>
+                              <Select
+                                value={draft.priority}
+                                onValueChange={(priority) =>
+                                  setActionItemDrafts((drafts) => ({
+                                    ...drafts,
+                                    [item.id]: { ...draft, priority },
+                                  }))
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="low">Low</SelectItem>
+                                  <SelectItem value="medium">Medium</SelectItem>
+                                  <SelectItem value="high">High</SelectItem>
+                                  <SelectItem value="critical">Critical</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Week</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                max="4"
+                                value={draft.weekNumber}
+                                onChange={(event) =>
+                                  setActionItemDrafts((drafts) => ({
+                                    ...drafts,
+                                    [item.id]: { ...draft, weekNumber: event.target.value },
+                                  }))
+                                }
+                                aria-label="Action item week"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Status</Label>
+                              <Select
+                                value={draft.status}
+                                onValueChange={(status) =>
+                                  setActionItemDrafts((drafts) => ({
+                                    ...drafts,
+                                    [item.id]: { ...draft, status },
+                                  }))
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="draft">Draft</SelectItem>
+                                  <SelectItem value="approved">Approved</SelectItem>
+                                  <SelectItem value="in_progress">In progress</SelectItem>
+                                  <SelectItem value="done">Done</SelectItem>
+                                  <SelectItem value="deferred">Deferred</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <Textarea
+                            value={draft.description}
+                            onChange={(event) =>
+                              setActionItemDrafts((drafts) => ({
+                                ...drafts,
+                                [item.id]: { ...draft, description: event.target.value },
+                              }))
+                            }
+                            aria-label="Action item description"
+                            className="min-h-20"
+                          />
+                          <div className="flex flex-wrap items-center gap-2">
+                            <StatusBadge status={item.status} />
+                            <Button
+                              data-testid="geo-aeo-save-action-item"
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                updateActionItem.mutate({
+                                  actionItemId: item.id,
+                                  title: draft.title,
+                                  description: draft.description,
+                                  category: draft.category,
+                                  priority: draft.priority,
+                                  weekNumber: draft.weekNumber,
+                                  status: draft.status,
+                                })
+                              }
+                              disabled={!draft.title || updateActionItem.isPending}
+                            >
+                              Save
                             </Button>
-                          )}
+                            {item.status !== "approved" && (
+                              <Button size="sm" variant="outline" onClick={() => approveActionItem.mutate(item.id)}>
+                                <CheckCircle2 className="mr-2 h-4 w-4" />
+                                Approve
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </CardContent>
               </Card>

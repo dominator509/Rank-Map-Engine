@@ -1802,6 +1802,26 @@ paths:
                   - $ref: "#/components/schemas/GeoAeoActionPlanWithItems"
                   - type: "null"
 
+  /geo-aeo/audits/{auditId}/action-items:
+    post:
+      operationId: createGeoAeoActionItem
+      tags: [geo-aeo]
+      parameters:
+        - $ref: "#/components/parameters/GeoAeoAuditId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoAeoActionItemCreateBody"
+      responses:
+        "201":
+          description: Created manual action item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAeoActionPlanItemResult"
+
   /geo-aeo/action-items/{actionItemId}:
     patch:
       operationId: updateGeoAeoActionItem
@@ -5248,6 +5268,26 @@ components:
         timeHorizonDays:
           type: integer
 
+    GeoAeoActionItemCreateBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        weekNumber:
+          type: integer
+        status:
+          type: string
+          enum: [draft, approved, in_progress, done, deferred]
+      required:
+        - title
+
     GeoAeoActionItemUpdateBody:
       type: object
       properties:
@@ -5265,6 +5305,17 @@ components:
         status:
           type: string
           enum: [draft, approved, in_progress, done, deferred]
+
+    GeoAeoActionPlanItemResult:
+      type: object
+      properties:
+        plan:
+          $ref: "#/components/schemas/GeoAeoActionPlan"
+        item:
+          $ref: "#/components/schemas/GeoAeoActionItem"
+      required:
+        - plan
+        - item
 
     GeoAeoReportGenerateBody:
       type: object

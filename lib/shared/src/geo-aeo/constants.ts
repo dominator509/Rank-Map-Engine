@@ -107,6 +107,7 @@ export const GEO_AEO_AUDIT_EVENTS = [
   "geo_aeo.schema_finding.created",
   "geo_aeo.schema_finding.updated",
   "geo_aeo.action_plan.generated",
+  "geo_aeo.action_item.created",
   "geo_aeo.action_item.updated",
   "geo_aeo.report.generated",
   "geo_aeo.report.approved",

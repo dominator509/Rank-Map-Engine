@@ -59,8 +59,10 @@ import type {
   GdprExport,
   GenerateReportBody,
   GeoAeoActionItem,
+  GeoAeoActionItemCreateBody,
   GeoAeoActionItemUpdateBody,
   GeoAeoActionPlanGenerateBody,
+  GeoAeoActionPlanItemResult,
   GeoAeoActionPlanWithItems,
   GeoAeoAnalysisResult,
   GeoAeoAnswerSnapshot,
@@ -6298,6 +6300,85 @@ export function useGetGeoAeoActionPlan<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+export const getCreateGeoAeoActionItemUrl = (auditId: number) => {
+  return `/api/geo-aeo/audits/${auditId}/action-items`;
+};
+
+export const createGeoAeoActionItem = async (
+  auditId: number,
+  geoAeoActionItemCreateBody: GeoAeoActionItemCreateBody,
+  options?: RequestInit,
+): Promise<GeoAeoActionPlanItemResult> => {
+  return customFetch<GeoAeoActionPlanItemResult>(getCreateGeoAeoActionItemUrl(auditId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(geoAeoActionItemCreateBody),
+  });
+};
+
+export const getCreateGeoAeoActionItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createGeoAeoActionItem>>,
+    TError,
+    { auditId: number; data: BodyType<GeoAeoActionItemCreateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createGeoAeoActionItem>>,
+  TError,
+  { auditId: number; data: BodyType<GeoAeoActionItemCreateBody> },
+  TContext
+> => {
+  const mutationKey = ["createGeoAeoActionItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createGeoAeoActionItem>>,
+    { auditId: number; data: BodyType<GeoAeoActionItemCreateBody> }
+  > = (props) => {
+    const { auditId, data } = props ?? {};
+
+    return createGeoAeoActionItem(auditId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateGeoAeoActionItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createGeoAeoActionItem>>
+>;
+export type CreateGeoAeoActionItemMutationBody = BodyType<GeoAeoActionItemCreateBody>;
+export type CreateGeoAeoActionItemMutationError = ErrorType<unknown>;
+
+export const useCreateGeoAeoActionItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createGeoAeoActionItem>>,
+    TError,
+    { auditId: number; data: BodyType<GeoAeoActionItemCreateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createGeoAeoActionItem>>,
+  TError,
+  { auditId: number; data: BodyType<GeoAeoActionItemCreateBody> },
+  TContext
+> => {
+  return useMutation(getCreateGeoAeoActionItemMutationOptions(options));
+};
 
 export const getUpdateGeoAeoActionItemUrl = (actionItemId: number) => {
   return `/api/geo-aeo/action-items/${actionItemId}`;

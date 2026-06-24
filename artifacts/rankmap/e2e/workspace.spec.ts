@@ -301,6 +301,13 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
   await expect(page.getByText("Score override saved", { exact: true }).first()).toBeVisible();
   await page.getByTestId("geo-aeo-action-plan").click();
   await expect(page.getByText("Action plan generated", { exact: true }).first()).toBeVisible();
+  await page.getByTestId("geo-aeo-action-item-title").fill("Manual browser action item");
+  await page.getByPlaceholder("Optional implementation notes").fill("Add a manual task from operator review.");
+  await page.getByTestId("geo-aeo-add-action-item").click();
+  await expect(page.getByText("Action item added", { exact: true }).first()).toBeVisible();
+  await page.getByTestId("geo-aeo-existing-action-title").last().fill("Manual browser action item updated");
+  await page.getByTestId("geo-aeo-save-action-item").last().click();
+  await expect(page.getByText("Action item updated", { exact: true }).first()).toBeVisible();
 
   await page.getByLabel("Baseline Month").fill("2026-05");
   await page.getByLabel("Baseline Score").fill("70");

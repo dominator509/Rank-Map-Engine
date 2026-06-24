@@ -136,6 +136,15 @@ export const geoAeoFindingUpdateSchema = z.object({
   status: z.enum(["draft", "needs_review", "approved", "rejected", "deleted"]).optional(),
 });
 
+export const geoAeoActionItemCreateSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(5000).optional(),
+  category: geoAeoActionCategorySchema.default("manual_review"),
+  priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
+  weekNumber: z.number().int().min(1).max(4).default(1),
+  status: z.enum(["draft", "approved", "in_progress", "done", "deferred"]).default("draft"),
+});
+
 export const geoAeoActionItemUpdateSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
   description: z.string().trim().max(5000).optional(),
@@ -212,5 +221,6 @@ export type GeoAeoSourceRecommendationUpdateInput = z.infer<
 >;
 export type GeoAeoSchemaFindingCreateInput = z.infer<typeof geoAeoSchemaFindingCreateSchema>;
 export type GeoAeoSchemaFindingUpdateInput = z.infer<typeof geoAeoSchemaFindingUpdateSchema>;
+export type GeoAeoActionItemCreateInput = z.infer<typeof geoAeoActionItemCreateSchema>;
 export type GeoAeoMonitoringRunCreateInput = z.infer<typeof geoAeoMonitoringRunCreateSchema>;
 export type GeoAeoMonitoringRunUpdateInput = z.infer<typeof geoAeoMonitoringRunUpdateSchema>;

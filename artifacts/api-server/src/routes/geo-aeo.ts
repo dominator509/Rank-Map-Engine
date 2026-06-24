@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   geoAeoAuditCreateSchema,
   geoAeoAuditUpdateSchema,
+  geoAeoActionItemCreateSchema,
   geoAeoActionItemUpdateSchema,
   geoAeoActionPlanGenerateSchema,
   geoAeoCitationCreateSchema,
@@ -52,6 +53,7 @@ import {
   createGeoAeoAnswerSnapshot,
   createGeoAeoAnswerSnapshots,
   createGeoAeoAudit,
+  createGeoAeoActionItem,
   createGeoAeoPrompt,
   createGeoAeoPrompts,
   listApprovedGeoAeoClientAudits,
@@ -1288,6 +1290,50 @@ router.get(
 
     const actionPlan = await getGeoAeoActionPlan({ tenantId, auditId });
     res.json(actionPlan);
+  },
+);
+
+router.post(
+  "/geo-aeo/audits/:auditId/action-items",
+  requireAuth,
+  requireRole(GEO_AEO_OPERATOR_ROLES),
+  async (req, res): Promise<void> => {
+    const auditId = parseId(req.params.auditId);
+    if (auditId === null) {
+      res.status(400).json({ error: "Invalid auditId" });
+      return;
+    }
+
+    const parsed = geoAeoActionItemCreateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid input", details: parsed.error.issues });
+      return;
+    }
+
+    const { tenantId, id: userId } = req.session.user!;
+    if (!(await getTenantScopedGeoAeoAudit(auditId, tenantId))) {
+      res.status(404).json({ error: "Audit not found" });
+      return;
+    }
+
+    const actionItem = await createGeoAeoActionItem({
+      tenantId,
+      auditId,
+      userId,
+      input: parsed.data,
+    });
+
+    await auditGeoAeoEvent({
+      tenantId,
+      userId,
+      action: "geo_aeo.action_item.created",
+      resourceType: "geo_aeo_action_item",
+      resourceId: actionItem.item.id,
+      metadata: { auditId, actionPlanId: actionItem.plan.id },
+      req,
+    });
+
+    res.status(201).json(actionItem);
   },
 );
 

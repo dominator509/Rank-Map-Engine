@@ -22,6 +22,7 @@ import {
   type GeoAeoSourceRecommendationUpdateInput,
   type GeoAeoMonitoringRunCreateInput,
   type GeoAeoMonitoringRunUpdateInput,
+  type GeoAeoActionItemCreateInput,
 } from "@workspace/shared/geo-aeo";
 import {
   db,
@@ -1173,6 +1174,50 @@ export async function getGeoAeoActionPlan(params: { tenantId: number; auditId: n
     .orderBy(geoAeoActionItemsTable.weekNumber, geoAeoActionItemsTable.createdAt);
 
   return { plan, items };
+}
+
+export async function createGeoAeoActionItem(params: {
+  tenantId: number;
+  auditId: number;
+  userId: number;
+  input: GeoAeoActionItemCreateInput;
+}) {
+  const existingPlan = await getGeoAeoActionPlan({ tenantId: params.tenantId, auditId: params.auditId });
+  let plan = existingPlan?.plan;
+
+  if (!plan) {
+    [plan] = await db
+      .insert(geoAeoActionPlansTable)
+      .values({
+        tenantId: params.tenantId,
+        auditId: params.auditId,
+        name: "30-day AI visibility action plan",
+        timeHorizonDays: 30,
+        summary: "Manual operator-created AI visibility action plan.",
+        createdById: params.userId,
+        updatedById: params.userId,
+      })
+      .returning();
+  }
+
+  const [item] = await db
+    .insert(geoAeoActionItemsTable)
+    .values({
+      tenantId: params.tenantId,
+      auditId: params.auditId,
+      actionPlanId: plan.id,
+      title: params.input.title,
+      description: params.input.description,
+      category: params.input.category,
+      priority: params.input.priority,
+      weekNumber: params.input.weekNumber,
+      status: params.input.status,
+      createdById: params.userId,
+      updatedById: params.userId,
+    })
+    .returning();
+
+  return { plan, item };
 }
 
 export async function listApprovedGeoAeoClientAudits(params: { tenantId: number }) {

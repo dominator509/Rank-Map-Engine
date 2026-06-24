@@ -1231,6 +1231,36 @@ export interface GeoAeoActionPlanGenerateBody {
   timeHorizonDays?: number;
 }
 
+export type GeoAeoActionItemCreateBodyPriority =
+  (typeof GeoAeoActionItemCreateBodyPriority)[keyof typeof GeoAeoActionItemCreateBodyPriority];
+
+export const GeoAeoActionItemCreateBodyPriority = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  critical: "critical",
+} as const;
+
+export type GeoAeoActionItemCreateBodyStatus =
+  (typeof GeoAeoActionItemCreateBodyStatus)[keyof typeof GeoAeoActionItemCreateBodyStatus];
+
+export const GeoAeoActionItemCreateBodyStatus = {
+  draft: "draft",
+  approved: "approved",
+  in_progress: "in_progress",
+  done: "done",
+  deferred: "deferred",
+} as const;
+
+export interface GeoAeoActionItemCreateBody {
+  title: string;
+  description?: string;
+  category?: string;
+  priority?: GeoAeoActionItemCreateBodyPriority;
+  weekNumber?: number;
+  status?: GeoAeoActionItemCreateBodyStatus;
+}
+
 export type GeoAeoActionItemUpdateBodyPriority =
   (typeof GeoAeoActionItemUpdateBodyPriority)[keyof typeof GeoAeoActionItemUpdateBodyPriority];
 
@@ -1259,6 +1289,11 @@ export interface GeoAeoActionItemUpdateBody {
   priority?: GeoAeoActionItemUpdateBodyPriority;
   weekNumber?: number;
   status?: GeoAeoActionItemUpdateBodyStatus;
+}
+
+export interface GeoAeoActionPlanItemResult {
+  plan: GeoAeoActionPlan;
+  item: GeoAeoActionItem;
 }
 
 export type GeoAeoReportGenerateBodyFormat =

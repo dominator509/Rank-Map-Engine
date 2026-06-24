@@ -265,4 +265,42 @@ describe("GEO/AEO service hardening", () => {
       currentSnapshotCount: 12,
     });
   });
+
+  it("creates a default manual action plan when adding an action item without an active plan", async () => {
+    const { createGeoAeoActionItem } = await import("./geo-aeo-service.js");
+    dbState.selectRows.push([]);
+    dbState.insertReturningRows.push([{ id: 88, name: "30-day AI visibility action plan" }]);
+    dbState.insertReturningRows.push([{ id: 89, actionPlanId: 88, title: "Create FAQ section" }]);
+
+    const created = await createGeoAeoActionItem({
+      tenantId: 7,
+      auditId: 44,
+      userId: 12,
+      input: {
+        title: "Create FAQ section",
+        description: "Answer source-worthy service questions.",
+        category: "faq_schema",
+        priority: "high",
+        weekNumber: 2,
+        status: "draft",
+      },
+    });
+
+    expect(created).toEqual({
+      plan: { id: 88, name: "30-day AI visibility action plan" },
+      item: { id: 89, actionPlanId: 88, title: "Create FAQ section" },
+    });
+    expect(dbState.insertValues).toMatchObject({
+      tenantId: 7,
+      auditId: 44,
+      actionPlanId: 88,
+      title: "Create FAQ section",
+      category: "faq_schema",
+      priority: "high",
+      weekNumber: 2,
+      status: "draft",
+      createdById: 12,
+      updatedById: 12,
+    });
+  });
 });

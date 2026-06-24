@@ -1801,6 +1801,19 @@ export const GetGeoAeoActionPlanResponse = zod.union([
   zod.null(),
 ]);
 
+export const CreateGeoAeoActionItemParams = zod.object({
+  auditId: zod.coerce.number(),
+});
+
+export const CreateGeoAeoActionItemBody = zod.object({
+  title: zod.string(),
+  description: zod.string().optional(),
+  category: zod.string().optional(),
+  priority: zod.enum(["low", "medium", "high", "critical"]).optional(),
+  weekNumber: zod.number().optional(),
+  status: zod.enum(["draft", "approved", "in_progress", "done", "deferred"]).optional(),
+});
+
 export const UpdateGeoAeoActionItemParams = zod.object({
   actionItemId: zod.coerce.number(),
 });

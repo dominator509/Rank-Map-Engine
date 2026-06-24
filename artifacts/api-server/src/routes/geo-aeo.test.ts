@@ -38,6 +38,7 @@ const serviceMocks = vi.hoisted(() => ({
   updateGeoAeoFinding: vi.fn(),
   generateGeoAeoActionPlan: vi.fn(),
   getGeoAeoActionPlan: vi.fn(),
+  createGeoAeoActionItem: vi.fn(),
   updateGeoAeoActionItem: vi.fn(),
   generateGeoAeoReport: vi.fn(),
   exportGeoAeoReport: vi.fn(),
@@ -162,6 +163,10 @@ beforeEach(() => {
     runMonth: "2026-07",
     status: "approved",
     scoreDelta: 3,
+  });
+  serviceMocks.createGeoAeoActionItem.mockResolvedValue({
+    plan: { id: 601, auditId: 101, status: "draft" },
+    item: { id: 602, auditId: 101, title: "Manual action item", status: "draft" },
   });
 });
 
@@ -403,6 +408,57 @@ describe("GEO/AEO route security and approval boundaries", () => {
           action: "geo_aeo.monitoring_run.approved",
           resourceType: "geo_aeo_monitoring_run",
           resourceId: 502,
+        }),
+      );
+    } finally {
+      await close();
+    }
+  });
+
+  it("blocks clients from creating manual action items and audits operator-created items", async () => {
+    const { baseUrl, close } = await bootGeoAeoRoute();
+    const body = {
+      title: "Create AI-citable FAQ section",
+      description: "Write direct answers for source-worthy service questions.",
+      category: "faq_schema",
+      priority: "high",
+      weekNumber: 2,
+    };
+
+    try {
+      const forbidden = await fetch(`${baseUrl}/geo-aeo/audits/101/action-items`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-role": "client" },
+        body: JSON.stringify(body),
+      });
+
+      expect(forbidden.status).toBe(403);
+      expect(serviceMocks.createGeoAeoActionItem).not.toHaveBeenCalled();
+
+      const created = await fetch(`${baseUrl}/geo-aeo/audits/101/action-items`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-role": "agency_admin" },
+        body: JSON.stringify(body),
+      });
+
+      expect(created.status).toBe(201);
+      expect(serviceMocks.createGeoAeoActionItem).toHaveBeenCalledWith({
+        tenantId: 7,
+        auditId: 101,
+        userId: 11,
+        input: expect.objectContaining({
+          title: "Create AI-citable FAQ section",
+          category: "faq_schema",
+          priority: "high",
+          weekNumber: 2,
+          status: "draft",
+        }),
+      });
+      expect(accessMocks.auditGeoAeoEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "geo_aeo.action_item.created",
+          resourceType: "geo_aeo_action_item",
+          resourceId: 602,
         }),
       );
     } finally {

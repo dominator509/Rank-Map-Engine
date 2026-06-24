@@ -87,6 +87,14 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - Tests/checks to run: RankMap frontend typecheck, lint, browser e2e wrapper, full workspace typecheck, full Vitest suite, and build.
 - Rollback plan: remove the score override panel, inline manual-record edit controls, and corresponding Playwright assertions while leaving the API-backed manual fallback workflow intact.
 
+## Checkpoint - 2026-06-24 Manual Action Item Editing
+
+- Current task: let operators manually create and edit action-plan items from the GEO/AEO workspace.
+- Acceptance criteria targeted: operators can create a manual action item into the active action plan, a default manual plan is created when needed, client-role users cannot create action items, action item creation is audited, OpenAPI/generated clients include the route, and the protected browser workflow proves manual add/edit behavior.
+- Files expected to change: shared GEO/AEO schemas/constants, `geo-aeo-service.ts`, `geo-aeo.ts` routes, route/service tests, OpenAPI spec and generated clients, `artifacts/rankmap/src/pages/geo-aeo.tsx`, `artifacts/rankmap/e2e/workspace.spec.ts`, and this status document.
+- Tests/checks to run: focused GEO/AEO tests, route drift, API spec codegen, API/frontend typecheck, lint, browser e2e wrapper, full workspace tests, security gate, and build.
+- Rollback plan: remove the action-item create schema/service/route/OpenAPI path/generated clients and the action-plan add/edit UI while leaving generated action plans and action item status updates intact.
+
 ## Phase Checklist
 
 - [x] G0 discovery completed.
@@ -109,6 +117,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - [x] Primary manual fallback and monitoring controls exposed in the GEO/AEO page.
 - [x] PDF report generation/export added for GEO/AEO reports.
 - [x] Operator score override and manual-record edit controls exposed in the GEO/AEO page.
+- [x] Manual action item creation/editing exposed in the GEO/AEO page.
 - [ ] G17 final security hardening and smoke in progress.
 
 ## Tests/Checks Run
@@ -221,6 +230,17 @@ Continue final hardening after adding route tests, service hardening tests, Open
 | `corepack pnpm run test` | Pass | Full Vitest suite passed after the operator edit/override UI: 79 passed, 4 e2e tests skipped by default gates. |
 | `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
 | `corepack pnpm run build` | Pass | Full workspace build passed after the operator edit/override UI. |
+| `corepack pnpm --filter @workspace/shared exec tsc -p tsconfig.json --noEmit` | Pass | Shared package typecheck passed after adding the action item create schema. |
+| `corepack pnpm --filter @workspace/api-server exec tsc -p tsconfig.json --noEmit` | Pass | API server typecheck passed after adding manual action item creation. |
+| `corepack pnpm --filter @workspace/rankmap exec tsc -p tsconfig.json --noEmit` | Pass | RankMap frontend typecheck passed after adding action-plan add/edit controls. |
+| `corepack pnpm run api:route-drift:check` | Pass | OpenAPI route drift stayed zero after documenting `POST /geo-aeo/audits/{auditId}/action-items`. |
+| `corepack pnpm --filter @workspace/api-spec run codegen` | Pass | Regenerated API client/Zod packages after adding manual action item creation. |
+| `corepack pnpm exec vitest run lib/shared/src/geo-aeo artifacts/api-server/src/routes/geo-aeo.test.ts artifacts/api-server/src/lib/geo-aeo-service.test.ts` | Pass | 30 focused GEO/AEO tests passed after adding action item creation service/route coverage. |
+| `corepack pnpm run lint` | Pass | ESLint completed with zero warnings after adding action-plan add/edit controls. |
+| `corepack pnpm run test:e2e:browser` | Pass | Browser e2e wrapper passed after extending the protected GEO/AEO workflow to add and edit a manual action item. |
+| `corepack pnpm run test` | Pass | Full Vitest suite passed after manual action item creation/editing: 81 passed, 4 e2e tests skipped by default gates. |
+| `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
+| `corepack pnpm run build` | Pass | Full workspace build passed after manual action item creation/editing. |
 
 ## Known Limitations
 
@@ -231,7 +251,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - The RankMap frontend has a GEO/AEO Visibility page for operator workflows, primary manual fallback controls, monitoring run controls, and client-role approved audit views.
 - GEO/AEO report generation currently requires a linked project because the existing shared `reports` table requires `projectId`.
 - GEO/AEO report export supports markdown, CSV, JSON, and PDF.
-- The frontend surface exposes primary manual fallback controls, monitoring creation/approval, score override, and edit-in-place for competitors/source recommendations/schema findings. Delete/soft-delete controls beyond citations remain API-only.
+- The frontend surface exposes primary manual fallback controls, monitoring creation/approval, score override, action item creation/editing, and edit-in-place for competitors/source recommendations/schema findings. Delete/soft-delete controls beyond citations remain API-only.
 - Client-role GEO/AEO views are tenant-scoped and approved-only, but the current user schema has no per-client contact assignment model, so row-level client-contact scoping would require a future data-model addition.
 - OpenAPI and generated client/Zod packages now include GEO/AEO routes; the first frontend surface still uses `customFetch` directly.
 - Repo API and browser e2e wrappers now pass against temporary Postgres databases, including an authenticated GEO/AEO protected browser journey for the manual fallback workflow.
