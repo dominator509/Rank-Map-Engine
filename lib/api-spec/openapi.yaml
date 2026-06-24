@@ -2028,6 +2028,18 @@ paths:
               schema:
                 type: object
                 additionalProperties: true
+        "403":
+          description: Export denied by role, geoAeo.exportReports permission, approval, or download license
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: GEO/AEO report not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /billing/plans:
     get:

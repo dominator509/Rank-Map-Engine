@@ -58,6 +58,7 @@ const accessMocks = vi.hoisted(() => ({
   assertTenantScopedClient: vi.fn(),
   assertTenantScopedProject: vi.fn(),
   auditGeoAeoEvent: vi.fn(),
+  authorizeGeoAeoReportExport: vi.fn(),
   getTenantScopedGeoAeoAudit: vi.fn(),
   getTenantScopedGeoAeoPrompt: vi.fn(),
   getTenantScopedGeoAeoFinding: vi.fn(),
@@ -141,6 +142,12 @@ beforeEach(() => {
     id: 1,
     tenantId: 7,
     auditId: 101,
+  });
+  accessMocks.authorizeGeoAeoReportExport.mockResolvedValue({
+    allowed: true,
+    permission: "geoAeo.exportReports",
+    clientDownload: false,
+    licensePlan: null,
   });
   serviceMocks.updateGeoAeoAudit.mockResolvedValue({
     id: 101,
@@ -254,7 +261,9 @@ describe("GEO/AEO route security and approval boundaries", () => {
       const response = await fetch(`${baseUrl}/geo-aeo/audits/101/snapshots/import-csv`, {
         method: "POST",
         headers: { "content-type": "application/json", "x-role": "client" },
-        body: JSON.stringify({ csvText: "promptId,engine,captureMethod,answerText\n1,chatgpt,csv_import,x" }),
+        body: JSON.stringify({
+          csvText: "promptId,engine,captureMethod,answerText\n1,chatgpt,csv_import,x",
+        }),
       });
 
       expect(response.status).toBe(403);
@@ -490,9 +499,16 @@ describe("GEO/AEO route security and approval boundaries", () => {
     }
   });
 
-  it("blocks client-role report export and returns operator exports with attachment headers", async () => {
+  it("requires report export permission and download license before exporting reports", async () => {
     const { baseUrl, close } = await bootGeoAeoRoute();
     try {
+      accessMocks.authorizeGeoAeoReportExport.mockResolvedValueOnce({
+        allowed: false,
+        status: 403,
+        error: "GEO/AEO report export requires geoAeo.exportReports and a report-download license.",
+        permission: "geoAeo.exportReports",
+        licensePlan: "solo",
+      });
       const forbidden = await fetch(`${baseUrl}/geo-aeo/reports/301/export`, {
         method: "POST",
         headers: { "content-type": "application/json", "x-role": "client" },
@@ -500,7 +516,40 @@ describe("GEO/AEO route security and approval boundaries", () => {
       });
 
       expect(forbidden.status).toBe(403);
+      await expect(forbidden.json()).resolves.toEqual({
+        error: "GEO/AEO report export requires geoAeo.exportReports and a report-download license.",
+      });
+      expect(accessMocks.authorizeGeoAeoReportExport).toHaveBeenCalledWith({
+        tenantId: 7,
+        reportId: 301,
+        role: "client",
+      });
       expect(serviceMocks.exportGeoAeoReport).not.toHaveBeenCalled();
+
+      accessMocks.authorizeGeoAeoReportExport.mockResolvedValueOnce({
+        allowed: true,
+        permission: "geoAeo.exportReports",
+        clientDownload: true,
+        licensePlan: "agency",
+      });
+      const clientExported = await fetch(`${baseUrl}/geo-aeo/reports/301/export`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-role": "client" },
+        body: JSON.stringify({ format: "markdown" }),
+      });
+
+      expect(clientExported.status).toBe(200);
+      expect(await clientExported.text()).toBe("# GEO/AEO report");
+      expect(accessMocks.auditGeoAeoEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "geo_aeo.report.exported",
+          metadata: expect.objectContaining({
+            permission: "geoAeo.exportReports",
+            clientDownload: true,
+            licensePlan: "agency",
+          }),
+        }),
+      );
 
       const exported = await fetch(`${baseUrl}/geo-aeo/reports/301/export`, {
         method: "POST",

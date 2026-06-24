@@ -31,6 +31,7 @@ import {
   assertTenantScopedClient,
   assertTenantScopedProject,
   auditGeoAeoEvent,
+  authorizeGeoAeoReportExport,
   GEO_AEO_APPROVER_ROLES,
   GEO_AEO_OPERATOR_ROLES,
   GEO_AEO_VIEW_ROLES,
@@ -548,7 +549,9 @@ router.post(
       return;
     }
 
-    const promptIds = Array.from(new Set(importResult.snapshots.map((snapshot) => snapshot.promptId)));
+    const promptIds = Array.from(
+      new Set(importResult.snapshots.map((snapshot) => snapshot.promptId)),
+    );
     for (const promptId of promptIds) {
       if (!(await getTenantScopedGeoAeoPrompt(promptId, tenantId, auditId))) {
         res.status(404).json({ error: "Prompt not found", promptId });
@@ -703,7 +706,12 @@ router.post(
       return;
     }
 
-    const competitor = await createGeoAeoCompetitor({ tenantId, auditId, userId, input: parsed.data });
+    const competitor = await createGeoAeoCompetitor({
+      tenantId,
+      auditId,
+      userId,
+      input: parsed.data,
+    });
     await auditGeoAeoEvent({
       tenantId,
       userId,
@@ -1467,7 +1475,10 @@ router.patch(
       return;
     }
 
-    if (parsed.data.status === "approved" && !GEO_AEO_APPROVER_ROLES.includes(req.session.user!.role)) {
+    if (
+      parsed.data.status === "approved" &&
+      !GEO_AEO_APPROVER_ROLES.includes(req.session.user!.role)
+    ) {
       res.status(403).json({ error: "Forbidden" });
       return;
     }
@@ -1486,7 +1497,8 @@ router.patch(
     await auditGeoAeoEvent({
       tenantId,
       userId,
-      action: parsed.data.status === "approved" ? "geo_aeo.finding.approved" : "geo_aeo.finding.updated",
+      action:
+        parsed.data.status === "approved" ? "geo_aeo.finding.approved" : "geo_aeo.finding.updated",
       resourceType: "geo_aeo_finding",
       resourceId: finding.id,
       metadata: { auditId: finding.auditId, status: finding.status },
@@ -1740,7 +1752,7 @@ router.post(
 router.post(
   "/geo-aeo/reports/:reportId/export",
   requireAuth,
-  requireRole(GEO_AEO_OPERATOR_ROLES),
+  requireRole(GEO_AEO_VIEW_ROLES),
   async (req, res): Promise<void> => {
     const reportId = parseId(req.params.reportId);
     if (reportId === null) {
@@ -1754,7 +1766,13 @@ router.post(
       return;
     }
 
-    const { tenantId, id: userId } = req.session.user!;
+    const { tenantId, id: userId, role } = req.session.user!;
+    const access = await authorizeGeoAeoReportExport({ tenantId, reportId, role });
+    if (!access.allowed) {
+      res.status(access.status).json({ error: access.error });
+      return;
+    }
+
     const exported = await exportGeoAeoReport({
       tenantId,
       reportId,
@@ -1771,7 +1789,12 @@ router.post(
       action: "geo_aeo.report.exported",
       resourceType: "geo_aeo_report",
       resourceId: reportId,
-      metadata: { format: parsed.data.format },
+      metadata: {
+        format: parsed.data.format,
+        permission: access.permission,
+        clientDownload: access.clientDownload,
+        licensePlan: access.licensePlan,
+      },
       req,
     });
 

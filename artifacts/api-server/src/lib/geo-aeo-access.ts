@@ -8,12 +8,17 @@ import {
   geoAeoFindingsTable,
   geoAeoPromptsTable,
   projectsTable,
+  reportsTable,
+  tenantsTable,
 } from "@workspace/db";
 import { audit } from "./audit.js";
 
 export const GEO_AEO_VIEW_ROLES = ["agency_admin", "agency_user", "client", "super_admin"];
 export const GEO_AEO_OPERATOR_ROLES = ["agency_admin", "agency_user", "super_admin"];
 export const GEO_AEO_APPROVER_ROLES = ["agency_admin", "super_admin"];
+export const GEO_AEO_REPORT_EXPORT_PERMISSION = "geoAeo.exportReports";
+
+const GEO_AEO_REPORT_DOWNLOAD_PLANS = new Set(["agency", "enterprise"]);
 
 export interface GeoAeoAuditAccess {
   id: number;
@@ -37,6 +42,139 @@ export interface GeoAeoPromptAccess {
   auditId: number;
   tenantId: number;
   status: string;
+}
+
+export type GeoAeoReportExportAccess =
+  | {
+      allowed: true;
+      permission: typeof GEO_AEO_REPORT_EXPORT_PERMISSION;
+      clientDownload: boolean;
+      licensePlan: string | null;
+    }
+  | {
+      allowed: false;
+      status: 403 | 404;
+      error: string;
+      permission: typeof GEO_AEO_REPORT_EXPORT_PERMISSION;
+      licensePlan?: string | null;
+    };
+
+function getGeoAeoReportAuditId(data: unknown): number | null {
+  if (!data || typeof data !== "object") return null;
+  const audit = (data as { audit?: unknown }).audit;
+  if (!audit || typeof audit !== "object") return null;
+  const id = (audit as { id?: unknown }).id;
+  return typeof id === "number" && Number.isInteger(id) && id > 0 ? id : null;
+}
+
+export async function authorizeGeoAeoReportExport(params: {
+  tenantId: number;
+  reportId: number;
+  role: string;
+}): Promise<GeoAeoReportExportAccess> {
+  const [report] = await db
+    .select({
+      id: reportsTable.id,
+      tenantId: reportsTable.tenantId,
+      projectId: reportsTable.projectId,
+      type: reportsTable.type,
+      data: reportsTable.data,
+    })
+    .from(reportsTable)
+    .where(
+      and(
+        eq(reportsTable.id, params.reportId),
+        eq(reportsTable.tenantId, params.tenantId),
+        eq(reportsTable.type, "geo_aeo_visibility_audit"),
+      ),
+    )
+    .limit(1);
+
+  if (!report) {
+    return {
+      allowed: false,
+      status: 404,
+      error: "Report not found",
+      permission: GEO_AEO_REPORT_EXPORT_PERMISSION,
+    };
+  }
+
+  if (GEO_AEO_OPERATOR_ROLES.includes(params.role)) {
+    return {
+      allowed: true,
+      permission: GEO_AEO_REPORT_EXPORT_PERMISSION,
+      clientDownload: false,
+      licensePlan: null,
+    };
+  }
+
+  if (params.role !== "client") {
+    return {
+      allowed: false,
+      status: 403,
+      error: "Forbidden",
+      permission: GEO_AEO_REPORT_EXPORT_PERMISSION,
+    };
+  }
+
+  const [tenant] = await db
+    .select({ plan: tenantsTable.plan })
+    .from(tenantsTable)
+    .where(eq(tenantsTable.id, params.tenantId))
+    .limit(1);
+  const licensePlan = tenant?.plan ?? "solo";
+
+  if (!GEO_AEO_REPORT_DOWNLOAD_PLANS.has(licensePlan)) {
+    return {
+      allowed: false,
+      status: 403,
+      error: "GEO/AEO report export requires geoAeo.exportReports and a report-download license.",
+      permission: GEO_AEO_REPORT_EXPORT_PERMISSION,
+      licensePlan,
+    };
+  }
+
+  const auditId = getGeoAeoReportAuditId(report.data);
+  if (!auditId || !report.projectId) {
+    return {
+      allowed: false,
+      status: 403,
+      error: "Report is not approved for client export.",
+      permission: GEO_AEO_REPORT_EXPORT_PERMISSION,
+      licensePlan,
+    };
+  }
+
+  const [auditRecord] = await db
+    .select({ id: geoAeoAuditsTable.id })
+    .from(geoAeoAuditsTable)
+    .where(
+      and(
+        eq(geoAeoAuditsTable.id, auditId),
+        eq(geoAeoAuditsTable.tenantId, params.tenantId),
+        eq(geoAeoAuditsTable.projectId, report.projectId),
+        eq(geoAeoAuditsTable.status, "approved"),
+        isNull(geoAeoAuditsTable.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!auditRecord) {
+    return {
+      allowed: false,
+      status: 403,
+      error: "Report is not approved for client export.",
+      permission: GEO_AEO_REPORT_EXPORT_PERMISSION,
+      licensePlan,
+    };
+  }
+
+  return {
+    allowed: true,
+    permission: GEO_AEO_REPORT_EXPORT_PERMISSION,
+    clientDownload: true,
+    licensePlan,
+  };
 }
 
 export async function getTenantScopedGeoAeoAudit(
@@ -119,7 +257,10 @@ export async function getTenantScopedGeoAeoPrompt(
   return prompt ?? null;
 }
 
-export async function assertTenantScopedClient(clientId: number, tenantId: number): Promise<boolean> {
+export async function assertTenantScopedClient(
+  clientId: number,
+  tenantId: number,
+): Promise<boolean> {
   const [client] = await db
     .select({ id: clientsTable.id })
     .from(clientsTable)

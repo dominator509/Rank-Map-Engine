@@ -7176,7 +7176,7 @@ export const exportGeoAeoReport = async (
 };
 
 export const getExportGeoAeoReportMutationOptions = <
-  TError = ErrorType<unknown>,
+  TError = ErrorType<ErrorResponse>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -7215,9 +7215,12 @@ export type ExportGeoAeoReportMutationResult = NonNullable<
   Awaited<ReturnType<typeof exportGeoAeoReport>>
 >;
 export type ExportGeoAeoReportMutationBody = BodyType<GeoAeoReportExportBody>;
-export type ExportGeoAeoReportMutationError = ErrorType<unknown>;
+export type ExportGeoAeoReportMutationError = ErrorType<ErrorResponse>;
 
-export const useExportGeoAeoReport = <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+export const useExportGeoAeoReport = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof exportGeoAeoReport>>,
     TError,
