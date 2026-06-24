@@ -241,6 +241,15 @@ export default function GeoAeo() {
   const [monitoringBaselineMonth, setMonitoringBaselineMonth] = useState("");
   const [monitoringBaselineScore, setMonitoringBaselineScore] = useState("");
   const [monitoringCurrentScore, setMonitoringCurrentScore] = useState("");
+  const [overrideScore, setOverrideScore] = useState("");
+  const [overrideReason, setOverrideReason] = useState("");
+  const [competitorDrafts, setCompetitorDrafts] = useState<Record<number, { name: string; websiteUrl: string }>>({});
+  const [sourceDrafts, setSourceDrafts] = useState<
+    Record<number, { sourceName: string; sourceUrl: string; status: string }>
+  >({});
+  const [schemaDrafts, setSchemaDrafts] = useState<
+    Record<number, { issueType: string; pageUrl: string; status: string }>
+  >({});
 
   const operatorAudits = useQuery<GeoAeoAudit[]>({
     queryKey: ["/api/geo-aeo/audits"],
@@ -455,6 +464,24 @@ export default function GeoAeo() {
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
 
+  const overrideVisibilityScore = useMutation({
+    mutationFn: () =>
+      customFetch(`/api/geo-aeo/audits/${auditId}/score`, {
+        method: "POST",
+        body: JSON.stringify({
+          score: Number(overrideScore),
+          reason: overrideReason,
+        }),
+      }),
+    onSuccess: () => {
+      setOverrideScore("");
+      setOverrideReason("");
+      invalidateAudit();
+      toast({ title: "Score override saved" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
   const createCompetitor = useMutation({
     mutationFn: () =>
       customFetch(`/api/geo-aeo/audits/${auditId}/competitors`, {
@@ -469,6 +496,27 @@ export default function GeoAeo() {
       setCompetitorUrl("");
       invalidateManualFallback();
       toast({ title: "Competitor added" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
+  const updateCompetitor = useMutation({
+    mutationFn: ({ competitorId, name, websiteUrl }: { competitorId: number; name: string; websiteUrl: string }) =>
+      customFetch(`/api/geo-aeo/competitors/${competitorId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          name,
+          websiteUrl: websiteUrl || undefined,
+        }),
+      }),
+    onSuccess: (_data, variables) => {
+      setCompetitorDrafts((drafts) => {
+        const next = { ...drafts };
+        delete next[variables.competitorId];
+        return next;
+      });
+      invalidateManualFallback();
+      toast({ title: "Competitor updated" });
     },
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
@@ -522,6 +570,38 @@ export default function GeoAeo() {
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
 
+  const updateSourceRecommendation = useMutation({
+    mutationFn: ({
+      sourceRecommendationId,
+      sourceName,
+      sourceUrl,
+      status,
+    }: {
+      sourceRecommendationId: number;
+      sourceName: string;
+      sourceUrl: string;
+      status: string;
+    }) =>
+      customFetch(`/api/geo-aeo/source-recommendations/${sourceRecommendationId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          sourceName,
+          sourceUrl: sourceUrl || undefined,
+          status,
+        }),
+      }),
+    onSuccess: (_data, variables) => {
+      setSourceDrafts((drafts) => {
+        const next = { ...drafts };
+        delete next[variables.sourceRecommendationId];
+        return next;
+      });
+      invalidateManualFallback();
+      toast({ title: "Source recommendation updated" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
   const createSchemaFinding = useMutation({
     mutationFn: () =>
       customFetch(`/api/geo-aeo/audits/${auditId}/schema-findings`, {
@@ -538,6 +618,38 @@ export default function GeoAeo() {
       setSchemaPageUrl("");
       invalidateManualFallback();
       toast({ title: "Schema finding added" });
+    },
+    onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
+  });
+
+  const updateSchemaFinding = useMutation({
+    mutationFn: ({
+      schemaFindingId,
+      issueType,
+      pageUrl,
+      status,
+    }: {
+      schemaFindingId: number;
+      issueType: string;
+      pageUrl: string;
+      status: string;
+    }) =>
+      customFetch(`/api/geo-aeo/schema-findings/${schemaFindingId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          issueType,
+          pageUrl: pageUrl || undefined,
+          status,
+        }),
+      }),
+    onSuccess: (_data, variables) => {
+      setSchemaDrafts((drafts) => {
+        const next = { ...drafts };
+        delete next[variables.schemaFindingId];
+        return next;
+      });
+      invalidateManualFallback();
+      toast({ title: "Schema finding updated" });
     },
     onError: (error: Error) => toast({ title: error.message, variant: "destructive" }),
   });
@@ -806,6 +918,53 @@ export default function GeoAeo() {
                   </CardContent>
                 </Card>
               </div>
+
+              {!isClientUser && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Score Override</CardTitle>
+                    <CardDescription>Manual score changes require an operator reason and are audited.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-3 md:grid-cols-[160px_1fr_auto] md:items-end">
+                    <div className="space-y-2">
+                      <Label htmlFor="geoAeoOverrideScore">Score</Label>
+                      <Input
+                        id="geoAeoOverrideScore"
+                        data-testid="geo-aeo-override-score"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value={overrideScore}
+                        onChange={(event) => setOverrideScore(event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="geoAeoOverrideReason">Reason</Label>
+                      <Input
+                        id="geoAeoOverrideReason"
+                        data-testid="geo-aeo-override-reason"
+                        value={overrideReason}
+                        onChange={(event) => setOverrideReason(event.target.value)}
+                        placeholder="Operator review reason"
+                      />
+                    </div>
+                    <Button
+                      data-testid="geo-aeo-save-score-override"
+                      variant="outline"
+                      onClick={() => overrideVisibilityScore.mutate()}
+                      disabled={
+                        !overrideScore ||
+                        Number.isNaN(Number(overrideScore)) ||
+                        overrideReason.trim().length < 10 ||
+                        overrideVisibilityScore.isPending
+                      }
+                    >
+                      Save Override
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
 
               {!isClientUser && (
                 <div className="flex flex-wrap gap-2">
@@ -1094,14 +1253,52 @@ export default function GeoAeo() {
                         Add
                       </Button>
                       <div className="space-y-2">
-                        {(competitors.data ?? []).slice(0, 5).map((competitor) => (
-                          <div key={competitor.id} className="rounded-md border p-2 text-sm">
-                            <div className="font-medium">{competitor.name}</div>
-                            {competitor.websiteUrl && (
-                              <div className="truncate text-muted-foreground">{competitor.websiteUrl}</div>
-                            )}
-                          </div>
-                        ))}
+                        {(competitors.data ?? []).slice(0, 5).map((competitor) => {
+                          const draft = competitorDrafts[competitor.id] ?? {
+                            name: competitor.name ?? "",
+                            websiteUrl: competitor.websiteUrl ?? "",
+                          };
+                          return (
+                            <div key={competitor.id} className="space-y-2 rounded-md border p-2 text-sm">
+                              <Input
+                                value={draft.name}
+                                onChange={(event) =>
+                                  setCompetitorDrafts((drafts) => ({
+                                    ...drafts,
+                                    [competitor.id]: { ...draft, name: event.target.value },
+                                  }))
+                                }
+                                aria-label="Competitor name"
+                              />
+                              <Input
+                                value={draft.websiteUrl}
+                                onChange={(event) =>
+                                  setCompetitorDrafts((drafts) => ({
+                                    ...drafts,
+                                    [competitor.id]: { ...draft, websiteUrl: event.target.value },
+                                  }))
+                                }
+                                placeholder="https://competitor.com"
+                                aria-label="Competitor URL"
+                              />
+                              <Button
+                                data-testid="geo-aeo-save-competitor"
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  updateCompetitor.mutate({
+                                    competitorId: competitor.id,
+                                    name: draft.name,
+                                    websiteUrl: draft.websiteUrl,
+                                  })
+                                }
+                                disabled={!draft.name || updateCompetitor.isPending}
+                              >
+                                Save
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>
@@ -1176,17 +1373,75 @@ export default function GeoAeo() {
                         Add
                       </Button>
                       <div className="space-y-2">
-                        {(sourceRecommendations.data ?? []).slice(0, 5).map((source) => (
-                          <div key={source.id} className="rounded-md border p-2 text-sm">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-medium">{source.sourceName}</span>
-                              {source.status && <StatusBadge status={source.status} />}
+                        {(sourceRecommendations.data ?? []).slice(0, 5).map((source) => {
+                          const draft = sourceDrafts[source.id] ?? {
+                            sourceName: source.sourceName ?? "",
+                            sourceUrl: source.sourceUrl ?? "",
+                            status: source.status ?? "draft",
+                          };
+                          return (
+                            <div key={source.id} className="space-y-2 rounded-md border p-2 text-sm">
+                              <Input
+                                value={draft.sourceName}
+                                onChange={(event) =>
+                                  setSourceDrafts((drafts) => ({
+                                    ...drafts,
+                                    [source.id]: { ...draft, sourceName: event.target.value },
+                                  }))
+                                }
+                                aria-label="Source target name"
+                              />
+                              <Input
+                                value={draft.sourceUrl}
+                                onChange={(event) =>
+                                  setSourceDrafts((drafts) => ({
+                                    ...drafts,
+                                    [source.id]: { ...draft, sourceUrl: event.target.value },
+                                  }))
+                                }
+                                placeholder="https://directory.com/profile"
+                                aria-label="Source target URL"
+                              />
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Select
+                                  value={draft.status}
+                                  onValueChange={(status) =>
+                                    setSourceDrafts((drafts) => ({
+                                      ...drafts,
+                                      [source.id]: { ...draft, status },
+                                    }))
+                                  }
+                                >
+                                  <SelectTrigger className="h-9 w-32" aria-label="Source target status">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="draft">Draft</SelectItem>
+                                    <SelectItem value="approved">Approved</SelectItem>
+                                    <SelectItem value="rejected">Rejected</SelectItem>
+                                    <SelectItem value="done">Done</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <Button
+                                  data-testid="geo-aeo-save-source-recommendation"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    updateSourceRecommendation.mutate({
+                                      sourceRecommendationId: source.id,
+                                      sourceName: draft.sourceName,
+                                      sourceUrl: draft.sourceUrl,
+                                      status: draft.status,
+                                    })
+                                  }
+                                  disabled={!draft.sourceName || updateSourceRecommendation.isPending}
+                                >
+                                  Save
+                                </Button>
+                              </div>
                             </div>
-                            {source.sourceUrl && (
-                              <div className="truncate text-muted-foreground">{source.sourceUrl}</div>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>
@@ -1216,17 +1471,75 @@ export default function GeoAeo() {
                         Add
                       </Button>
                       <div className="space-y-2">
-                        {(schemaFindings.data ?? []).slice(0, 5).map((schemaFinding) => (
-                          <div key={schemaFinding.id} className="rounded-md border p-2 text-sm">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-medium">{schemaFinding.issueType}</span>
-                              {schemaFinding.status && <StatusBadge status={schemaFinding.status} />}
+                        {(schemaFindings.data ?? []).slice(0, 5).map((schemaFinding) => {
+                          const draft = schemaDrafts[schemaFinding.id] ?? {
+                            issueType: schemaFinding.issueType ?? "",
+                            pageUrl: schemaFinding.pageUrl ?? "",
+                            status: schemaFinding.status ?? "draft",
+                          };
+                          return (
+                            <div key={schemaFinding.id} className="space-y-2 rounded-md border p-2 text-sm">
+                              <Input
+                                value={draft.issueType}
+                                onChange={(event) =>
+                                  setSchemaDrafts((drafts) => ({
+                                    ...drafts,
+                                    [schemaFinding.id]: { ...draft, issueType: event.target.value },
+                                  }))
+                                }
+                                aria-label="Schema issue"
+                              />
+                              <Input
+                                value={draft.pageUrl}
+                                onChange={(event) =>
+                                  setSchemaDrafts((drafts) => ({
+                                    ...drafts,
+                                    [schemaFinding.id]: { ...draft, pageUrl: event.target.value },
+                                  }))
+                                }
+                                placeholder="https://site.com/page"
+                                aria-label="Schema page URL"
+                              />
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Select
+                                  value={draft.status}
+                                  onValueChange={(status) =>
+                                    setSchemaDrafts((drafts) => ({
+                                      ...drafts,
+                                      [schemaFinding.id]: { ...draft, status },
+                                    }))
+                                  }
+                                >
+                                  <SelectTrigger className="h-9 w-32" aria-label="Schema finding status">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="draft">Draft</SelectItem>
+                                    <SelectItem value="approved">Approved</SelectItem>
+                                    <SelectItem value="rejected">Rejected</SelectItem>
+                                    <SelectItem value="done">Done</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <Button
+                                  data-testid="geo-aeo-save-schema-finding"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    updateSchemaFinding.mutate({
+                                      schemaFindingId: schemaFinding.id,
+                                      issueType: draft.issueType,
+                                      pageUrl: draft.pageUrl,
+                                      status: draft.status,
+                                    })
+                                  }
+                                  disabled={!draft.issueType || updateSchemaFinding.isPending}
+                                >
+                                  Save
+                                </Button>
+                              </div>
                             </div>
-                            {schemaFinding.pageUrl && (
-                              <div className="truncate text-muted-foreground">{schemaFinding.pageUrl}</div>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>

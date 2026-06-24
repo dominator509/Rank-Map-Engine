@@ -267,7 +267,10 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
   await page.getByPlaceholder("https://competitor.com").fill(`https://competitor-${unique}.example.com`);
   await page.getByTestId("geo-aeo-add-competitor").click();
   await expect(page.getByText("Competitor added", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText(geoCompetitorName)).toBeVisible();
+  await page.getByLabel("Competitor name").fill(`${geoCompetitorName} Updated`);
+  await page.getByTestId("geo-aeo-save-competitor").click();
+  await expect(page.getByText("Competitor updated", { exact: true }).first()).toBeVisible();
+  await expect(page.getByLabel("Competitor name")).toHaveValue(`${geoCompetitorName} Updated`);
 
   await page.getByPlaceholder("Source name").first().fill(geoSourceName);
   await page.getByPlaceholder("https://source.com/page").fill(`https://${clientDomain}/ai-visibility`);
@@ -278,14 +281,24 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
   await page.getByPlaceholder("https://directory.com/profile").fill(`https://directory-${unique}.example.com/profile`);
   await page.getByTestId("geo-aeo-add-source-recommendation").click();
   await expect(page.getByText("Source recommendation added", { exact: true }).first()).toBeVisible();
+  await page.getByLabel("Source target name").fill("Browser Directory Updated");
+  await page.getByTestId("geo-aeo-save-source-recommendation").click();
+  await expect(page.getByText("Source recommendation updated", { exact: true }).first()).toBeVisible();
 
   await page.getByPlaceholder("Missing FAQPage").fill("Missing FAQPage schema");
   await page.getByPlaceholder("https://site.com/page").fill(`https://${clientDomain}/ai-visibility`);
   await page.getByTestId("geo-aeo-add-schema-finding").click();
   await expect(page.getByText("Schema finding added", { exact: true }).first()).toBeVisible();
+  await page.getByLabel("Schema issue").fill("Missing FAQPage schema on service page");
+  await page.getByTestId("geo-aeo-save-schema-finding").click();
+  await expect(page.getByText("Schema finding updated", { exact: true }).first()).toBeVisible();
 
   await page.getByTestId("geo-aeo-analyze").click();
   await expect(page.getByText("Analysis complete", { exact: true }).first()).toBeVisible();
+  await page.getByTestId("geo-aeo-override-score").fill("82");
+  await page.getByTestId("geo-aeo-override-reason").fill("Operator reviewed the snapshot set and corrected score.");
+  await page.getByTestId("geo-aeo-save-score-override").click();
+  await expect(page.getByText("Score override saved", { exact: true }).first()).toBeVisible();
   await page.getByTestId("geo-aeo-action-plan").click();
   await expect(page.getByText("Action plan generated", { exact: true }).first()).toBeVisible();
 

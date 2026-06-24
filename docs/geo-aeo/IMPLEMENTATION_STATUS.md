@@ -79,6 +79,14 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - Tests/checks to run: RankMap frontend typecheck, lint, browser e2e wrapper, full workspace typecheck, and full Vitest suite.
 - Rollback plan: remove the GEO/AEO-specific Playwright test and test IDs while leaving API e2e, route tests, and the operator UI intact.
 
+## Checkpoint - 2026-06-24 Operator Edit and Override UI
+
+- Current task: expose existing manual record update and score override capabilities in the GEO/AEO operator workspace.
+- Acceptance criteria targeted: operators can manually override the AI Visibility Score with a required reason, edit competitor records, edit source recommendations, edit schema findings, and prove those controls through the authenticated GEO/AEO browser workflow.
+- Files expected to change: `artifacts/rankmap/src/pages/geo-aeo.tsx`, `artifacts/rankmap/e2e/workspace.spec.ts`, and this status document.
+- Tests/checks to run: RankMap frontend typecheck, lint, browser e2e wrapper, full workspace typecheck, full Vitest suite, and build.
+- Rollback plan: remove the score override panel, inline manual-record edit controls, and corresponding Playwright assertions while leaving the API-backed manual fallback workflow intact.
+
 ## Phase Checklist
 
 - [x] G0 discovery completed.
@@ -100,6 +108,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - [x] G16 monthly monitoring scaffold added.
 - [x] Primary manual fallback and monitoring controls exposed in the GEO/AEO page.
 - [x] PDF report generation/export added for GEO/AEO reports.
+- [x] Operator score override and manual-record edit controls exposed in the GEO/AEO page.
 - [ ] G17 final security hardening and smoke in progress.
 
 ## Tests/Checks Run
@@ -206,6 +215,12 @@ Continue final hardening after adding route tests, service hardening tests, Open
 | `corepack pnpm run typecheck` | Pass | Full workspace typecheck passed after the GEO/AEO protected browser journey. |
 | `corepack pnpm run test` | Pass | Full Vitest suite passed after the GEO/AEO protected browser journey: 79 passed, 4 e2e tests skipped by default gates. |
 | `corepack pnpm run build` | Pass | Full workspace build passed after the GEO/AEO protected browser journey and test hooks. |
+| `corepack pnpm --filter @workspace/rankmap exec tsc -p tsconfig.json --noEmit` | Pass | RankMap frontend typecheck passed after adding score override and inline manual-record edit controls. |
+| `corepack pnpm run lint` | Pass | ESLint completed with zero warnings after adding score override and inline manual-record edit controls. |
+| `corepack pnpm run test:e2e:browser` | Pass | Browser e2e wrapper passed after extending the GEO/AEO workflow to edit competitor/source/schema records and save a reasoned score override. |
+| `corepack pnpm run test` | Pass | Full Vitest suite passed after the operator edit/override UI: 79 passed, 4 e2e tests skipped by default gates. |
+| `corepack pnpm run security:check` | Pass | Secret scan passed and `pnpm audit --audit-level high` passed; remaining audit items are 2 low and 3 moderate below the configured high-severity gate. |
+| `corepack pnpm run build` | Pass | Full workspace build passed after the operator edit/override UI. |
 
 ## Known Limitations
 
@@ -216,7 +231,7 @@ Continue final hardening after adding route tests, service hardening tests, Open
 - The RankMap frontend has a GEO/AEO Visibility page for operator workflows, primary manual fallback controls, monitoring run controls, and client-role approved audit views.
 - GEO/AEO report generation currently requires a linked project because the existing shared `reports` table requires `projectId`.
 - GEO/AEO report export supports markdown, CSV, JSON, and PDF.
-- The first frontend surface exposes primary manual fallback and monitoring creation/approval controls; advanced edit-in-place for existing competitor/source/schema records remains API-only.
+- The frontend surface exposes primary manual fallback controls, monitoring creation/approval, score override, and edit-in-place for competitors/source recommendations/schema findings. Delete/soft-delete controls beyond citations remain API-only.
 - Client-role GEO/AEO views are tenant-scoped and approved-only, but the current user schema has no per-client contact assignment model, so row-level client-contact scoping would require a future data-model addition.
 - OpenAPI and generated client/Zod packages now include GEO/AEO routes; the first frontend surface still uses `customFetch` directly.
 - Repo API and browser e2e wrappers now pass against temporary Postgres databases, including an authenticated GEO/AEO protected browser journey for the manual fallback workflow.
