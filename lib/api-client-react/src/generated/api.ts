@@ -12566,11 +12566,8 @@ export const getDeleteProjectTemplateUrl = (id: number) => {
   return `/api/templates/${id}`;
 };
 
-export const deleteProjectTemplate = async (
-  id: number,
-  options?: RequestInit,
-): Promise<OkResponse> => {
-  return customFetch<OkResponse>(getDeleteProjectTemplateUrl(id), {
+export const deleteProjectTemplate = async (id: number, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getDeleteProjectTemplateUrl(id), {
     ...options,
     method: "DELETE",
   });

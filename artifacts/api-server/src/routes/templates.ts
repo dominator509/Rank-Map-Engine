@@ -147,7 +147,7 @@ router.delete(
     await db
       .delete(projectTemplatesTable)
       .where(and(eq(projectTemplatesTable.id, id), eq(projectTemplatesTable.tenantId, tenantId)));
-    res.json({ ok: true });
+    res.status(204).send();
   },
 );
 

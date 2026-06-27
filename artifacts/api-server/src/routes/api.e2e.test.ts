@@ -105,7 +105,13 @@ class ApiAgent {
     this.storeCookies(response.headers);
 
     const text = await response.text();
-    const body = text ? (JSON.parse(text) as T) : null;
+    const contentType = response.headers.get("content-type") ?? "";
+    const body =
+      text && (contentType.includes("application/json") || contentType.includes("+json"))
+        ? (JSON.parse(text) as T)
+        : text
+          ? (text as T)
+          : null;
     return { status: response.status, body };
   }
 

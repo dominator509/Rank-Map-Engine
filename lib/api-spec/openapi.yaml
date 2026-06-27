@@ -3766,12 +3766,8 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        "204":
           description: Deleted project template
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OkResponse"
 
   /projects/{projectId}/save-as-template:
     post:

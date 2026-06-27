@@ -3189,10 +3189,6 @@ export const DeleteProjectTemplateParams = zod.object({
   id: zod.coerce.number(),
 });
 
-export const DeleteProjectTemplateResponse = zod.object({
-  ok: zod.boolean(),
-});
-
 export const SaveProjectAsTemplateParams = zod.object({
   projectId: zod.coerce.number(),
 });
