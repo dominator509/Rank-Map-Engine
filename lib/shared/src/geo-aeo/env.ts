@@ -67,10 +67,16 @@ export function validateGeoAeoEnv(input: GeoAeoEnvInput): GeoAeoEnvValidationRes
   }
 
   if (!env.chatgptVisibilityManualOnly) {
-    errors.push("ChatGPT visibility collection must remain manual/mock unless an approved path exists.");
+    errors.push(
+      "ChatGPT visibility collection must remain manual/mock unless an approved path exists.",
+    );
   }
 
-  if (env.perplexityEnabled && env.realAnswerEngineCallsEnabled && !input.PERPLEXITY_API_KEY?.trim()) {
+  if (
+    env.perplexityEnabled &&
+    env.realAnswerEngineCallsEnabled &&
+    !input.PERPLEXITY_API_KEY?.trim()
+  ) {
     errors.push("PERPLEXITY_API_KEY is required when Perplexity real calls are enabled.");
   }
 

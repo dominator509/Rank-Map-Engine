@@ -136,6 +136,42 @@ ${rows(stale)}
 `;
 }
 
+async function writeIfChanged(path, content) {
+  try {
+    if ((await readFile(path, "utf8")) === content) return;
+  } catch {
+    // Missing reports are recreated below.
+  }
+
+  await writeFile(path, content, "utf8");
+}
+
+async function writeJsonReport(path, result) {
+  try {
+    const existing = JSON.parse(await readFile(path, "utf8"));
+    const existingSemanticResult = {
+      implementedCount: existing.implementedCount,
+      documentedCount: existing.documentedCount,
+      undocumented: existing.undocumented,
+      stale: existing.stale,
+    };
+    const nextSemanticResult = {
+      implementedCount: result.implementedCount,
+      documentedCount: result.documentedCount,
+      undocumented: result.undocumented,
+      stale: result.stale,
+    };
+
+    if (JSON.stringify(existingSemanticResult) === JSON.stringify(nextSemanticResult)) {
+      return;
+    }
+  } catch {
+    // Invalid or missing JSON reports are recreated below.
+  }
+
+  await writeFile(path, `${JSON.stringify(result, null, 2)}\n`, "utf8");
+}
+
 const implemented = await implementedOperations();
 const documented = await documentedOperations();
 const implementedKeys = new Set(implemented.map((operation) => operation.key));
@@ -152,12 +188,8 @@ const result = {
 };
 
 await mkdir(REPORT_DIR, { recursive: true });
-await writeFile(REPORT_JSON, `${JSON.stringify(result, null, 2)}\n`, "utf8");
-await writeFile(
-  REPORT_MD,
-  markdownReport({ implemented, documented, undocumented, stale }),
-  "utf8",
-);
+await writeJsonReport(REPORT_JSON, result);
+await writeIfChanged(REPORT_MD, markdownReport({ implemented, documented, undocumented, stale }));
 
 const summary = `API route drift: ${undocumented.length} undocumented, ${stale.length} stale.`;
 if (failOnDrift && (undocumented.length > 0 || stale.length > 0)) {

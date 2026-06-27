@@ -202,13 +202,13 @@ Requirements:
 - Store score explanations.
 - Add labels:
 
-| Score | Label |
-|---:|---|
-| 90–100 | AI Visibility Leader |
-| 75–89 | Strong AI Presence |
-| 60–74 | Emerging AI Presence |
-| 40–59 | At Risk |
-| 0–39 | Invisible / Competitor-Owned |
+|  Score | Label                        |
+| -----: | ---------------------------- |
+| 90–100 | AI Visibility Leader         |
+|  75–89 | Strong AI Presence           |
+|  60–74 | Emerging AI Presence         |
+|  40–59 | At Risk                      |
+|   0–39 | Invisible / Competitor-Owned |
 
 Manual overrides require permission, reason, and audit log entry.
 

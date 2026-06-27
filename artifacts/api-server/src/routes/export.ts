@@ -13,6 +13,15 @@ import { requireAuth, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
 
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
+
 async function assertProjectAccess(projectId: number, tenantId: number) {
   const [p] = await db
     .select({ id: projectsTable.id })
@@ -49,8 +58,8 @@ router.get(
   requireAuth,
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    if (isNaN(projectId)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    if (projectId == null) {
       res.status(400).json({ error: "Invalid projectId" });
       return;
     }
@@ -88,8 +97,8 @@ router.get(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    if (isNaN(projectId)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    if (projectId == null) {
       res.status(400).json({ error: "Invalid projectId" });
       return;
     }

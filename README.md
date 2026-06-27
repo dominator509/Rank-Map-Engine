@@ -27,21 +27,22 @@ See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the canonical architecture.
 
 ## Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18 + Vite, Tailwind CSS v4, shadcn/ui |
-| Backend | Express 5 + TypeScript |
-| Database | PostgreSQL + Drizzle ORM |
-| Validation | Zod v4 |
-| Testing | Vitest + Playwright |
-| Linting | ESLint + Prettier |
-| Package Manager | pnpm (workspace monorepo) |
+| Layer           | Technology                                  |
+| --------------- | ------------------------------------------- |
+| Frontend        | React 19 + Vite, Tailwind CSS v4, shadcn/ui |
+| Backend         | Express 5 + TypeScript                      |
+| Database        | PostgreSQL + Drizzle ORM                    |
+| Validation      | Zod v3                                      |
+| Testing         | Vitest + Playwright                         |
+| Linting         | ESLint + Prettier                           |
+| Package Manager | pnpm (workspace monorepo)                   |
 
 ## Prerequisites
 
 - Node.js ≥ 20
 - pnpm ≥ 9
 - PostgreSQL (provided by Replit)
+- Docker Desktop or another reachable Docker daemon for e2e, smoke, performance, and recovery baselines that start disposable Postgres containers
 
 ## Setup
 

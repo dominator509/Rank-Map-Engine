@@ -294,6 +294,12 @@ export function parseGeoAeoPromptCsv(
   const errors: string[] = [];
 
   parseCsvObjects(csvText).forEach((row, index) => {
+    const priority = parseOptionalIntegerInRange(row.priority, 0, 100);
+    if (priority === null) {
+      errors.push(`Row ${index + 2}: Invalid priority`);
+      return;
+    }
+
     const parsed = geoAeoPromptCreateSchema.safeParse({
       auditId,
       promptText: row.promptText || row.prompt || row.question,
@@ -301,7 +307,7 @@ export function parseGeoAeoPromptCsv(
       funnelStage: emptyToUndefined(row.funnelStage),
       serviceOrProduct: emptyToUndefined(row.serviceOrProduct),
       location: emptyToUndefined(row.location),
-      priority: row.priority ? Number(row.priority) : undefined,
+      priority,
     });
 
     if (!parsed.success) {
@@ -346,6 +352,15 @@ export async function previewGeoAeoPromptCsv(params: {
 
   parseCsvObjects(params.csvText).forEach((row, index) => {
     const rowNumber = index + 2;
+    const priority = parseOptionalIntegerInRange(row.priority, 0, 100);
+    if (priority === null) {
+      invalid.push({
+        row: rowNumber,
+        reason: "Invalid priority",
+      });
+      return;
+    }
+
     const parsed = geoAeoPromptCreateSchema.safeParse({
       auditId: params.auditId,
       promptText: row.promptText || row.prompt || row.question,
@@ -353,7 +368,7 @@ export async function previewGeoAeoPromptCsv(params: {
       funnelStage: emptyToUndefined(row.funnelStage),
       serviceOrProduct: emptyToUndefined(row.serviceOrProduct),
       location: emptyToUndefined(row.location),
-      priority: row.priority ? Number(row.priority) : undefined,
+      priority,
     });
 
     if (!parsed.success) {
@@ -464,10 +479,22 @@ export function parseGeoAeoSnapshotCsv(
   const errors: string[] = [];
 
   parseCsvObjects(csvText).forEach((row, index) => {
+    const promptId = parseOptionalPositiveInteger(row.promptId);
+    if (promptId === null) {
+      errors.push(`Row ${index + 2}: Invalid promptId`);
+      return;
+    }
+
+    const promptVariantId = parseOptionalPositiveInteger(row.promptVariantId);
+    if (promptVariantId === null) {
+      errors.push(`Row ${index + 2}: Invalid promptVariantId`);
+      return;
+    }
+
     const parsed = geoAeoSnapshotCreateSchema.safeParse({
       auditId,
-      promptId: row.promptId ? Number(row.promptId) : undefined,
-      promptVariantId: row.promptVariantId ? Number(row.promptVariantId) : undefined,
+      promptId,
+      promptVariantId,
       engine: row.engine,
       captureMethod: row.captureMethod || "csv_import",
       answerText: row.answerText || row.answer,
@@ -532,10 +559,28 @@ export async function previewGeoAeoSnapshotCsv(params: {
 
   parseCsvObjects(params.csvText).forEach((row, index) => {
     const rowNumber = index + 2;
+    const promptId = parseOptionalPositiveInteger(row.promptId);
+    if (promptId === null) {
+      invalid.push({
+        row: rowNumber,
+        reason: "Invalid promptId",
+      });
+      return;
+    }
+
+    const promptVariantId = parseOptionalPositiveInteger(row.promptVariantId);
+    if (promptVariantId === null) {
+      invalid.push({
+        row: rowNumber,
+        reason: "Invalid promptVariantId",
+      });
+      return;
+    }
+
     const parsed = geoAeoSnapshotCreateSchema.safeParse({
       auditId: params.auditId,
-      promptId: row.promptId ? Number(row.promptId) : undefined,
-      promptVariantId: row.promptVariantId ? Number(row.promptVariantId) : undefined,
+      promptId,
+      promptVariantId,
       engine: row.engine,
       captureMethod: row.captureMethod || "csv_import",
       answerText: row.answerText || row.answer,
@@ -2311,6 +2356,38 @@ function normalizePrompt(promptText: string): string {
 function emptyToUndefined(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
+}
+
+function parseOptionalPositiveInteger(value: string | undefined): number | null | undefined {
+  if (value == null) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (!/^[1-9]\d*$/.test(trimmed)) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function parseOptionalIntegerInRange(
+  value: string | undefined,
+  min: number,
+  max: number,
+): number | null | undefined {
+  if (value == null) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  return Number.isSafeInteger(parsed) && parsed >= min && parsed <= max ? parsed : null;
 }
 
 function buildFindingRows(params: {

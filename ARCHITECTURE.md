@@ -18,13 +18,13 @@
 
 **Primary Users**
 
-| Role | Description |
-|------|-------------|
+| Role         | Description                                           |
+| ------------ | ----------------------------------------------------- |
 | Agency Admin | Manages clients, seats, white-label settings, billing |
-| Agency User | Operates client projects within permission scope |
-| Solo SEO | Single-tenant user managing their own projects |
-| Client | Read-only dashboard access (white-labeled) |
-| Super Admin | Platform operator with cross-tenant access |
+| Agency User  | Operates client projects within permission scope      |
+| Solo SEO     | Single-tenant user managing their own projects        |
+| Client       | Read-only dashboard access (white-labeled)            |
+| Super Admin  | Platform operator with cross-tenant access            |
 
 ---
 
@@ -48,30 +48,35 @@ rankmap/
 ## 3. Entities (Core Data Model)
 
 ### Tenant
+
 ```
 id, name, plan (enum), seats_used, seats_max, white_label_config (jsonb),
 stripe_customer_id, stripe_subscription_id, created_at, updated_at
 ```
 
 ### User
+
 ```
 id, tenant_id (FK), email, password_hash, role (enum), full_name,
 avatar_url, last_login_at, created_at, updated_at
 ```
 
 ### Client
+
 ```
 id, tenant_id (FK), name, domain, industry, logo_url, is_active,
 created_at, updated_at
 ```
 
 ### Project
+
 ```
 id, client_id (FK), tenant_id (FK), name, target_domain, locale,
 status (enum), created_at, updated_at
 ```
 
 ### Keyword
+
 ```
 id, project_id (FK), phrase, search_volume, cpc, kd, intent (enum),
 cluster_id (FK nullable), source (enum: manual|csv|ahrefs|semrush),
@@ -79,12 +84,14 @@ is_active, raw_score, final_score, created_at, updated_at
 ```
 
 ### KeywordCluster
+
 ```
 id, project_id (FK), label, pillar_topic, cluster_type (enum),
 status (enum: pending|approved|rejected), created_at, updated_at
 ```
 
 ### ContentBrief
+
 ```
 id, cluster_id (FK), project_id (FK), title, outline (jsonb),
 target_word_count, status (enum), assigned_to (FK nullable),
@@ -92,12 +99,14 @@ created_at, updated_at
 ```
 
 ### Report
+
 ```
 id, project_id (FK), type (enum), format (enum: pdf|csv),
 generated_at, file_url, created_at
 ```
 
 ### AiTask
+
 ```
 id, project_id (FK), task_type (enum), provider (enum),
 status (enum: queued|running|awaiting_approval|approved|rejected|failed),
@@ -106,6 +115,7 @@ created_by (FK), approved_by (FK nullable), created_at, updated_at
 ```
 
 ### IntegrationCredential
+
 ```
 id, tenant_id (FK), provider (enum), credentials (encrypted JSON envelope),
 is_active, created_at, updated_at
@@ -136,14 +146,18 @@ final_score = weighted_sum(
 ## 5. AI Orchestration
 
 ### Task Registry
+
 Every AI task type is registered with:
+
 - Input/output Zod schemas
 - Provider list (priority order)
 - Timeout and retry policy
 - Whether human approval is required
 
 ### Provider Registry
+
 Each AI provider adapter implements `AIProviderAdapter`:
+
 ```typescript
 interface AIProviderAdapter {
   name: string;
@@ -155,6 +169,7 @@ interface AIProviderAdapter {
 Providers: `openai`, `anthropic`, `mock` (always available, used in dev/test)
 
 ### Human Approval Gate
+
 Tasks with `requires_approval = true` pause at `AWAITING_APPROVAL` state.
 Approved/rejected by a user with appropriate role before output is applied.
 
@@ -163,6 +178,7 @@ Approved/rejected by a user with appropriate role before output is applied.
 ## 6. Integration Adapter Registry
 
 All third-party data integrations implement `DataSourceAdapter`:
+
 ```typescript
 interface DataSourceAdapter {
   name: string;
@@ -205,11 +221,11 @@ Adapters: `ahrefs`, `semrush`, `dataforseo`, `csv-upload`, `manual`
 
 ## 9. Licensing & Billing (Stripe)
 
-| Plan | Seats | Projects | AI Tasks/mo | White-label |
-|------|-------|----------|-------------|-------------|
-| Solo | 1 | 3 | 500 | No |
-| Agency | 5 | 25 | 5,000 | Yes |
-| Enterprise | Unlimited | Unlimited | Unlimited | Yes + custom |
+| Plan       | Seats     | Projects  | AI Tasks/mo | White-label  |
+| ---------- | --------- | --------- | ----------- | ------------ |
+| Solo       | 1         | 3         | 500         | No           |
+| Agency     | 5         | 25        | 5,000       | Yes          |
+| Enterprise | Unlimited | Unlimited | Unlimited   | Yes + custom |
 
 - Stripe webhooks update `Tenant.plan`, `seats_max`, feature flags
 - Metered AI usage tracked in `AiTask` table
@@ -221,6 +237,7 @@ Adapters: `ahrefs`, `semrush`, `dataforseo`, `csv-upload`, `manual`
 ## 10. White-Label
 
 Agencies can configure:
+
 - Custom domain (CNAME)
 - Logo, colors, app name
 - `white_label_config` jsonb on `Tenant`
@@ -239,18 +256,18 @@ Agencies can configure:
 
 ## 12. Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18 + Vite, Tailwind CSS v4, shadcn/ui, Wouter |
-| Backend | Express 5 + TypeScript, Pino logging |
-| Database | PostgreSQL + Drizzle ORM |
-| Validation | Zod v4 |
-| Auth | Session-based (Phase 1+) with RBAC middleware |
-| AI | OpenAI / Anthropic via adapter registry; mock adapter in dev |
-| Payments | Stripe (Phase 5+) |
-| Testing | Vitest (unit/integration), Playwright (e2e) |
-| Linting | ESLint + Prettier |
-| Deployment | Replit (dev + production) |
+| Layer      | Technology                                                   |
+| ---------- | ------------------------------------------------------------ |
+| Frontend   | React 18 + Vite, Tailwind CSS v4, shadcn/ui, Wouter          |
+| Backend    | Express 5 + TypeScript, Pino logging                         |
+| Database   | PostgreSQL + Drizzle ORM                                     |
+| Validation | Zod v4                                                       |
+| Auth       | Session-based (Phase 1+) with RBAC middleware                |
+| AI         | OpenAI / Anthropic via adapter registry; mock adapter in dev |
+| Payments   | Stripe (Phase 5+)                                            |
+| Testing    | Vitest (unit/integration), Playwright (e2e)                  |
+| Linting    | ESLint + Prettier                                            |
+| Deployment | Replit (dev + production)                                    |
 
 ---
 
@@ -267,4 +284,4 @@ FEATURE_WHITE_LABEL=false         # White-label (Phase 6+)
 
 ---
 
-*Last updated: 2026-05-27 - repo reconciliation against implemented architecture.*
+_Last updated: 2026-05-27 - repo reconciliation against implemented architecture._

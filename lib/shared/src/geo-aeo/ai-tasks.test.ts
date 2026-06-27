@@ -20,8 +20,8 @@ describe("GEO/AEO AI task registry", () => {
   });
 
   it("looks up definitions by task type", () => {
-    expect(getGeoAeoAiTaskDefinition("geoAeo.generateClientReportSections").mockOutput.summary).toContain(
-      "Mock",
-    );
+    expect(
+      getGeoAeoAiTaskDefinition("geoAeo.generateClientReportSections").mockOutput.summary,
+    ).toContain("Mock");
   });
 });

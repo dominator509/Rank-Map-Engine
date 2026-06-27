@@ -98,12 +98,8 @@
           "name": "ai_tasks_project_id_projects_id_fk",
           "tableFrom": "ai_tasks",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -111,12 +107,8 @@
           "name": "ai_tasks_tenant_id_tenants_id_fk",
           "tableFrom": "ai_tasks",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -124,12 +116,8 @@
           "name": "ai_tasks_created_by_users_id_fk",
           "tableFrom": "ai_tasks",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -137,12 +125,8 @@
           "name": "ai_tasks_approved_by_users_id_fk",
           "tableFrom": "ai_tasks",
           "tableTo": "users",
-          "columnsFrom": [
-            "approved_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approved_by"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -232,12 +216,8 @@
           "name": "api_keys_tenant_id_tenants_id_fk",
           "tableFrom": "api_keys",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -245,12 +225,8 @@
           "name": "api_keys_user_id_users_id_fk",
           "tableFrom": "api_keys",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -260,9 +236,7 @@
         "api_keys_key_hash_unique": {
           "name": "api_keys_key_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "key_hash"
-          ]
+          "columns": ["key_hash"]
         }
       },
       "policies": {},
@@ -341,12 +315,8 @@
           "name": "audit_log_tenant_id_tenants_id_fk",
           "tableFrom": "audit_log",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -354,12 +324,8 @@
           "name": "audit_log_user_id_users_id_fk",
           "tableFrom": "audit_log",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -450,12 +416,8 @@
           "name": "content_briefs_cluster_id_keyword_clusters_id_fk",
           "tableFrom": "content_briefs",
           "tableTo": "keyword_clusters",
-          "columnsFrom": [
-            "cluster_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["cluster_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -463,12 +425,8 @@
           "name": "content_briefs_project_id_projects_id_fk",
           "tableFrom": "content_briefs",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -476,12 +434,8 @@
           "name": "content_briefs_tenant_id_tenants_id_fk",
           "tableFrom": "content_briefs",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -489,12 +443,8 @@
           "name": "content_briefs_assigned_to_users_id_fk",
           "tableFrom": "content_briefs",
           "tableTo": "users",
-          "columnsFrom": [
-            "assigned_to"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["assigned_to"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -591,12 +541,8 @@
           "name": "content_calendar_entries_tenant_id_tenants_id_fk",
           "tableFrom": "content_calendar_entries",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -604,12 +550,8 @@
           "name": "content_calendar_entries_project_id_projects_id_fk",
           "tableFrom": "content_calendar_entries",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -617,12 +559,8 @@
           "name": "content_calendar_entries_assigned_to_users_id_fk",
           "tableFrom": "content_calendar_entries",
           "tableTo": "users",
-          "columnsFrom": [
-            "assigned_to"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["assigned_to"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -701,12 +639,8 @@
           "name": "clients_tenant_id_tenants_id_fk",
           "tableFrom": "clients",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -784,12 +718,8 @@
           "name": "comments_tenant_id_tenants_id_fk",
           "tableFrom": "comments",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -797,12 +727,8 @@
           "name": "comments_user_id_users_id_fk",
           "tableFrom": "comments",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -861,12 +787,8 @@
           "name": "competitor_domains_tenant_id_tenants_id_fk",
           "tableFrom": "competitor_domains",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -874,12 +796,8 @@
           "name": "competitor_domains_project_id_projects_id_fk",
           "tableFrom": "competitor_domains",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -951,12 +869,8 @@
           "name": "custom_field_values_tenant_id_tenants_id_fk",
           "tableFrom": "custom_field_values",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -964,12 +878,8 @@
           "name": "custom_field_values_field_id_custom_fields_id_fk",
           "tableFrom": "custom_field_values",
           "tableTo": "custom_fields",
-          "columnsFrom": [
-            "field_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["field_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1047,12 +957,8 @@
           "name": "custom_fields_tenant_id_tenants_id_fk",
           "tableFrom": "custom_fields",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1248,12 +1154,8 @@
           "name": "geo_aeo_action_items_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_action_items",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1261,12 +1163,8 @@
           "name": "geo_aeo_action_items_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_action_items",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1274,12 +1172,8 @@
           "name": "geo_aeo_action_items_action_plan_id_geo_aeo_action_plans_id_fk",
           "tableFrom": "geo_aeo_action_items",
           "tableTo": "geo_aeo_action_plans",
-          "columnsFrom": [
-            "action_plan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["action_plan_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1287,12 +1181,8 @@
           "name": "geo_aeo_action_items_related_finding_id_geo_aeo_findings_id_fk",
           "tableFrom": "geo_aeo_action_items",
           "tableTo": "geo_aeo_findings",
-          "columnsFrom": [
-            "related_finding_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["related_finding_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1300,12 +1190,8 @@
           "name": "geo_aeo_action_items_related_prompt_id_geo_aeo_prompts_id_fk",
           "tableFrom": "geo_aeo_action_items",
           "tableTo": "geo_aeo_prompts",
-          "columnsFrom": [
-            "related_prompt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["related_prompt_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1313,12 +1199,8 @@
           "name": "geo_aeo_action_items_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_action_items",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1326,12 +1208,8 @@
           "name": "geo_aeo_action_items_updated_by_id_users_id_fk",
           "tableFrom": "geo_aeo_action_items",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1487,12 +1365,8 @@
           "name": "geo_aeo_action_plans_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_action_plans",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1500,12 +1374,8 @@
           "name": "geo_aeo_action_plans_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_action_plans",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1513,12 +1383,8 @@
           "name": "geo_aeo_action_plans_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_action_plans",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1526,12 +1392,8 @@
           "name": "geo_aeo_action_plans_updated_by_id_users_id_fk",
           "tableFrom": "geo_aeo_action_plans",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1539,12 +1401,8 @@
           "name": "geo_aeo_action_plans_approved_by_id_users_id_fk",
           "tableFrom": "geo_aeo_action_plans",
           "tableTo": "users",
-          "columnsFrom": [
-            "approved_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approved_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1780,12 +1638,8 @@
           "name": "geo_aeo_answer_snapshots_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_answer_snapshots",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1793,12 +1647,8 @@
           "name": "geo_aeo_answer_snapshots_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_answer_snapshots",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1806,12 +1656,8 @@
           "name": "geo_aeo_answer_snapshots_prompt_id_geo_aeo_prompts_id_fk",
           "tableFrom": "geo_aeo_answer_snapshots",
           "tableTo": "geo_aeo_prompts",
-          "columnsFrom": [
-            "prompt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["prompt_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1819,12 +1665,8 @@
           "name": "geo_aeo_answer_snapshots_prompt_variant_id_geo_aeo_prompt_variants_id_fk",
           "tableFrom": "geo_aeo_answer_snapshots",
           "tableTo": "geo_aeo_prompt_variants",
-          "columnsFrom": [
-            "prompt_variant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["prompt_variant_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1832,12 +1674,8 @@
           "name": "geo_aeo_answer_snapshots_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_answer_snapshots",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1845,12 +1683,8 @@
           "name": "geo_aeo_answer_snapshots_approved_by_id_users_id_fk",
           "tableFrom": "geo_aeo_answer_snapshots",
           "tableTo": "users",
-          "columnsFrom": [
-            "approved_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approved_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2109,12 +1943,8 @@
           "name": "geo_aeo_audits_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_audits",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2122,12 +1952,8 @@
           "name": "geo_aeo_audits_client_id_clients_id_fk",
           "tableFrom": "geo_aeo_audits",
           "tableTo": "clients",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2135,12 +1961,8 @@
           "name": "geo_aeo_audits_project_id_projects_id_fk",
           "tableFrom": "geo_aeo_audits",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2148,12 +1970,8 @@
           "name": "geo_aeo_audits_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_audits",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2161,12 +1979,8 @@
           "name": "geo_aeo_audits_updated_by_id_users_id_fk",
           "tableFrom": "geo_aeo_audits",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2174,12 +1988,8 @@
           "name": "geo_aeo_audits_approved_by_id_users_id_fk",
           "tableFrom": "geo_aeo_audits",
           "tableTo": "users",
-          "columnsFrom": [
-            "approved_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approved_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2334,12 +2144,8 @@
           "name": "geo_aeo_citations_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_citations",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2347,12 +2153,8 @@
           "name": "geo_aeo_citations_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_citations",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2360,12 +2162,8 @@
           "name": "geo_aeo_citations_snapshot_id_geo_aeo_answer_snapshots_id_fk",
           "tableFrom": "geo_aeo_citations",
           "tableTo": "geo_aeo_answer_snapshots",
-          "columnsFrom": [
-            "snapshot_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["snapshot_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2373,12 +2171,8 @@
           "name": "geo_aeo_citations_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_citations",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2499,12 +2293,8 @@
           "name": "geo_aeo_competitors_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_competitors",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2512,12 +2302,8 @@
           "name": "geo_aeo_competitors_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_competitors",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2525,12 +2311,8 @@
           "name": "geo_aeo_competitors_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_competitors",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2656,12 +2438,8 @@
           "name": "geo_aeo_engines_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_engines",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2669,12 +2447,8 @@
           "name": "geo_aeo_engines_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_engines",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2863,12 +2637,8 @@
           "name": "geo_aeo_findings_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_findings",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2876,12 +2646,8 @@
           "name": "geo_aeo_findings_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_findings",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2889,12 +2655,8 @@
           "name": "geo_aeo_findings_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_findings",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2902,12 +2664,8 @@
           "name": "geo_aeo_findings_updated_by_id_users_id_fk",
           "tableFrom": "geo_aeo_findings",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2915,12 +2673,8 @@
           "name": "geo_aeo_findings_approved_by_id_users_id_fk",
           "tableFrom": "geo_aeo_findings",
           "tableTo": "users",
-          "columnsFrom": [
-            "approved_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approved_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3069,12 +2823,8 @@
           "name": "geo_aeo_mentions_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_mentions",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3082,12 +2832,8 @@
           "name": "geo_aeo_mentions_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_mentions",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3095,12 +2841,8 @@
           "name": "geo_aeo_mentions_snapshot_id_geo_aeo_answer_snapshots_id_fk",
           "tableFrom": "geo_aeo_mentions",
           "tableTo": "geo_aeo_answer_snapshots",
-          "columnsFrom": [
-            "snapshot_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["snapshot_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3326,12 +3068,8 @@
           "name": "geo_aeo_monitoring_runs_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_monitoring_runs",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3339,12 +3077,8 @@
           "name": "geo_aeo_monitoring_runs_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_monitoring_runs",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3352,12 +3086,8 @@
           "name": "geo_aeo_monitoring_runs_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_monitoring_runs",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -3365,12 +3095,8 @@
           "name": "geo_aeo_monitoring_runs_updated_by_id_users_id_fk",
           "tableFrom": "geo_aeo_monitoring_runs",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -3378,12 +3104,8 @@
           "name": "geo_aeo_monitoring_runs_approved_by_id_users_id_fk",
           "tableFrom": "geo_aeo_monitoring_runs",
           "tableTo": "users",
-          "columnsFrom": [
-            "approved_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["approved_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3514,12 +3236,8 @@
           "name": "geo_aeo_prompt_sets_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_prompt_sets",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3527,12 +3245,8 @@
           "name": "geo_aeo_prompt_sets_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_prompt_sets",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3540,12 +3254,8 @@
           "name": "geo_aeo_prompt_sets_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_prompt_sets",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3698,12 +3408,8 @@
           "name": "geo_aeo_prompt_variants_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_prompt_variants",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3711,12 +3417,8 @@
           "name": "geo_aeo_prompt_variants_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_prompt_variants",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3724,12 +3426,8 @@
           "name": "geo_aeo_prompt_variants_prompt_id_geo_aeo_prompts_id_fk",
           "tableFrom": "geo_aeo_prompt_variants",
           "tableTo": "geo_aeo_prompts",
-          "columnsFrom": [
-            "prompt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["prompt_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3737,12 +3435,8 @@
           "name": "geo_aeo_prompt_variants_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_prompt_variants",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3931,12 +3625,8 @@
           "name": "geo_aeo_prompts_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_prompts",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3944,12 +3634,8 @@
           "name": "geo_aeo_prompts_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_prompts",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3957,12 +3643,8 @@
           "name": "geo_aeo_prompts_prompt_set_id_geo_aeo_prompt_sets_id_fk",
           "tableFrom": "geo_aeo_prompts",
           "tableTo": "geo_aeo_prompt_sets",
-          "columnsFrom": [
-            "prompt_set_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["prompt_set_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -3970,12 +3652,8 @@
           "name": "geo_aeo_prompts_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_prompts",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -3983,12 +3661,8 @@
           "name": "geo_aeo_prompts_updated_by_id_users_id_fk",
           "tableFrom": "geo_aeo_prompts",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -4144,12 +3818,8 @@
           "name": "geo_aeo_schema_findings_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_schema_findings",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4157,12 +3827,8 @@
           "name": "geo_aeo_schema_findings_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_schema_findings",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4170,12 +3836,8 @@
           "name": "geo_aeo_schema_findings_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_schema_findings",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -4183,12 +3845,8 @@
           "name": "geo_aeo_schema_findings_updated_by_id_users_id_fk",
           "tableFrom": "geo_aeo_schema_findings",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -4344,12 +4002,8 @@
           "name": "geo_aeo_source_recommendations_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_source_recommendations",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4357,12 +4011,8 @@
           "name": "geo_aeo_source_recommendations_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_source_recommendations",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4370,12 +4020,8 @@
           "name": "geo_aeo_source_recommendations_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_source_recommendations",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -4383,12 +4029,8 @@
           "name": "geo_aeo_source_recommendations_updated_by_id_users_id_fk",
           "tableFrom": "geo_aeo_source_recommendations",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -4515,12 +4157,8 @@
           "name": "geo_aeo_visibility_scores_tenant_id_tenants_id_fk",
           "tableFrom": "geo_aeo_visibility_scores",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4528,12 +4166,8 @@
           "name": "geo_aeo_visibility_scores_audit_id_geo_aeo_audits_id_fk",
           "tableFrom": "geo_aeo_visibility_scores",
           "tableTo": "geo_aeo_audits",
-          "columnsFrom": [
-            "audit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["audit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4541,12 +4175,8 @@
           "name": "geo_aeo_visibility_scores_overridden_by_id_users_id_fk",
           "tableFrom": "geo_aeo_visibility_scores",
           "tableTo": "users",
-          "columnsFrom": [
-            "overridden_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["overridden_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -4554,12 +4184,8 @@
           "name": "geo_aeo_visibility_scores_created_by_id_users_id_fk",
           "tableFrom": "geo_aeo_visibility_scores",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -4741,12 +4367,8 @@
           "name": "users_tenant_id_tenants_id_fk",
           "tableFrom": "users",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4756,9 +4378,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -4837,12 +4457,8 @@
           "name": "project_score_settings_project_id_projects_id_fk",
           "tableFrom": "project_score_settings",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4852,9 +4468,7 @@
         "project_score_settings_project_id_unique": {
           "name": "project_score_settings_project_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "project_id"
-          ]
+          "columns": ["project_id"]
         }
       },
       "policies": {},
@@ -4930,12 +4544,8 @@
           "name": "projects_client_id_clients_id_fk",
           "tableFrom": "projects",
           "tableTo": "clients",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4943,12 +4553,8 @@
           "name": "projects_tenant_id_tenants_id_fk",
           "tableFrom": "projects",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5028,12 +4634,8 @@
           "name": "keyword_clusters_project_id_projects_id_fk",
           "tableFrom": "keyword_clusters",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5041,12 +4643,8 @@
           "name": "keyword_clusters_tenant_id_tenants_id_fk",
           "tableFrom": "keyword_clusters",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5162,12 +4760,8 @@
           "name": "keywords_project_id_projects_id_fk",
           "tableFrom": "keywords",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5175,12 +4769,8 @@
           "name": "keywords_tenant_id_tenants_id_fk",
           "tableFrom": "keywords",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5188,12 +4778,8 @@
           "name": "keywords_cluster_id_keyword_clusters_id_fk",
           "tableFrom": "keywords",
           "tableTo": "keyword_clusters",
-          "columnsFrom": [
-            "cluster_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["cluster_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -5270,12 +4856,8 @@
           "name": "reports_project_id_projects_id_fk",
           "tableFrom": "reports",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5283,12 +4865,8 @@
           "name": "reports_tenant_id_tenants_id_fk",
           "tableFrom": "reports",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5366,12 +4944,8 @@
           "name": "user_invitations_tenant_id_tenants_id_fk",
           "tableFrom": "user_invitations",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5379,12 +4953,8 @@
           "name": "user_invitations_invited_by_users_id_fk",
           "tableFrom": "user_invitations",
           "tableTo": "users",
-          "columnsFrom": [
-            "invited_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invited_by"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5394,9 +4964,7 @@
         "user_invitations_token_unique": {
           "name": "user_invitations_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -5483,12 +5051,8 @@
           "name": "webhook_deliveries_endpoint_id_webhook_endpoints_id_fk",
           "tableFrom": "webhook_deliveries",
           "tableTo": "webhook_endpoints",
-          "columnsFrom": [
-            "endpoint_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["endpoint_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5496,12 +5060,8 @@
           "name": "webhook_deliveries_tenant_id_tenants_id_fk",
           "tableFrom": "webhook_deliveries",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5581,12 +5141,8 @@
           "name": "webhook_endpoints_tenant_id_tenants_id_fk",
           "tableFrom": "webhook_endpoints",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5654,12 +5210,8 @@
           "name": "integration_credentials_tenant_id_tenants_id_fk",
           "tableFrom": "integration_credentials",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5736,12 +5288,8 @@
           "name": "notifications_tenant_id_tenants_id_fk",
           "tableFrom": "notifications",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5749,12 +5297,8 @@
           "name": "notifications_user_id_users_id_fk",
           "tableFrom": "notifications",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5813,12 +5357,8 @@
           "name": "keyword_rankings_tenant_id_tenants_id_fk",
           "tableFrom": "keyword_rankings",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5826,12 +5366,8 @@
           "name": "keyword_rankings_keyword_id_keywords_id_fk",
           "tableFrom": "keyword_rankings",
           "tableTo": "keywords",
-          "columnsFrom": [
-            "keyword_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["keyword_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -5904,12 +5440,8 @@
           "name": "project_templates_tenant_id_tenants_id_fk",
           "tableFrom": "project_templates",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5917,12 +5449,8 @@
           "name": "project_templates_created_by_users_id_fk",
           "tableFrom": "project_templates",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -6014,12 +5542,8 @@
           "name": "report_schedules_tenant_id_tenants_id_fk",
           "tableFrom": "report_schedules",
           "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tenant_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6027,12 +5551,8 @@
           "name": "report_schedules_project_id_projects_id_fk",
           "tableFrom": "report_schedules",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

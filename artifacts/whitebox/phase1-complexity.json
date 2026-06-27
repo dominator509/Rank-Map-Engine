@@ -1,8 +1,26 @@
 {
-  "generatedAt": "2026-05-25T12:01:31.294Z",
-  "filesAnalyzed": 68,
-  "functionCount": 371,
+  "generatedAt": "2026-06-27T10:16:18.404Z",
+  "filesAnalyzed": 73,
+  "functionCount": 664,
   "topFunctions": [
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/geo-aeo-service.ts",
+      "line": 1191,
+      "name": "updateGeoAeoMonitoringRun",
+      "complexity": 17
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/geo-aeo-service.ts",
+      "line": 166,
+      "name": "updateGeoAeoAudit",
+      "complexity": 15
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/geo-aeo-service.ts",
+      "line": 1326,
+      "name": "analyzeGeoAeoAudit",
+      "complexity": 15
+    },
     {
       "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/health.ts",
       "line": 51,
@@ -16,6 +34,36 @@
       "complexity": 10
     },
     {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/geo-aeo.ts",
+      "line": 1411,
+      "name": "<anonymous>",
+      "complexity": 10
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/geo-aeo-service.ts",
+      "line": 491,
+      "name": "previewGeoAeoSnapshotCsv",
+      "complexity": 9
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/geo-aeo-service.ts",
+      "line": 533,
+      "name": "<anonymous>",
+      "complexity": 9
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/geo-aeo-service.ts",
+      "line": 1905,
+      "name": "exportGeoAeoReport",
+      "complexity": 9
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/keyword-adapters.ts",
+      "line": 75,
+      "name": "fetchFromSEMrush",
+      "complexity": 9
+    },
+    {
       "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/billing.ts",
       "line": 375,
       "name": "verifyStripeSignature",
@@ -24,6 +72,12 @@
     {
       "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/clients.ts",
       "line": 66,
+      "name": "<anonymous>",
+      "complexity": 9
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/geo-aeo.ts",
+      "line": 540,
       "name": "<anonymous>",
       "complexity": 9
     },
@@ -47,7 +101,7 @@
     },
     {
       "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/team.ts",
-      "line": 140,
+      "line": 133,
       "name": "<anonymous>",
       "complexity": 9
     },
@@ -58,9 +112,21 @@
       "complexity": 8
     },
     {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/keyword-adapters.ts",
-      "line": 71,
-      "name": "fetchFromSEMrush",
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/geo-aeo-access.ts",
+      "line": 79,
+      "name": "getGeoAeoReportAuditId",
+      "complexity": 8
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/geo-aeo-access.ts",
+      "line": 132,
+      "name": "authorizeGeoAeoReportExport",
+      "complexity": 8
+    },
+    {
+      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/geo-aeo-service.ts",
+      "line": 1279,
+      "name": "updateGeoAeoFinding",
       "complexity": 8
     },
     {
@@ -86,72 +152,6 @@
       "line": 230,
       "name": "<anonymous>",
       "complexity": 8
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/projects.ts",
-      "line": 94,
-      "name": "<anonymous>",
-      "complexity": 8
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/team.ts",
-      "line": 257,
-      "name": "<anonymous>",
-      "complexity": 8
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/webhook-emitter.ts",
-      "line": 31,
-      "name": "emitWebhookEvent",
-      "complexity": 7
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/billing.ts",
-      "line": 223,
-      "name": "findTenantForStripeObject",
-      "complexity": 7
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/billing.ts",
-      "line": 534,
-      "name": "<anonymous>",
-      "complexity": 7
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/export.ts",
-      "line": 25,
-      "name": "toCSV",
-      "complexity": 7
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/reports.ts",
-      "line": 51,
-      "name": "<anonymous>",
-      "complexity": 7
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/topic-map.ts",
-      "line": 17,
-      "name": "<anonymous>",
-      "complexity": 7
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/routes/webhooks.ts",
-      "line": 91,
-      "name": "<anonymous>",
-      "complexity": 7
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/lib/integration-credentials.ts",
-      "line": 17,
-      "name": "isCredentialEnvelope",
-      "complexity": 6
-    },
-    {
-      "file": "C:/dev/Rank-Map-Engine/artifacts/api-server/src/middlewares/auth.ts",
-      "line": 98,
-      "name": "requireRole",
-      "complexity": 6
     }
   ]
 }

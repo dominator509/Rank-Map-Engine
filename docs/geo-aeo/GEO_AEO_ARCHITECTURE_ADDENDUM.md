@@ -414,21 +414,21 @@ All inputs are normalized to `0–100`. Output is clamped to `0–100`.
 
 Labels:
 
-| Score | Label |
-|---:|---|
-| 90–100 | AI Visibility Leader |
-| 75–89 | Strong AI Presence |
-| 60–74 | Emerging AI Presence |
-| 40–59 | At Risk |
-| 0–39 | Invisible / Competitor-Owned |
+|  Score | Label                        |
+| -----: | ---------------------------- |
+| 90–100 | AI Visibility Leader         |
+|  75–89 | Strong AI Presence           |
+|  60–74 | Emerging AI Presence         |
+|  40–59 | At Risk                      |
+|   0–39 | Invisible / Competitor-Owned |
 
 ## 10. Prompt Visibility Matrix
 
 The prompt matrix should compare visibility across engines:
 
-| Prompt | ChatGPT | Gemini | Perplexity | Google AIO | Winner | Priority |
-|---|---|---|---|---|---|---|
-| Best emergency plumber in Austin | Missing | Mentioned | Competitor cited | Missing | Competitor A | High |
+| Prompt                           | ChatGPT | Gemini    | Perplexity       | Google AIO | Winner       | Priority |
+| -------------------------------- | ------- | --------- | ---------------- | ---------- | ------------ | -------- |
+| Best emergency plumber in Austin | Missing | Mentioned | Competitor cited | Missing    | Competitor A | High     |
 
 Statuses:
 

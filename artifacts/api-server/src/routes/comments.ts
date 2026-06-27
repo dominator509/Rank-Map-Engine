@@ -1,7 +1,15 @@
 import { Router } from "express";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
-import { db, commentsTable, usersTable } from "@workspace/db";
+import {
+  db,
+  commentsTable,
+  usersTable,
+  projectsTable,
+  keywordClustersTable,
+  contentBriefsTable,
+  keywordsTable,
+} from "@workspace/db";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
@@ -12,18 +20,81 @@ const CommentBody = z.object({
   body: z.string().min(1).max(4000),
 });
 
+function parsePositiveQueryInt(value: unknown): number | null {
+  if (typeof value !== "string" || !/^[1-9]\d*$/.test(value)) {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
+
+async function assertEntityAccess(
+  entityType: z.infer<typeof CommentBody>["entityType"],
+  entityId: number,
+  tenantId: number,
+): Promise<boolean> {
+  if (entityType === "project") {
+    const [row] = await db
+      .select({ id: projectsTable.id })
+      .from(projectsTable)
+      .where(and(eq(projectsTable.id, entityId), eq(projectsTable.tenantId, tenantId)))
+      .limit(1);
+    return !!row;
+  }
+  if (entityType === "cluster") {
+    const [row] = await db
+      .select({ id: keywordClustersTable.id })
+      .from(keywordClustersTable)
+      .where(
+        and(eq(keywordClustersTable.id, entityId), eq(keywordClustersTable.tenantId, tenantId)),
+      )
+      .limit(1);
+    return !!row;
+  }
+  if (entityType === "brief") {
+    const [row] = await db
+      .select({ id: contentBriefsTable.id })
+      .from(contentBriefsTable)
+      .where(and(eq(contentBriefsTable.id, entityId), eq(contentBriefsTable.tenantId, tenantId)))
+      .limit(1);
+    return !!row;
+  }
+  const [row] = await db
+    .select({ id: keywordsTable.id })
+    .from(keywordsTable)
+    .where(and(eq(keywordsTable.id, entityId), eq(keywordsTable.tenantId, tenantId)))
+    .limit(1);
+  return !!row;
+}
+
 router.get("/comments", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const { entityType, entityId } = req.query;
+  const parsedEntityId = parsePositiveQueryInt(req.query.entityId);
+  const parsedQuery = CommentBody.pick({ entityType: true, entityId: true }).safeParse({
+    entityType: req.query.entityType,
+    entityId: parsedEntityId,
+  });
 
-  if (!entityType || !entityId) {
+  if (!req.query.entityType || !req.query.entityId) {
     res.status(400).json({ error: "entityType and entityId required" });
     return;
   }
-
-  const eid = parseInt(entityId as string, 10);
-  if (isNaN(eid)) {
+  if (!parsedQuery.success) {
     res.status(400).json({ error: "Invalid entityId" });
+    return;
+  }
+  const { entityType, entityId } = parsedQuery.data;
+  if (!(await assertEntityAccess(entityType, entityId, tenantId))) {
+    res.status(404).json({ error: "Entity not found" });
     return;
   }
 
@@ -47,8 +118,8 @@ router.get("/comments", requireAuth, async (req, res): Promise<void> => {
     .where(
       and(
         eq(commentsTable.tenantId, tenantId),
-        eq(commentsTable.entityType, entityType as string),
-        eq(commentsTable.entityId, eid),
+        eq(commentsTable.entityType, entityType),
+        eq(commentsTable.entityId, entityId),
       ),
     )
     .orderBy(commentsTable.createdAt);
@@ -61,6 +132,10 @@ router.post("/comments", requireAuth, async (req, res): Promise<void> => {
   const parsed = CommentBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid input", details: parsed.error.issues });
+    return;
+  }
+  if (!(await assertEntityAccess(parsed.data.entityType, parsed.data.entityId, tenantId))) {
+    res.status(404).json({ error: "Entity not found" });
     return;
   }
 
@@ -77,8 +152,8 @@ router.patch(
   requireRole(["agency_admin", "agency_user", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const id = parseInt(req.params.id as string, 10);
-    if (isNaN(id)) {
+    const id = parsePositiveRouteInt(req.params.id);
+    if (id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -99,8 +174,8 @@ router.patch(
 
 router.delete("/comments/:id", requireAuth, async (req, res): Promise<void> => {
   const { id: userId, tenantId } = req.session.user!;
-  const id = parseInt(req.params.id as string, 10);
-  if (isNaN(id)) {
+  const id = parsePositiveRouteInt(req.params.id);
+  if (id == null) {
     res.status(400).json({ error: "Invalid id" });
     return;
   }
@@ -123,7 +198,9 @@ router.delete("/comments/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  await db.delete(commentsTable).where(eq(commentsTable.id, id));
+  await db
+    .delete(commentsTable)
+    .where(and(eq(commentsTable.id, id), eq(commentsTable.tenantId, tenantId)));
   res.json({ ok: true });
 });
 

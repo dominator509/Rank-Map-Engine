@@ -390,10 +390,15 @@ function verifyStripeSignature(
       return parts;
     }, {});
 
-  const timestamp = Number(signatureParts.t?.[0]);
+  const timestampRaw = signatureParts.t?.[0];
   const signatures = signatureParts.v1 ?? [];
 
-  if (!Number.isInteger(timestamp) || signatures.length === 0) {
+  if (timestampRaw === undefined || !/^\d+$/.test(timestampRaw)) {
+    throw new Error("Malformed Stripe signature header.");
+  }
+
+  const timestamp = Number(timestampRaw);
+  if (!Number.isSafeInteger(timestamp) || signatures.length === 0) {
     throw new Error("Malformed Stripe signature header.");
   }
 

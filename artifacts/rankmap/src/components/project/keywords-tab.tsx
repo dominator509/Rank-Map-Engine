@@ -35,6 +35,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Upload, Trash2, ChevronDown, Tag, Settings2 } from "lucide-react";
+import { parseOptionalPositiveDecimal, parseOptionalPositiveInteger } from "@/lib/form-numbers";
 
 const INTENT_COLORS: Record<string, string> = {
   informational: "bg-blue-500/10 text-blue-600 border-blue-200",
@@ -80,9 +81,9 @@ export function KeywordsTab({ projectId }: Props) {
         projectId,
         data: {
           phrase: fd.get("phrase") as string,
-          searchVolume: fd.get("searchVolume") ? Number(fd.get("searchVolume")) : undefined,
-          kd: fd.get("kd") ? Number(fd.get("kd")) : undefined,
-          cpc: fd.get("cpc") ? Number(fd.get("cpc")) : undefined,
+          searchVolume: parseOptionalPositiveInteger(fd.get("searchVolume") as string | null),
+          kd: parseOptionalPositiveInteger(fd.get("kd") as string | null),
+          cpc: parseOptionalPositiveDecimal(fd.get("cpc") as string | null),
           intent:
             (fd.get("intent") as
               | "informational"
@@ -146,11 +147,11 @@ export function KeywordsTab({ projectId }: Props) {
       {
         projectId,
         data: {
-          volumeWeight: Number(fd.get("volumeWeight")),
-          kdWeight: Number(fd.get("kdWeight")),
-          intentWeight: Number(fd.get("intentWeight")),
-          cpcWeight: Number(fd.get("cpcWeight")),
-          freshnessWeight: Number(fd.get("freshnessWeight")),
+          volumeWeight: parseOptionalPositiveDecimal(fd.get("volumeWeight") as string | null),
+          kdWeight: parseOptionalPositiveDecimal(fd.get("kdWeight") as string | null),
+          intentWeight: parseOptionalPositiveDecimal(fd.get("intentWeight") as string | null),
+          cpcWeight: parseOptionalPositiveDecimal(fd.get("cpcWeight") as string | null),
+          freshnessWeight: parseOptionalPositiveDecimal(fd.get("freshnessWeight") as string | null),
         },
       },
       {

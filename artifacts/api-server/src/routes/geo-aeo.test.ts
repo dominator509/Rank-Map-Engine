@@ -122,6 +122,15 @@ async function bootGeoAeoRoute(): Promise<{ baseUrl: string; close: () => Promis
 
 beforeEach(() => {
   vi.clearAllMocks();
+  serviceMocks.listGeoAeoAudits.mockResolvedValue([
+    {
+      id: 41,
+      auditName: "Filtered Audit",
+      clientId: 5,
+      projectId: 9,
+      status: "in_review",
+    },
+  ]);
   serviceMocks.listApprovedGeoAeoClientAudits.mockResolvedValue([
     { id: 101, auditName: "Approved Audit", status: "approved" },
   ]);
@@ -246,6 +255,50 @@ afterEach(() => {
 });
 
 describe("GEO/AEO route security and approval boundaries", () => {
+  it("rejects malformed audit filters and accepts canonical ids", async () => {
+    const { baseUrl, close } = await bootGeoAeoRoute();
+    try {
+      const invalidAuditId = await fetch(`${baseUrl}/geo-aeo/client/audits/1e2`, {
+        headers: { "x-role": "client" },
+      });
+
+      expect(invalidAuditId.status).toBe(400);
+
+      const invalid = await fetch(`${baseUrl}/geo-aeo/audits?clientId=1e2`, {
+        headers: { "x-role": "agency_admin" },
+      });
+
+      expect(invalid.status).toBe(400);
+      expect(serviceMocks.listGeoAeoAudits).not.toHaveBeenCalled();
+
+      const valid = await fetch(
+        `${baseUrl}/geo-aeo/audits?clientId=5&projectId=9&status=in_review`,
+        {
+          headers: { "x-role": "agency_admin" },
+        },
+      );
+
+      expect(valid.status).toBe(200);
+      expect(await valid.json()).toEqual([
+        {
+          id: 41,
+          auditName: "Filtered Audit",
+          clientId: 5,
+          projectId: 9,
+          status: "in_review",
+        },
+      ]);
+      expect(serviceMocks.listGeoAeoAudits).toHaveBeenCalledWith({
+        tenantId: 7,
+        clientId: 5,
+        projectId: 9,
+        status: "in_review",
+      });
+    } finally {
+      await close();
+    }
+  });
+
   it("returns only the approved client-dashboard feed for client-role viewers", async () => {
     const { baseUrl, close } = await bootGeoAeoRoute();
     try {
@@ -265,7 +318,7 @@ describe("GEO/AEO route security and approval boundaries", () => {
     } finally {
       await close();
     }
-  });
+  }, 15000);
 
   it("blocks client-dashboard reads when the tenant license does not allow GEO/AEO", async () => {
     const { baseUrl, close } = await bootGeoAeoRoute();

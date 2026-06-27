@@ -8,6 +8,15 @@ import crypto from "node:crypto";
 
 const router = Router();
 
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
+
 function isAllowedWebhookUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
@@ -25,6 +34,24 @@ function isAllowedWebhookUrl(url: string): boolean {
   } catch {
     return false;
   }
+}
+
+function parseWebhookEvents(events: unknown): { events: string[]; invalidEvents: string[] } | null {
+  if (!Array.isArray(events) || events.some((event) => typeof event !== "string")) {
+    return null;
+  }
+  return {
+    events,
+    invalidEvents: events.filter((event) => !WEBHOOK_EVENTS.includes(event as never)),
+  };
+}
+
+function parseDeliveryLimit(value: unknown): number | null {
+  const raw = value === undefined ? "20" : String(value);
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > 100) return null;
+  return parsed;
 }
 
 router.get("/webhooks", requireAuth, async (req, res): Promise<void> => {
@@ -48,7 +75,7 @@ router.post(
       description,
     } = req.body as {
       url?: string;
-      events?: string[];
+      events?: unknown;
       description?: string;
     };
 
@@ -57,9 +84,13 @@ router.post(
       return;
     }
 
-    const invalidEvents = events.filter((e) => !WEBHOOK_EVENTS.includes(e as never));
-    if (invalidEvents.length > 0) {
-      res.status(400).json({ error: `Invalid events: ${invalidEvents.join(", ")}` });
+    const parsedEvents = parseWebhookEvents(events);
+    if (!parsedEvents) {
+      res.status(400).json({ error: "events must be an array of strings" });
+      return;
+    }
+    if (parsedEvents.invalidEvents.length > 0) {
+      res.status(400).json({ error: `Invalid events: ${parsedEvents.invalidEvents.join(", ")}` });
       return;
     }
 
@@ -67,7 +98,7 @@ router.post(
 
     const [endpoint] = await db
       .insert(webhookEndpointsTable)
-      .values({ tenantId, url, events, secret, description })
+      .values({ tenantId, url, events: parsedEvents.events, secret, description })
       .returning();
 
     await audit({
@@ -90,13 +121,17 @@ router.patch(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const id = parseInt(req.params.id as string, 10);
+    const id = parsePositiveRouteInt(req.params.id);
     const { url, events, isActive, description } = req.body as {
       url?: string;
-      events?: string[];
+      events?: unknown;
       isActive?: boolean;
       description?: string;
     };
+    if (id == null) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
 
     const [ep] = await db
       .select({ id: webhookEndpointsTable.id })
@@ -117,14 +152,25 @@ router.patch(
       }
       updates.url = url;
     }
-    if (events !== undefined) updates.events = events;
+    if (events !== undefined) {
+      const parsedEvents = parseWebhookEvents(events);
+      if (!parsedEvents) {
+        res.status(400).json({ error: "events must be an array of strings" });
+        return;
+      }
+      if (parsedEvents.invalidEvents.length > 0) {
+        res.status(400).json({ error: `Invalid events: ${parsedEvents.invalidEvents.join(", ")}` });
+        return;
+      }
+      updates.events = parsedEvents.events;
+    }
     if (isActive !== undefined) updates.isActive = isActive;
     if (description !== undefined) updates.description = description;
 
     const [updated] = await db
       .update(webhookEndpointsTable)
       .set(updates)
-      .where(eq(webhookEndpointsTable.id, id))
+      .where(and(eq(webhookEndpointsTable.id, id), eq(webhookEndpointsTable.tenantId, tenantId)))
       .returning();
 
     res.json({ ...updated, secret: undefined });
@@ -137,7 +183,11 @@ router.delete(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId, id: userId } = req.session.user!;
-    const id = parseInt(req.params.id as string, 10);
+    const id = parsePositiveRouteInt(req.params.id);
+    if (id == null) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
 
     await db
       .delete(webhookEndpointsTable)
@@ -161,7 +211,11 @@ router.post(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const id = parseInt(req.params.id as string, 10);
+    const id = parsePositiveRouteInt(req.params.id);
+    if (id == null) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
 
     const [ep] = await db
       .select({ id: webhookEndpointsTable.id })
@@ -181,8 +235,16 @@ router.post(
 
 router.get("/webhooks/:id/deliveries", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const id = parseInt(req.params.id as string, 10);
-  const limit = Math.min(parseInt((req.query.limit as string) || "20", 10), 100);
+  const id = parsePositiveRouteInt(req.params.id);
+  const limit = parseDeliveryLimit(req.query.limit);
+  if (id == null) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+  if (limit == null) {
+    res.status(400).json({ error: "Invalid limit" });
+    return;
+  }
 
   const deliveries = await db
     .select()

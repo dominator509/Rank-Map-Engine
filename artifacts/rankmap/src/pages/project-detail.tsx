@@ -12,6 +12,7 @@ import { RoadmapTab } from "@/components/project/roadmap-tab";
 import { BriefsTab } from "@/components/project/briefs-tab";
 import { ReportsTab } from "@/components/project/reports-tab";
 import { useLocation } from "wouter";
+import { parsePositiveRouteInt } from "@/lib/route-params";
 
 const STATUS_BADGE: Record<string, string> = {
   active: "bg-green-500/10 text-green-600 border-green-200",
@@ -30,15 +31,17 @@ const TABS = [
 
 export default function ProjectDetail() {
   const { clientId, projectId, tab = "keywords" } = useParams();
-  const cId = parseInt(clientId || "0", 10);
-  const pId = parseInt(projectId || "0", 10);
+  const cId = parsePositiveRouteInt(clientId);
+  const pId = parsePositiveRouteInt(projectId);
+  const projectQueryId = pId ?? 0;
   const [, setLocation] = useLocation();
 
-  const { data: project, isLoading } = useGetProject(pId, {
-    query: { enabled: !!pId, queryKey: getGetProjectQueryKey(pId) },
+  const { data: project, isLoading } = useGetProject(projectQueryId, {
+    query: { enabled: pId != null, queryKey: getGetProjectQueryKey(projectQueryId) },
   });
 
   const handleTabChange = (val: string) => {
+    if (cId == null || pId == null) return;
     setLocation(`/clients/${cId}/projects/${pId}/${val}`);
   };
 
@@ -52,7 +55,7 @@ export default function ProjectDetail() {
     );
   }
 
-  if (!project) {
+  if (cId == null || pId == null || !project) {
     return <div className="p-8 text-destructive">Project not found.</div>;
   }
 

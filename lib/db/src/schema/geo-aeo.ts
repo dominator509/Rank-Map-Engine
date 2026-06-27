@@ -600,20 +600,18 @@ export const insertGeoAeoPromptSchema = createInsertSchema(geoAeoPromptsTable).o
   createdAt: true,
   updatedAt: true,
 });
-export const insertGeoAeoPromptVariantSchema = createInsertSchema(
-  geoAeoPromptVariantsTable,
-).omit({
+export const insertGeoAeoPromptVariantSchema = createInsertSchema(geoAeoPromptVariantsTable).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
-export const insertGeoAeoAnswerSnapshotSchema = createInsertSchema(
-  geoAeoAnswerSnapshotsTable,
-).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertGeoAeoAnswerSnapshotSchema = createInsertSchema(geoAeoAnswerSnapshotsTable).omit(
+  {
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  },
+);
 export const insertGeoAeoFindingSchema = createInsertSchema(geoAeoFindingsTable).omit({
   id: true,
   createdAt: true,

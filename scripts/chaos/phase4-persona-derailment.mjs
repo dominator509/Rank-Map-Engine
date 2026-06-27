@@ -42,11 +42,26 @@ const results = {
 
 let server;
 
+function ensureChaosPrerequisites() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error(
+      [
+        "DATABASE_URL is required for chaos phase 4 because it boots the API against a real test database.",
+        "Run with a disposable database and the TypeScript executor, for example:",
+        "  .\\node_modules\\.bin\\tsx.cmd scripts/chaos/phase4-persona-derailment.mjs",
+      ].join("\n"),
+    );
+  }
+}
+
 try {
+  ensureChaosPrerequisites();
+
   process.env.NODE_ENV = "test";
   process.env.SESSION_SECRET = "test-session-secret-with-at-least-32-characters";
 
-  const { ensureSessionTable } = await import("../../artifacts/api-server/src/lib/session-table.ts");
+  const { ensureSessionTable } =
+    await import("../../artifacts/api-server/src/lib/session-table.ts");
   await ensureSessionTable();
   const { default: app } = await import("../../artifacts/api-server/src/app.ts");
 
@@ -162,5 +177,6 @@ try {
   );
   console.log(JSON.stringify(results, null, 2));
 } finally {
-  if (server) await new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())));
+  if (server)
+    await new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())));
 }

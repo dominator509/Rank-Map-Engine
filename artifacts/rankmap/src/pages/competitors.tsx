@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Plus, Trash2, Globe, TrendingUp, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { parsePositiveRouteInt } from "@/lib/route-params";
 import { useQuery as useGetClients } from "@tanstack/react-query";
 
 interface Project {
@@ -59,7 +60,7 @@ export default function Competitors() {
     queryFn: () => customFetch("/api/clients"),
   });
 
-  const projectId = selectedProjectId ? parseInt(selectedProjectId, 10) : null;
+  const projectId = parsePositiveRouteInt(selectedProjectId);
 
   const { data: allProjects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],

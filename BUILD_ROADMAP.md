@@ -982,4 +982,4 @@ Phases 0-10 remain the historical foundation for the platform. Phases 11-39 are 
 
 ---
 
-*Last updated: 2026-05-10 - canonical Phases 11-39 roadmap drafted.*
+_Last updated: 2026-05-10 - canonical Phases 11-39 roadmap drafted._

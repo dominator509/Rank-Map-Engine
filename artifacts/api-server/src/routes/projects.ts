@@ -6,13 +6,36 @@ import { requireAuth, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
 
+function parsePositiveQueryInt(value: unknown): number | null {
+  if (typeof value !== "string" || !/^[1-9]\d*$/.test(value)) {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+function parsePositiveRouteInt(value: unknown): number | null {
+  if (typeof value !== "string" || !/^[1-9]\d*$/.test(value)) {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
 router.get("/projects", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
   const clientIdRaw = req.query.clientId;
-  const clientId = clientIdRaw ? parseInt(clientIdRaw as string, 10) : undefined;
+  const parsedClientId =
+    clientIdRaw === undefined ? undefined : parsePositiveQueryInt(clientIdRaw as unknown);
+
+  if (clientIdRaw !== undefined && parsedClientId == null) {
+    res.status(400).json({ error: "Invalid clientId" });
+    return;
+  }
+  const clientId = parsedClientId ?? undefined;
 
   const conditions = [eq(projectsTable.tenantId, tenantId)];
-  if (clientId && !isNaN(clientId)) {
+  if (clientId !== undefined) {
     conditions.push(eq(projectsTable.clientId, clientId));
   }
 
@@ -66,9 +89,9 @@ router.post(
 
 router.get("/projects/:id", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const id = parseInt(req.params.id as string, 10);
+  const id = parsePositiveRouteInt(req.params.id);
 
-  if (isNaN(id)) {
+  if (id == null) {
     res.status(400).json({ error: "Invalid id" });
     return;
   }
@@ -99,9 +122,9 @@ router.patch(
     }
 
     const { tenantId } = req.session.user!;
-    const id = parseInt(req.params.id as string, 10);
+    const id = parsePositiveRouteInt(req.params.id);
 
-    if (isNaN(id)) {
+    if (id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -134,9 +157,9 @@ router.delete(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const id = parseInt(req.params.id as string, 10);
+    const id = parsePositiveRouteInt(req.params.id);
 
-    if (isNaN(id)) {
+    if (id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -151,9 +174,9 @@ router.delete(
 
 router.get("/clients/:clientId/projects", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const clientId = parseInt(req.params.clientId as string, 10);
+  const clientId = parsePositiveRouteInt(req.params.clientId);
 
-  if (isNaN(clientId)) {
+  if (clientId == null) {
     res.status(400).json({ error: "Invalid clientId" });
     return;
   }
@@ -189,9 +212,9 @@ router.post(
     }
 
     const { tenantId } = req.session.user!;
-    const clientId = parseInt(req.params.clientId as string, 10);
+    const clientId = parsePositiveRouteInt(req.params.clientId);
 
-    if (isNaN(clientId)) {
+    if (clientId == null) {
       res.status(400).json({ error: "Invalid clientId" });
       return;
     }
@@ -220,10 +243,10 @@ router.post(
 
 router.get("/clients/:clientId/projects/:id", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const clientId = parseInt(req.params.clientId as string, 10);
-  const id = parseInt(req.params.id as string, 10);
+  const clientId = parsePositiveRouteInt(req.params.clientId);
+  const id = parsePositiveRouteInt(req.params.id);
 
-  if (isNaN(clientId) || isNaN(id)) {
+  if (clientId == null || id == null) {
     res.status(400).json({ error: "Invalid id" });
     return;
   }
@@ -260,10 +283,10 @@ router.patch(
     }
 
     const { tenantId } = req.session.user!;
-    const clientId = parseInt(req.params.clientId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
+    const clientId = parsePositiveRouteInt(req.params.clientId);
+    const id = parsePositiveRouteInt(req.params.id);
 
-    if (isNaN(clientId) || isNaN(id)) {
+    if (clientId == null || id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -302,10 +325,10 @@ router.delete(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const clientId = parseInt(req.params.clientId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
+    const clientId = parsePositiveRouteInt(req.params.clientId);
+    const id = parsePositiveRouteInt(req.params.id);
 
-    if (isNaN(clientId) || isNaN(id)) {
+    if (clientId == null || id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -326,9 +349,9 @@ router.delete(
 
 router.get("/projects/:projectId/score-settings", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const projectId = parseInt(req.params.projectId as string, 10);
+  const projectId = parsePositiveRouteInt(req.params.projectId);
 
-  if (isNaN(projectId)) {
+  if (projectId == null) {
     res.status(400).json({ error: "Invalid projectId" });
     return;
   }
@@ -365,9 +388,9 @@ router.patch(
     }
 
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
+    const projectId = parsePositiveRouteInt(req.params.projectId);
 
-    if (isNaN(projectId)) {
+    if (projectId == null) {
       res.status(400).json({ error: "Invalid projectId" });
       return;
     }

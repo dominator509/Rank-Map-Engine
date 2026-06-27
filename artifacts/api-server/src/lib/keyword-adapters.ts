@@ -16,6 +16,24 @@ function isFeatureEnabled(name: string): boolean {
   return truthyPattern.test(process.env[name] ?? "");
 }
 
+function parseOptionalPositiveInteger(value: string | undefined): number | undefined {
+  if (value === undefined || !/^[1-9]\d*$/.test(value)) {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : undefined;
+}
+
+function parseOptionalPositiveDecimal(value: string | undefined): number | undefined {
+  if (value === undefined || !/^\d+(?:\.\d+)?$/.test(value.trim())) {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+}
+
 export async function fetchKeywordsFromProvider(
   provider: AdapterProvider,
   query: string,
@@ -107,9 +125,9 @@ async function fetchFromSEMrush(
         const [phrase, volume, cpc, kd] = line.split(";");
         return {
           phrase: phrase?.trim() ?? "",
-          searchVolume: parseInt(volume ?? "0", 10) || undefined,
-          cpc: parseFloat(cpc ?? "0") || undefined,
-          kd: parseInt(kd ?? "0", 10) || undefined,
+          searchVolume: parseOptionalPositiveInteger(volume),
+          cpc: parseOptionalPositiveDecimal(cpc),
+          kd: parseOptionalPositiveInteger(kd),
         };
       })
       .filter((k) => k.phrase);

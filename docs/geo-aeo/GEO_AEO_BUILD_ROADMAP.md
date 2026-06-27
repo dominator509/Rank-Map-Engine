@@ -5,9 +5,11 @@ This roadmap is an addendum to the existing RankMap roadmap. It must not replace
 ## Phase G0 — Discovery, Scope Lock, and Docs
 
 ### Goal
+
 Understand the existing RankMap repo and lock the GEO/AEO feature scope before coding.
 
 ### Tasks
+
 1. Read `ARCHITECTURE.md`, `BUILD_ROADMAP.md`, `ROADMAP_STATUS.md`, `SECURITY.md`, and `AGENTS.md`.
 2. Inspect package scripts, framework, ORM, auth, RBAC, tenant, AI adapter, report, export, and audit-log patterns.
 3. Identify current app phase/maturity.
@@ -19,15 +21,18 @@ Understand the existing RankMap repo and lock the GEO/AEO feature scope before c
 9. Update `ROADMAP_STATUS.md` with a short entry stating this is a scoped product expansion.
 
 ### Acceptance Criteria
+
 - Repo patterns are summarized before implementation.
 - Docs exist and align with existing architecture.
 - No product code has been changed yet except docs/config discovery if needed.
 
 ### Tests / Checks
+
 - Documentation lint if available.
 - No build required unless docs tooling exists.
 
 ### Commit
+
 `geo-aeo-0: document geo aeo feature scope`
 
 ---
@@ -35,9 +40,11 @@ Understand the existing RankMap repo and lock the GEO/AEO feature scope before c
 ## Phase G1 — Feature Flags and Environment Validation
 
 ### Goal
+
 Add safe feature flags with real answer-engine calls disabled by default.
 
 ### Tasks
+
 1. Add `.env.example` placeholders:
    - `GEO_AEO_ENABLED=true`
    - `MOCK_ANSWER_ENGINE_ENABLED=true`
@@ -54,11 +61,13 @@ Add safe feature flags with real answer-engine calls disabled by default.
 4. Add env validation tests.
 
 ### Acceptance Criteria
+
 - Env validation passes in local/mock mode.
 - Real answer-engine calls are disabled by default.
 - Missing real provider keys fail validation only if corresponding real flags are enabled.
 
 ### Tests / Checks
+
 ```bash
 npm run verify-env
 npm run test:unit -- env
@@ -67,6 +76,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-1: add geo aeo feature flags`
 
 ---
@@ -74,9 +84,11 @@ npm run lint
 ## Phase G2 — Shared Domain Constants, Schemas, and Scoring
 
 ### Goal
+
 Create central shared domain modules before API/UI implementation.
 
 ### Tasks
+
 1. Add shared constants for engines, capture methods, snapshot statuses, finding types, action categories, and labels.
 2. Add Zod/repo-standard schemas for:
    - Audit create/update.
@@ -91,11 +103,13 @@ Create central shared domain modules before API/UI implementation.
 6. Add unit tests for normalization, clamping, formula, edge cases, and labels.
 
 ### Acceptance Criteria
+
 - No duplicate score formula exists.
 - Schemas can be reused by API and UI.
 - Score tests pass.
 
 ### Tests / Checks
+
 ```bash
 npm run test:unit -- geo-aeo
 npm run test:unit -- scoring
@@ -104,6 +118,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-2: add shared geo aeo domain and scoring`
 
 ---
@@ -111,9 +126,11 @@ npm run lint
 ## Phase G3 — Database Migration and Seed Additions
 
 ### Goal
+
 Persist GEO/AEO audits, prompts, snapshots, findings, scores, citations, competitors, and action plans.
 
 ### Tasks
+
 1. Add additive migration using existing ORM/migration conventions.
 2. Add tenant/project/client scoping fields to every tenant-owned model.
 3. Add indexes for organization/client/project/audit/status/engine/prompt.
@@ -123,6 +140,7 @@ Persist GEO/AEO audits, prompts, snapshots, findings, scores, citations, competi
 7. Add migration/seed tests.
 
 ### Acceptance Criteria
+
 - Migration applies cleanly from empty DB.
 - Migration is non-destructive.
 - Seed runs repeatedly without duplicates.
@@ -130,6 +148,7 @@ Persist GEO/AEO audits, prompts, snapshots, findings, scores, citations, competi
 - No credential/plaintext-secret fields exist.
 
 ### Tests / Checks
+
 ```bash
 npm run db:migrate
 npm run db:seed
@@ -140,6 +159,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-3: add geo aeo data model`
 
 ---
@@ -147,9 +167,11 @@ npm run lint
 ## Phase G4 — RBAC, Tenant Helpers, and Audit Logs
 
 ### Goal
+
 Protect GEO/AEO routes and actions using existing server-side authorization.
 
 ### Tasks
+
 1. Add permissions only if existing permissions are insufficient:
    - `geoAeo.view`
    - `geoAeo.manageAudits`
@@ -176,12 +198,14 @@ Protect GEO/AEO routes and actions using existing server-side authorization.
 5. Add RBAC and tenant isolation tests.
 
 ### Acceptance Criteria
+
 - UI hiding is not relied upon for security.
 - Client viewer cannot see drafts or other tenants.
 - Role escalation is blocked.
 - Sensitive actions are audited.
 
 ### Tests / Checks
+
 ```bash
 npm run test:unit -- rbac
 npm run test:integration -- geo-aeo-rbac
@@ -191,6 +215,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-4: protect geo aeo with rbac and audit logs`
 
 ---
@@ -198,9 +223,11 @@ npm run lint
 ## Phase G5 — Services and Thin API Routes
 
 ### Goal
+
 Create service-layer business logic and API endpoints.
 
 ### Tasks
+
 1. Implement `GeoAeoAuditService`.
 2. Implement `GeoAeoPromptService`.
 3. Implement `GeoAeoSnapshotService`.
@@ -212,12 +239,14 @@ Create service-layer business logic and API endpoints.
 9. Add consistent error shapes.
 
 ### Acceptance Criteria
+
 - CRUD works for audits/prompts/snapshots/findings/action plans.
 - Every query is tenant-scoped.
 - Mutations require permission.
 - Routes are thin and services own business logic.
 
 ### Tests / Checks
+
 ```bash
 npm run test:integration -- geo-aeo-api
 npm run test:security -- tenant-isolation
@@ -226,6 +255,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-5: add geo aeo services and api`
 
 ---
@@ -233,9 +263,11 @@ npm run lint
 ## Phase G6 — Prompt Entry and CSV Prompt Import
 
 ### Goal
+
 Allow admins to create and import AI visibility prompts.
 
 ### Tasks
+
 1. Add manual prompt entry service/UI support.
 2. Add CSV prompt parser.
 3. Add import preview showing valid/invalid/duplicate rows.
@@ -246,6 +278,7 @@ Allow admins to create and import AI visibility prompts.
 8. Add fixture tests.
 
 ### Acceptance Criteria
+
 - Manual prompt entry works.
 - CSV prompt import works.
 - Invalid rows are recoverable.
@@ -253,6 +286,7 @@ Allow admins to create and import AI visibility prompts.
 - CSV injection is neutralized.
 
 ### Tests / Checks
+
 ```bash
 npm run test:unit -- geo-aeo-imports
 npm run test:integration -- geo-aeo-imports
@@ -261,6 +295,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-6: add prompt entry and import`
 
 ---
@@ -268,9 +303,11 @@ npm run lint
 ## Phase G7 — Manual and CSV Answer Snapshot Import
 
 ### Goal
+
 Allow admins to capture answer-engine observations without real integrations.
 
 ### Tasks
+
 1. Add manual answer snapshot form/service.
 2. Add CSV answer snapshot parser.
 3. Store engine, prompt, capture method, answer text, citation URLs, and notes.
@@ -280,12 +317,14 @@ Allow admins to capture answer-engine observations without real integrations.
 7. Add fixture tests.
 
 ### Acceptance Criteria
+
 - Admin can paste ChatGPT/Gemini/Perplexity/Google AIO snapshots manually.
 - Admin can import snapshots by CSV.
 - Snapshot text is stored safely.
 - Failed imports do not leave partial state.
 
 ### Tests / Checks
+
 ```bash
 npm run test:unit -- snapshots
 npm run test:integration -- geo-aeo-snapshots
@@ -295,6 +334,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-7: add manual and csv answer snapshots`
 
 ---
@@ -302,9 +342,11 @@ npm run lint
 ## Phase G8 — Answer-Engine Adapter Registry
 
 ### Goal
+
 Represent manual, mock, and future real answer-engine paths using adapters.
 
 ### Tasks
+
 1. Add answer-engine adapter interface.
 2. Add registry.
 3. Implement manual snapshot adapter.
@@ -318,12 +360,14 @@ Represent manual, mock, and future real answer-engine paths using adapters.
 11. Add adapter contract tests.
 
 ### Acceptance Criteria
+
 - Feature services use adapter registry only.
 - Mock/manual paths work with no API keys.
 - Real provider paths are disabled by default.
 - No automated test makes paid calls.
 
 ### Tests / Checks
+
 ```bash
 npm run test:adapter-contract -- answer-engine
 npm run test:integration -- answer-engine
@@ -333,6 +377,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-8: add answer engine adapter registry`
 
 ---
@@ -340,9 +385,11 @@ npm run lint
 ## Phase G9 — AI Analysis Task Registry Additions
 
 ### Goal
+
 Analyze snapshots through the existing AI task runner.
 
 ### Tasks
+
 1. Add prompt templates and output schemas for:
    - Prompt intent classification.
    - Brand mention extraction.
@@ -361,12 +408,14 @@ Analyze snapshots through the existing AI task runner.
 5. Send failures to visible error/review state.
 
 ### Acceptance Criteria
+
 - Every GEO/AEO AI task is registered.
 - Mock analysis works with no real AI key.
 - Invalid outputs are rejected safely.
 - No client-facing output bypasses approval.
 
 ### Tests / Checks
+
 ```bash
 npm run test:unit -- geo-aeo-ai
 npm run test:integration -- geo-aeo-ai
@@ -376,6 +425,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-9: add geo aeo ai analysis tasks`
 
 ---
@@ -383,9 +433,11 @@ npm run lint
 ## Phase G10 — Findings, Scores, Competitor Comparison, and Citation Gaps
 
 ### Goal
+
 Generate business-usable audit findings from prompts and snapshots.
 
 ### Tasks
+
 1. Calculate AI Visibility Score from snapshots/findings.
 2. Generate competitor share-of-answer summary.
 3. Generate engine-by-engine visibility matrix.
@@ -396,12 +448,14 @@ Generate business-usable audit findings from prompts and snapshots.
 8. Allow manual score override with reason and audit log.
 
 ### Acceptance Criteria
+
 - Score and label are correct.
 - Findings are explainable.
 - Manual overrides are permissioned and audited.
 - Client cannot see draft findings.
 
 ### Tests / Checks
+
 ```bash
 npm run test:unit -- geo-aeo-scoring
 npm run test:integration -- geo-aeo-findings
@@ -411,6 +465,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-10: generate geo aeo findings and scores`
 
 ---
@@ -418,9 +473,11 @@ npm run lint
 ## Phase G11 — Admin UI
 
 ### Goal
+
 Build a usable admin workflow for running GEO/AEO audits.
 
 ### Tasks
+
 1. Add admin audit list.
 2. Add new audit wizard.
 3. Add audit overview.
@@ -433,11 +490,13 @@ Build a usable admin workflow for running GEO/AEO audits.
 10. Add loading/empty/error/permission/success/manual-fallback states.
 
 ### Acceptance Criteria
+
 - Admin can complete setup, prompt entry, snapshot import, analysis review, and findings review.
 - UI uses existing design system.
 - No server-only code leaks to client bundle.
 
 ### Tests / Checks
+
 ```bash
 npm run test:e2e -- geo-aeo-admin
 npm run typecheck
@@ -445,6 +504,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-11: add admin geo aeo workflow`
 
 ---
@@ -452,9 +512,11 @@ npm run lint
 ## Phase G12 — Approval Workflow Integration
 
 ### Goal
+
 Ensure human approval before client visibility or client-facing export.
 
 ### Tasks
+
 1. Add GEO/AEO approval item types if needed.
 2. Allow approve/edit/regenerate/delete for findings, scores, action plans, and reports.
 3. Add audit logs for each action.
@@ -462,12 +524,14 @@ Ensure human approval before client visibility or client-facing export.
 5. Add client visibility filters.
 
 ### Acceptance Criteria
+
 - Draft findings hidden from clients.
 - Admin can approve and edit.
 - Regeneration does not destroy approved/manual content.
 - All approval actions audited.
 
 ### Tests / Checks
+
 ```bash
 npm run test:integration -- geo-aeo-approval
 npm run test:e2e -- geo-aeo-approval
@@ -477,6 +541,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-12: require approval for geo aeo outputs`
 
 ---
@@ -484,9 +549,11 @@ npm run lint
 ## Phase G13 — 30-Day Action Plan and Brief Conversion
 
 ### Goal
+
 Turn GEO/AEO findings into implementation work.
 
 ### Tasks
+
 1. Generate 30-day action plan from approved or draft findings.
 2. Add week 1/2/3/4 grouping.
 3. Add manual action item creation/editing.
@@ -495,11 +562,13 @@ Turn GEO/AEO findings into implementation work.
 6. Add assignment support if writer/editor module exists.
 
 ### Acceptance Criteria
+
 - Action plan is practical and editable.
 - Admin can manually create all required action items.
 - Action items can be approved for client visibility.
 
 ### Tests / Checks
+
 ```bash
 npm run test:unit -- geo-aeo-action-plan
 npm run test:integration -- geo-aeo-action-plan
@@ -509,6 +578,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-13: add geo aeo action plans`
 
 ---
@@ -516,9 +586,11 @@ npm run lint
 ## Phase G14 — Report Builder and Exports
 
 ### Goal
+
 Create client-ready GEO/AEO reports using existing report/export infrastructure.
 
 ### Tasks
+
 1. Add report type `GEO_AEO_VISIBILITY_AUDIT`.
 2. Add required report sections.
 3. Add Markdown export.
@@ -529,12 +601,14 @@ Create client-ready GEO/AEO reports using existing report/export infrastructure.
 8. Add methodology/limitations section.
 
 ### Acceptance Criteria
+
 - Report includes all required sections.
 - Client-facing report requires approval.
 - Exports enforce permissions.
 - CSV export neutralizes formula injection.
 
 ### Tests / Checks
+
 ```bash
 npm run test:integration -- geo-aeo-reports
 npm run test:e2e -- geo-aeo-reports
@@ -544,6 +618,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-14: add geo aeo reports and exports`
 
 ---
@@ -551,9 +626,11 @@ npm run lint
 ## Phase G15 — Client Dashboard and Licensing
 
 ### Goal
+
 Expose approved AI visibility insights to clients based on license tier.
 
 ### Tasks
+
 1. Add client AI visibility dashboard route/section.
 2. Show scorecard, approved prompt matrix, competitor comparison, action plan, and reports.
 3. Enforce license tier server-side.
@@ -561,11 +638,13 @@ Expose approved AI visibility insights to clients based on license tier.
 5. Hide drafts and disallowed downloads.
 
 ### Acceptance Criteria
+
 - Client sees plain-English approved insights only.
 - License tiers are enforced server-side.
 - Download permissions are enforced.
 
 ### Tests / Checks
+
 ```bash
 npm run test:e2e -- geo-aeo-client
 npm run test:integration -- geo-aeo-license
@@ -575,6 +654,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-15: add client ai visibility dashboard`
 
 ---
@@ -582,9 +662,11 @@ npm run lint
 ## Phase G16 — Monthly Monitoring Scaffold
 
 ### Goal
+
 Support recurring revenue through repeatable monthly audits.
 
 ### Tasks
+
 1. Add monitoring cadence fields.
 2. Add snapshot batch comparison by month.
 3. Add month-over-month score change.
@@ -593,11 +675,13 @@ Support recurring revenue through repeatable monthly audits.
 6. Keep automated real engine runs disabled unless explicitly supported.
 
 ### Acceptance Criteria
+
 - Admin can manually create monthly monitoring runs.
 - Client can see approved monthly progress.
 - No real provider required.
 
 ### Tests / Checks
+
 ```bash
 npm run test:integration -- geo-aeo-monitoring
 npm run test:e2e -- geo-aeo-monitoring
@@ -606,6 +690,7 @@ npm run lint
 ```
 
 ### Commit
+
 `geo-aeo-16: add monthly ai visibility monitoring scaffold`
 
 ---
@@ -613,9 +698,11 @@ npm run lint
 ## Phase G17 — Security Hardening and QA
 
 ### Goal
+
 Verify the feature does not weaken the hardened repo.
 
 ### Tasks
+
 1. Run full feature test suite.
 2. Run tenant isolation tests.
 3. Run RBAC tests.
@@ -627,6 +714,7 @@ Verify the feature does not weaken the hardened repo.
 9. Update implementation status.
 
 ### Acceptance Criteria
+
 - Critical tests pass.
 - No secret leakage.
 - No draft client exposure.
@@ -635,6 +723,7 @@ Verify the feature does not weaken the hardened repo.
 - Known limitations documented.
 
 ### Tests / Checks
+
 ```bash
 npm run typecheck
 npm run lint
@@ -646,6 +735,7 @@ npm run smoke
 ```
 
 ### Commit
+
 `geo-aeo-17: harden and verify geo aeo module`
 
 ---

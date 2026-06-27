@@ -2,6 +2,15 @@ import { logger as rootLogger } from "./logger.js";
 
 const logger = rootLogger.child({ module: "email" });
 
+export function parseSmtpPort(value: string | undefined): number {
+  if (value === undefined || !/^[1-9]\d*$/.test(value)) {
+    return 587;
+  }
+
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) && parsed > 0 && parsed <= 65535 ? parsed : 587;
+}
+
 export interface EmailPayload {
   to: string | string[];
   subject: string;
@@ -14,10 +23,11 @@ async function sendViaSMTP(payload: EmailPayload): Promise<void> {
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) throw new Error("SMTP not configured");
 
   const nodemailer = await import("nodemailer");
+  const port = parseSmtpPort(SMTP_PORT);
   const transporter = nodemailer.default.createTransport({
     host: SMTP_HOST,
-    port: parseInt(SMTP_PORT ?? "587", 10),
-    secure: parseInt(SMTP_PORT ?? "587", 10) === 465,
+    port,
+    secure: port === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
   });
 

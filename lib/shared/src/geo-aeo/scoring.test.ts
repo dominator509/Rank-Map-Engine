@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { neutralizeCsvCell, parseCsvObjects } from "./csv.js";
 import { validateGeoAeoEnv } from "./env.js";
-import {
-  calculateGeoAeoVisibilityScore,
-  getGeoAeoScoreLabel,
-} from "./scoring.js";
+import { calculateGeoAeoVisibilityScore, getGeoAeoScoreLabel } from "./scoring.js";
 import { geoAeoPromptCreateSchema, geoAeoSnapshotCreateSchema } from "./schemas.js";
 
 describe("GEO/AEO scoring", () => {
@@ -116,8 +113,8 @@ describe("GEO/AEO shared validation", () => {
   });
 
   it("neutralizes spreadsheet formula cells", () => {
-    expect(neutralizeCsvCell("=IMPORTXML(\"https://example.test\")")).toBe(
-      "'=IMPORTXML(\"https://example.test\")",
+    expect(neutralizeCsvCell('=IMPORTXML("https://example.test")')).toBe(
+      '\'=IMPORTXML("https://example.test")',
     );
     expect(neutralizeCsvCell("normal text")).toBe("normal text");
   });
@@ -129,7 +126,7 @@ describe("GEO/AEO shared validation", () => {
 
     expect(rows).toEqual([
       { promptText: "Best plumbers, Austin", intent: "commercial" },
-      { promptText: "'=IMPORTXML(\"https://example.test\")", intent: "informational" },
+      { promptText: '\'=IMPORTXML("https://example.test")', intent: "informational" },
     ]);
   });
 });

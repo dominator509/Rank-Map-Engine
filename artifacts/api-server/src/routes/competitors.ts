@@ -6,6 +6,15 @@ import { requireAuth, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
 
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
+
 async function assertProjectAccess(projectId: number, tenantId: number) {
   const [p] = await db
     .select({ id: projectsTable.id })
@@ -20,10 +29,23 @@ const DomainBody = z.object({
   label: z.string().max(100).optional(),
 });
 
+function stableRankSeed(input: string): number {
+  let hash = 0;
+  for (let index = 0; index < input.length; index += 1) {
+    hash = (hash * 31 + input.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+function estimateCompetitorRanking(keywordId: number, competitorDomain: string): number | null {
+  const seed = stableRankSeed(`${keywordId}:${competitorDomain.toLowerCase()}`);
+  return seed % 5 < 2 ? Math.floor(seed % 50) + 1 : null;
+}
+
 router.get("/projects/:projectId/competitors", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const projectId = parseInt(req.params.projectId as string, 10);
-  if (isNaN(projectId)) {
+  const projectId = parsePositiveRouteInt(req.params.projectId);
+  if (projectId == null) {
     res.status(400).json({ error: "Invalid projectId" });
     return;
   }
@@ -52,8 +74,8 @@ router.post(
   requireRole(["agency_admin", "agency_user", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    if (isNaN(projectId)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    if (projectId == null) {
       res.status(400).json({ error: "Invalid projectId" });
       return;
     }
@@ -82,9 +104,9 @@ router.delete(
   requireRole(["agency_admin", "agency_user", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
-    if (isNaN(projectId) || isNaN(id)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    const id = parsePositiveRouteInt(req.params.id);
+    if (projectId == null || id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -108,8 +130,8 @@ router.get(
   requireAuth,
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    if (isNaN(projectId)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    if (projectId == null) {
       res.status(400).json({ error: "Invalid projectId" });
       return;
     }
@@ -139,11 +161,11 @@ router.get(
       .from(keywordsTable)
       .where(and(eq(keywordsTable.projectId, projectId), eq(keywordsTable.tenantId, tenantId)));
 
-    // Mock gap analysis: pretend each competitor covers random 40% of keywords
+    // Placeholder gap analysis stays deterministic until live competitor ranking data is wired.
     const gap = keywords.map((kw) => {
       const competitorCoverage = competitors.map((c) => ({
         domain: c.domain,
-        ranking: Math.random() > 0.6 ? Math.floor(Math.random() * 50) + 1 : null,
+        ranking: estimateCompetitorRanking(kw.id, c.domain),
       }));
       return { ...kw, competitorCoverage };
     });

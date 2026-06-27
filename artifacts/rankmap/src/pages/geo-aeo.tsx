@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { parseOptionalPositiveDecimal, parseOptionalPositiveInteger } from "@/lib/form-numbers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -327,6 +328,12 @@ export default function GeoAeo() {
   const [actionItemWeek, setActionItemWeek] = useState("1");
   const [overrideScore, setOverrideScore] = useState("");
   const [overrideReason, setOverrideReason] = useState("");
+  const parsedOverrideScore = Number(overrideScore);
+  const isOverrideScoreValid =
+    overrideScore.trim().length > 0 &&
+    Number.isFinite(parsedOverrideScore) &&
+    parsedOverrideScore >= 0 &&
+    parsedOverrideScore <= 100;
   const [competitorDrafts, setCompetitorDrafts] = useState<
     Record<number, { name: string; websiteUrl: string }>
   >({});
@@ -536,7 +543,7 @@ export default function GeoAeo() {
           description: actionItemDescription || undefined,
           category: actionItemCategory,
           priority: actionItemPriority,
-          weekNumber: Number(actionItemWeek),
+          weekNumber: parseOptionalPositiveInteger(actionItemWeek),
           status: "draft",
         }),
       }),
@@ -660,7 +667,7 @@ export default function GeoAeo() {
       customFetch(`/api/geo-aeo/audits/${auditId}/score`, {
         method: "POST",
         body: JSON.stringify({
-          score: Number(overrideScore),
+          score: parsedOverrideScore,
           reason: overrideReason,
         }),
       }),
@@ -892,8 +899,8 @@ export default function GeoAeo() {
         body: JSON.stringify({
           runMonth: monitoringRunMonth,
           baselineMonth: monitoringBaselineMonth || undefined,
-          baselineScore: monitoringBaselineScore ? Number(monitoringBaselineScore) : undefined,
-          currentScore: monitoringCurrentScore ? Number(monitoringCurrentScore) : undefined,
+          baselineScore: parseOptionalPositiveDecimal(monitoringBaselineScore),
+          currentScore: parseOptionalPositiveDecimal(monitoringCurrentScore),
           currentSnapshotCount: snapshots.data?.length ?? 0,
         }),
       }),
@@ -980,7 +987,7 @@ export default function GeoAeo() {
           description: description || undefined,
           category,
           priority,
-          weekNumber: Number(weekNumber),
+          weekNumber: parseOptionalPositiveInteger(weekNumber),
           status,
         }),
       }),
@@ -1023,9 +1030,13 @@ export default function GeoAeo() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const projectValue = formData.get("projectId") as string;
+    const parsedClientId = parseOptionalPositiveInteger(formData.get("clientId") as string | null);
     createAudit.mutate({
-      clientId: Number(formData.get("clientId")),
-      projectId: projectValue && projectValue !== "none" ? Number(projectValue) : undefined,
+      clientId: parsedClientId,
+      projectId:
+        projectValue && projectValue !== "none"
+          ? parseOptionalPositiveInteger(projectValue)
+          : undefined,
       auditName: formData.get("auditName"),
       websiteUrl: formData.get("websiteUrl"),
       niche: formData.get("niche"),
@@ -1105,7 +1116,8 @@ export default function GeoAeo() {
                           {(projects.data ?? [])
                             .filter(
                               (project) =>
-                                !selectedClientId || project.clientId === Number(selectedClientId),
+                                !selectedClientId ||
+                                project.clientId === parseOptionalPositiveInteger(selectedClientId),
                             )
                             .map((project) => (
                               <SelectItem key={project.id} value={String(project.id)}>
@@ -1268,8 +1280,7 @@ export default function GeoAeo() {
                       variant="outline"
                       onClick={() => overrideVisibilityScore.mutate()}
                       disabled={
-                        !overrideScore ||
-                        Number.isNaN(Number(overrideScore)) ||
+                        !isOverrideScoreValid ||
                         overrideReason.trim().length < 10 ||
                         overrideVisibilityScore.isPending
                       }

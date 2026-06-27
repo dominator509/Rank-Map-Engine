@@ -33,7 +33,5 @@ services:
         value: "false"
       - key: FEATURE_SEMRUSH_IMPORT
         value: "false"
-      - key: FEATURE_SEORX_INTEGRATION
-        value: "false"
       - key: FEATURE_WHITE_LABEL
         value: "false"

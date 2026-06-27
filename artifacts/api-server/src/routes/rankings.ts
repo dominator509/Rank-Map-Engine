@@ -6,6 +6,15 @@ import { requireAuth, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
 
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
+
 async function assertProjectAccess(projectId: number, tenantId: number) {
   const [p] = await db
     .select({ id: projectsTable.id })
@@ -21,10 +30,15 @@ const CheckBody = z.object({
   url: z.string().url().nullable().optional(),
 });
 
+function estimateRankingPosition(keywordId: number): number | null {
+  const seed = (keywordId * 37 + 17) % 100;
+  return seed < 30 ? null : seed + 1;
+}
+
 router.get("/projects/:projectId/rankings", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const projectId = parseInt(req.params.projectId as string, 10);
-  if (isNaN(projectId)) {
+  const projectId = parsePositiveRouteInt(req.params.projectId);
+  if (projectId == null) {
     res.status(400).json({ error: "Invalid projectId" });
     return;
   }
@@ -73,9 +87,9 @@ router.get(
   requireAuth,
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const keywordId = parseInt(req.params.keywordId as string, 10);
-    if (isNaN(projectId) || isNaN(keywordId)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    const keywordId = parsePositiveRouteInt(req.params.keywordId);
+    if (projectId == null || keywordId == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -106,8 +120,8 @@ router.post(
   requireRole(["agency_admin", "agency_user", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    if (isNaN(projectId)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    if (projectId == null) {
       res.status(400).json({ error: "Invalid projectId" });
       return;
     }
@@ -137,8 +151,8 @@ router.post(
   requireRole(["agency_admin", "agency_user", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    if (isNaN(projectId)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    if (projectId == null) {
       res.status(400).json({ error: "Invalid projectId" });
       return;
     }
@@ -160,7 +174,7 @@ router.post(
     const values = keywords.map((kw) => ({
       tenantId,
       keywordId: kw.id,
-      position: Math.random() > 0.3 ? Math.floor(Math.random() * 100) + 1 : null,
+      position: estimateRankingPosition(kw.id),
       url: null,
     }));
 

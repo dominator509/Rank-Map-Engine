@@ -6,6 +6,7 @@ import {
   projectsTable,
   keywordsTable,
   keywordClustersTable,
+  usersTable,
 } from "@workspace/db";
 import { CreateBriefBody, UpdateBriefBody } from "@workspace/api-zod";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
@@ -13,6 +14,15 @@ import { enqueueAiTask } from "../lib/ai.js";
 import { generateBriefWithAI } from "../lib/ai-provider.js";
 
 const router = Router();
+
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
 
 async function assertProjectAccess(projectId: number, tenantId: number) {
   const [p] = await db
@@ -38,11 +48,20 @@ async function assertClusterAccess(clusterId: number, projectId: number, tenantI
   return !!cluster;
 }
 
+async function assertUserAccess(userId: number, tenantId: number) {
+  const [user] = await db
+    .select({ id: usersTable.id })
+    .from(usersTable)
+    .where(and(eq(usersTable.id, userId), eq(usersTable.tenantId, tenantId)))
+    .limit(1);
+  return !!user;
+}
+
 router.get("/projects/:projectId/briefs", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const projectId = parseInt(req.params.projectId as string, 10);
+  const projectId = parsePositiveRouteInt(req.params.projectId);
 
-  if (isNaN(projectId)) {
+  if (projectId == null) {
     res.status(400).json({ error: "Invalid projectId" });
     return;
   }
@@ -74,9 +93,9 @@ router.post(
     }
 
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
+    const projectId = parsePositiveRouteInt(req.params.projectId);
 
-    if (isNaN(projectId)) {
+    if (projectId == null) {
       res.status(400).json({ error: "Invalid projectId" });
       return;
     }
@@ -105,10 +124,10 @@ router.post(
 
 router.get("/projects/:projectId/briefs/:id", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const projectId = parseInt(req.params.projectId as string, 10);
-  const id = parseInt(req.params.id as string, 10);
+  const projectId = parsePositiveRouteInt(req.params.projectId);
+  const id = parsePositiveRouteInt(req.params.id);
 
-  if (isNaN(projectId) || isNaN(id)) {
+  if (projectId == null || id == null) {
     res.status(400).json({ error: "Invalid id" });
     return;
   }
@@ -145,16 +164,20 @@ router.patch(
     }
 
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    const id = parsePositiveRouteInt(req.params.id);
 
-    if (isNaN(projectId) || isNaN(id)) {
+    if (projectId == null || id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
 
     const updates: Record<string, unknown> = {};
     const d = parsed.data;
+    if (d.assignedTo != null && !(await assertUserAccess(d.assignedTo, tenantId))) {
+      res.status(400).json({ error: "Invalid assignedTo" });
+      return;
+    }
     if (d.title !== undefined) updates.title = d.title;
     if (d.outline !== undefined) updates.outline = d.outline;
     if (d.targetWordCount !== undefined) updates.targetWordCount = d.targetWordCount;
@@ -188,10 +211,10 @@ router.delete(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    const id = parsePositiveRouteInt(req.params.id);
 
-    if (isNaN(projectId) || isNaN(id)) {
+    if (projectId == null || id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -216,10 +239,10 @@ router.post(
   requireRole(["agency_admin", "agency_user", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId, id: userId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    const id = parsePositiveRouteInt(req.params.id);
 
-    if (isNaN(projectId) || isNaN(id)) {
+    if (projectId == null || id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -304,10 +327,10 @@ router.post(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    const id = parsePositiveRouteInt(req.params.id);
 
-    if (isNaN(projectId) || isNaN(id)) {
+    if (projectId == null || id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }

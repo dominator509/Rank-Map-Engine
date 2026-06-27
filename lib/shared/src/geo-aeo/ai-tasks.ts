@@ -71,7 +71,10 @@ export const GEO_AEO_AI_TASK_REGISTRY: GeoAeoAiTaskDefinition[] = [
   task("geoAeo.assessEntityClarity", "Mock entity clarity assessment complete."),
   task("geoAeo.assessSchemaReadiness", "Mock schema readiness assessment complete."),
   task("geoAeo.generateSourceRecommendations", "Mock source recommendations generated."),
-  task("geoAeo.generateAiCitablePageRecommendations", "Mock AI-citable page recommendations generated."),
+  task(
+    "geoAeo.generateAiCitablePageRecommendations",
+    "Mock AI-citable page recommendations generated.",
+  ),
   task("geoAeo.generateThirtyDayActionPlan", "Mock 30-day action plan generated."),
   task("geoAeo.generateAuditExecutiveSummary", "Mock audit executive summary generated."),
   task("geoAeo.generateClientReportSections", "Mock client report sections generated."),

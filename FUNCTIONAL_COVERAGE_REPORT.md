@@ -5,6 +5,7 @@
 ### BEHAVIORAL_CONTRACT_MAP
 
 #### Workflow: Authentication and Session/API-Key Authorization
+
 - Inputs:
   - `POST /api/auth/register` with `{ email, password, fullName, tenantName }`
   - `POST /api/auth/login` with `{ email, password }`
@@ -20,6 +21,7 @@
   - API key scope enforcement: read methods require `read`, write methods require `write`.
 
 #### Workflow: Tenant-Scoped CRUD and Data Isolation
+
 - Inputs:
   - Authenticated CRUD calls across clients/projects/keywords/clusters/briefs/reports.
 - Stateful mutations:
@@ -30,6 +32,7 @@
   - Cross-tenant resource access resolves as `404` or validation failure.
 
 #### Workflow: Integration Credential Lifecycle and Provider Search
+
 - Inputs:
   - `POST /api/integrations` with provider and credential object.
   - `POST /api/integrations/:provider/search` with `{ query }`.
@@ -42,6 +45,7 @@
   - Provider fetch returns deterministic fallback data when provider is unavailable.
 
 #### Workflow: Scoring and Content-State Pipeline
+
 - Inputs:
   - Keyword metrics (`searchVolume`, `kd`, `cpc`, `intent`, `createdAt`) and score settings.
   - Clustering/brief generation triggers.
@@ -55,6 +59,7 @@
   - Route aliases preserve expected workflow behavior (`/dashboard`, `/tenants/me`, cluster aliases).
 
 #### External Boundaries and Deterministic Test Strategy
+
 - OpenAI API boundary:
   - Mock via local HTTP server and `OPENAI_BASE_URL`/`OPENAI_API_KEY`.
 - SEO provider boundaries (Ahrefs/SEMrush/DataForSEO):
@@ -64,6 +69,7 @@
   - Unit tests avoid DB side effects unless explicitly boundary-testing migration/service functions.
 
 #### Concurrency and Throughput Contracts
+
 - API key usage updates (`last_used_at`) must remain consistent under concurrent requests.
 - Cluster ownership and keyword linkage must remain tenant-safe under concurrent task execution.
 - Stateless route behavior must remain deterministic under parallel request load.
@@ -71,6 +77,7 @@
 ## Phase 2: Unit and Component Verification (Core Logic)
 
 ### Added deterministic unit suites
+
 - `artifacts/api-server/src/lib/scoring.test.ts`
 - `artifacts/api-server/src/lib/api-key-scopes.test.ts`
 - `artifacts/api-server/src/lib/integration-credentials.test.ts`
@@ -78,6 +85,7 @@
 - `artifacts/api-server/src/lib/ai-provider.test.ts`
 
 ### Scope of verification
+
 - Scoring logic:
   - Nullish values, extreme numeric bounds, unknown intents, freshness decay behavior.
 - API key scopes:
@@ -91,12 +99,14 @@
   - Provider selection by env, JSON parse/filter behavior, fallback-to-mock guarantees.
 
 ### Execution status
+
 - Command:
   - `pnpm exec vitest run artifacts/api-server/src/lib/scoring.test.ts artifacts/api-server/src/lib/integration-credentials.test.ts artifacts/api-server/src/lib/keyword-adapters.test.ts artifacts/api-server/src/lib/ai-provider.test.ts artifacts/api-server/src/lib/api-key-scopes.test.ts --coverage --coverage.all=false`
 - Result:
   - 5 test files passed, 20 tests passed.
 
 ### Coverage snapshot (Phase 2 run)
+
 - `scoring.ts`: 100% statements, 91.66% branches.
 - `api-key-scopes.ts`: 93.54% statements, 68.75% branches.
 - `integration-credentials.ts`: 93.9% statements, 86.66% branches.
@@ -104,14 +114,17 @@
 - `ai-provider.ts`: 94.28% statements, 72.72% branches.
 
 ### Tooling note
+
 - Running coverage with default `all=true` currently fails due a `vitest`/`minimatch` runtime issue (`brace_expansion is not a function`). The deterministic workaround for CI is `--coverage.all=false`.
 
 ## Phase 3: Integration and Boundary Validation
 
 ### Added suite
+
 - `artifacts/api-server/src/routes/api.boundary.e2e.test.ts`
 
 ### Boundary and handoff checks implemented
+
 - Payload schema mismatch handling:
   - Rejects integration payloads with non-string credential fields.
   - Rejects missing search query payloads.
@@ -122,6 +135,7 @@
   - Route -> auth/session -> DB insert/query -> adapter invocation chain verified in one deterministic flow.
 
 ### Deterministic fixtures/factories used
+
 - Runtime-generated tenant/user fixture via `/api/auth/register`.
 - Deterministic integration payloads for provider and malformed variants.
 - Controlled upstream failure injection by URL-aware `fetch` stub:
@@ -129,21 +143,25 @@
   - Rejects outbound third-party URL calls.
 
 ### Execution status
+
 - Command:
   - `pnpm exec vitest run artifacts/api-server/src/routes/api.boundary.e2e.test.ts` (with `RUN_API_E2E=1`, ephemeral Postgres, migrated schema).
 - Result:
   - 1/1 integration boundary test passed.
 
 ### Observed failure mode during orchestration (non-app code)
-- Running `api.e2e.test.ts` and `api.boundary.e2e.test.ts` in the same Vitest invocation produced a setup race around `ensureSessionTable()` in test bootstrap (`duplicate key value violates unique constraint "pg_type_typname_nsp_index"`). 
+
+- Running `api.e2e.test.ts` and `api.boundary.e2e.test.ts` in the same Vitest invocation produced a setup race around `ensureSessionTable()` in test bootstrap (`duplicate key value violates unique constraint "pg_type_typname_nsp_index"`).
 - This is a test-harness concurrency issue in startup orchestration, not an application runtime contract failure.
 
 ## Phase 4: High-Concurrency and End-to-End Workflow Validation
 
 ### Added suite
+
 - `artifacts/api-server/src/routes/api.concurrency.e2e.test.ts`
 
 ### High-throughput checks implemented
+
 - Parallel authenticated read load:
   - 25 concurrent `GET /api/tenant/dashboard` requests via API key.
   - Asserts all responses are `200`.
@@ -154,11 +172,13 @@
   - Verifies final persisted project count matches request count exactly.
 
 ### End-state verification against BEHAVIORAL_CONTRACT_MAP
+
 - Confirms tenant-scoped integrity under concurrency.
 - Confirms auth state mutation (`last_used_at`) under read throughput.
 - Confirms deterministic final DB cardinality after concurrent writes.
 
 ### Execution status
+
 - Command:
   - `pnpm exec vitest run artifacts/api-server/src/routes/api.concurrency.e2e.test.ts` (with `RUN_API_E2E=1`, ephemeral Postgres, migrated schema).
 - Result:
@@ -167,6 +187,7 @@
 ## Phase 5: Final Verification and Repository-Wide Results
 
 ### End-to-end verification commands executed
+
 - `pnpm run typecheck` -> passed.
 - `pnpm run lint` -> passed.
 - `pnpm run test` -> passed.
@@ -177,12 +198,14 @@
   - `pnpm exec vitest run ... --coverage --coverage.all=false` -> passed.
 
 ### Existing failure points detected by rigorous constraints
+
 - No functional application-code regression failures were detected in executed suites.
 - One reproducible test-orchestration issue was detected when combining multiple E2E files in a single Vitest invocation:
   - `ensureSessionTable()` setup race can trigger a Postgres duplicate type/index creation error.
   - Classification: test harness/bootstrap concurrency issue, not business-logic failure.
 
 ### Missing coverage and recommended next additions
+
 - Remaining branch gaps are concentrated in:
   - `keyword-adapters.ts` alternate provider error and parsing branches.
   - `ai-provider.ts` additional malformed payload and timeout permutations.

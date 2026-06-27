@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { clusterKeywordsWithAI, generateBriefWithAI } from "./ai-provider.js";
+import { clusterKeywordsWithAI, generateBriefWithAI, parseOpenAiTimeoutMs } from "./ai-provider.js";
 
 const originalEnv = { ...process.env };
 
@@ -85,5 +85,11 @@ describe("ai-provider", () => {
 
     expect(result.sections.length).toBeGreaterThanOrEqual(4);
     expect(result.targetKeywords).toEqual(["rank map", "seo strategy", "keyword clustering"]);
+  });
+
+  it("rejects non-canonical openai timeout values", () => {
+    expect(parseOpenAiTimeoutMs("1e3")).toBe(30000);
+    expect(parseOpenAiTimeoutMs("15000ms")).toBe(30000);
+    expect(parseOpenAiTimeoutMs("15000")).toBe(15000);
   });
 });

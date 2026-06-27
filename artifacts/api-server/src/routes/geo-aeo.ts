@@ -1,5 +1,4 @@
 import { Router, type Request, type Response } from "express";
-import { z } from "zod";
 import {
   geoAeoAuditCreateSchema,
   geoAeoAuditUpdateSchema,
@@ -94,17 +93,49 @@ import {
 
 const router = Router();
 
-const ListAuditsQuery = z.object({
-  clientId: z.coerce.number().int().positive().optional(),
-  projectId: z.coerce.number().int().positive().optional(),
-  status: z.string().trim().min(1).max(80).optional(),
-});
-
 function parseId(value: string | string[] | undefined): number | null {
   if (typeof value !== "string") return null;
-  const id = Number.parseInt(value, 10);
-  if (!Number.isInteger(id) || id < 1) return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const id = Number(raw);
+  if (!Number.isSafeInteger(id) || id < 1) return null;
   return id;
+}
+
+function parsePositiveQueryInt(value: unknown): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
+
+function parseListAuditsQuery(
+  query: Record<string, unknown>,
+): { clientId?: number; projectId?: number; status?: string } | null {
+  const parsed: { clientId?: number; projectId?: number; status?: string } = {};
+
+  if (query.clientId !== undefined) {
+    const clientId = parsePositiveQueryInt(query.clientId);
+    if (clientId === null) return null;
+    parsed.clientId = clientId;
+  }
+
+  if (query.projectId !== undefined) {
+    const projectId = parsePositiveQueryInt(query.projectId);
+    if (projectId === null) return null;
+    parsed.projectId = projectId;
+  }
+
+  if (query.status !== undefined) {
+    if (typeof query.status !== "string") return null;
+    const status = query.status.trim();
+    if (!status || status.length > 80) return null;
+    parsed.status = status;
+  }
+
+  return parsed;
 }
 
 async function getClientDashboardAccessOrRespond(req: Request, res: Response) {
@@ -123,18 +154,18 @@ router.get(
   requireAuth,
   requireRole(GEO_AEO_OPERATOR_ROLES),
   async (req, res): Promise<void> => {
-    const parsed = ListAuditsQuery.safeParse(req.query);
-    if (!parsed.success) {
-      res.status(400).json({ error: "Invalid query", details: parsed.error.issues });
+    const parsed = parseListAuditsQuery(req.query);
+    if (!parsed) {
+      res.status(400).json({ error: "Invalid query" });
       return;
     }
 
     const { tenantId } = req.session.user!;
     const audits = await listGeoAeoAudits({
       tenantId,
-      clientId: parsed.data.clientId,
-      projectId: parsed.data.projectId,
-      status: parsed.data.status,
+      clientId: parsed.clientId,
+      projectId: parsed.projectId,
+      status: parsed.status,
     });
 
     res.json(audits);

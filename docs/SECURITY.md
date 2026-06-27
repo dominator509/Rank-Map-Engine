@@ -4,7 +4,7 @@
 
 If you discover a security vulnerability, please report it privately. Do not open a public issue.
 
-Contact: security@rankmap.io *(placeholder — update before launch)*
+Contact: security@rankmap.io _(placeholder — update before launch)_
 
 ---
 
@@ -100,4 +100,4 @@ Before each phase ships:
 
 ---
 
-*Last updated: 2026-05-31.*
+_Last updated: 2026-05-31._

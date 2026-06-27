@@ -34,9 +34,18 @@ function spawnTarget(command, args) {
 function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const target = spawnTarget(command, args);
+    const env = { ...process.env, ...(options.env ?? {}) };
+    if (
+      process.platform === "win32" &&
+      command === "docker" &&
+      !env.DOCKER_CONTEXT &&
+      !env.DOCKER_HOST
+    ) {
+      env.DOCKER_HOST = "npipe:////./pipe/dockerDesktopLinuxEngine";
+    }
     const child = spawn(target.command, target.args, {
       cwd: repoRoot,
-      env: { ...process.env, ...(options.env ?? {}) },
+      env,
       stdio: options.stdio ?? "inherit",
     });
 
@@ -68,6 +77,22 @@ function run(command, args, options = {}) {
       );
     });
   });
+}
+
+async function ensureDockerAvailable() {
+  const result = await run("docker", ["info"], { allowFailure: true, stdio: "pipe" });
+  if (result.code === 0) return;
+
+  const output = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+  throw new Error(
+    [
+      "Docker is required for the backup/restore baseline because it starts disposable Postgres containers.",
+      "Start Docker Desktop or make the Docker daemon reachable, then rerun `corepack pnpm run recovery:baseline`.",
+      output,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
 }
 
 function pipeToFile(command, args, filePath) {
@@ -248,6 +273,8 @@ function assertFingerprintsMatch(source, restored) {
 }
 
 try {
+  await ensureDockerAvailable();
+
   await rm(artifactsDir, { force: true, recursive: true });
   await mkdir(artifactsDir, { recursive: true });
   await startPostgres(sourceContainer, sourcePort, "rankmap_backup_source");

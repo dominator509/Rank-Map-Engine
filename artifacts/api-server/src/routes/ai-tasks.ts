@@ -5,6 +5,15 @@ import { requireAuth } from "../middlewares/auth.js";
 
 const router = Router();
 
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
+
 router.get("/ai-tasks", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
 
@@ -19,9 +28,9 @@ router.get("/ai-tasks", requireAuth, async (req, res): Promise<void> => {
 
 router.get("/ai-tasks/:id", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const id = parseInt(req.params.id as string, 10);
+  const id = parsePositiveRouteInt(req.params.id);
 
-  if (isNaN(id)) {
+  if (id == null) {
     res.status(400).json({ error: "Invalid id" });
     return;
   }

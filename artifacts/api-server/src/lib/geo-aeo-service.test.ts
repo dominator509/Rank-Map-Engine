@@ -166,6 +166,34 @@ describe("GEO/AEO service hardening", () => {
     });
   });
 
+  it("rejects non-canonical prompt priority values in prompt CSV previews", async () => {
+    dbState.selectRows = [[]];
+    const { previewGeoAeoPromptCsv } = await import("./geo-aeo-service.js");
+
+    const preview = await previewGeoAeoPromptCsv({
+      tenantId: 7,
+      auditId: 101,
+      csvText: "promptText,priority\nWhat is RankMap?,1e2",
+    });
+
+    expect(preview.invalidRows).toBe(1);
+    expect(preview.invalid[0]).toEqual({ row: 2, reason: "Invalid priority" });
+  });
+
+  it("rejects non-canonical prompt ids in snapshot CSV previews", async () => {
+    dbState.selectRows = [[]];
+    const { previewGeoAeoSnapshotCsv } = await import("./geo-aeo-service.js");
+
+    const preview = await previewGeoAeoSnapshotCsv({
+      tenantId: 7,
+      auditId: 101,
+      csvText: "promptId,engine,captureMethod,answerText\n1e2,chatgpt,csv_import,hello",
+    });
+
+    expect(preview.invalidRows).toBe(1);
+    expect(preview.invalid[0]).toEqual({ row: 2, reason: "Invalid promptId" });
+  });
+
   it("creates a snapshot CSV import batch and stamps imported snapshots", async () => {
     const { createGeoAeoSnapshotImportBatch } = await import("./geo-aeo-service.js");
     dbState.insertReturningRows.push([{ id: 901, importType: "snapshot_csv", importedRows: 2 }]);

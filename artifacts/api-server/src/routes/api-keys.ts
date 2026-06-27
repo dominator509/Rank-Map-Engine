@@ -9,6 +9,15 @@ import bcrypt from "bcryptjs";
 
 const router = Router();
 
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
+
 router.get("/api-keys", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
   const keys = await db
@@ -89,7 +98,11 @@ router.post("/api-keys", requireAuth, async (req, res): Promise<void> => {
 
 router.delete("/api-keys/:id", requireAuth, async (req, res): Promise<void> => {
   const { tenantId, id: userId } = req.session.user!;
-  const id = parseInt(req.params.id as string, 10);
+  const id = parsePositiveRouteInt(req.params.id);
+  if (id == null) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
 
   const [key] = await db
     .select({ id: apiKeysTable.id })
@@ -102,7 +115,10 @@ router.delete("/api-keys/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  await db.update(apiKeysTable).set({ revokedAt: new Date() }).where(eq(apiKeysTable.id, id));
+  await db
+    .update(apiKeysTable)
+    .set({ revokedAt: new Date() })
+    .where(and(eq(apiKeysTable.id, id), eq(apiKeysTable.tenantId, tenantId)));
 
   await audit({
     tenantId,

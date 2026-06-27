@@ -212,9 +212,9 @@ Add a GEO/AEO Audit workflow to RankMap for AI visibility audits across ChatGPT,
 
 ## Implementation Log
 
-| Date | Phase | Work Completed | Notes |
-|---|---|---|---|
-| YYYY-MM-DD | G0 | Started GEO/AEO docs and repo discovery. |  |
+| Date       | Phase | Work Completed                           | Notes |
+| ---------- | ----- | ---------------------------------------- | ----- |
+| YYYY-MM-DD | G0    | Started GEO/AEO docs and repo discovery. |       |
 
 ## Files Changed
 
@@ -227,8 +227,8 @@ Add a GEO/AEO Audit workflow to RankMap for AI visibility audits across ChatGPT,
 ## Tests/Checks Run
 
 | Command | Result | Notes |
-|---|---|---|
-| TBD | TBD | TBD |
+| ------- | ------ | ----- |
+| TBD     | TBD    | TBD   |
 
 ## Test Results
 
@@ -252,19 +252,19 @@ TBD.
 
 ## Production Readiness Progress
 
-| Area | Status |
-|---|---|
-| Docs | Not started |
-| Env flags | Not started |
-| Data model | Not started |
-| Services/API | Not started |
-| Adapters | Not started |
-| AI tasks | Not started |
-| Admin UI | Not started |
-| Approval | Not started |
-| Reports/exports | Not started |
+| Area             | Status      |
+| ---------------- | ----------- |
+| Docs             | Not started |
+| Env flags        | Not started |
+| Data model       | Not started |
+| Services/API     | Not started |
+| Adapters         | Not started |
+| AI tasks         | Not started |
+| Admin UI         | Not started |
+| Approval         | Not started |
+| Reports/exports  | Not started |
 | Client dashboard | Not started |
-| Security tests | Not started |
+| Security tests   | Not started |
 
 ## Commit-Style History
 

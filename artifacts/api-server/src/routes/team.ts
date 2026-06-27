@@ -10,6 +10,15 @@ import crypto from "node:crypto";
 const router = Router();
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
+
 function buildInviteUrl(token: string): string {
   const baseUrl = process.env.APP_URL;
   if (!baseUrl) {
@@ -46,8 +55,13 @@ router.patch(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId, id: currentUserId } = req.session.user!;
-    const userId = parseInt(req.params.userId as string, 10);
+    const userId = parsePositiveRouteInt(req.params.userId);
     const { role } = req.body as { role?: string };
+
+    if (userId == null) {
+      res.status(400).json({ error: "Invalid userId" });
+      return;
+    }
 
     if (!role || !["agency_admin", "agency_user", "client"].includes(role)) {
       res.status(400).json({ error: "Invalid role" });
@@ -91,7 +105,12 @@ router.delete(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId, id: currentUserId } = req.session.user!;
-    const userId = parseInt(req.params.userId as string, 10);
+    const userId = parsePositiveRouteInt(req.params.userId);
+
+    if (userId == null) {
+      res.status(400).json({ error: "Invalid userId" });
+      return;
+    }
 
     if (userId === currentUserId) {
       res.status(400).json({ error: "Cannot remove yourself" });
@@ -239,7 +258,12 @@ router.delete(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const id = parseInt(req.params.id as string, 10);
+    const id = parsePositiveRouteInt(req.params.id);
+    if (id == null) {
+      res.status(400).json({ error: "Invalid id" });
+      return;
+    }
+
     await db
       .delete(userInvitationsTable)
       .where(and(eq(userInvitationsTable.id, id), eq(userInvitationsTable.tenantId, tenantId)));

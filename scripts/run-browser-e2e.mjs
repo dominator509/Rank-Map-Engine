@@ -29,8 +29,17 @@ function spawnTarget(command, args) {
 function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const target = spawnTarget(command, args);
+    const env = { ...process.env, ...(options.env ?? {}) };
+    if (
+      process.platform === "win32" &&
+      command === "docker" &&
+      !env.DOCKER_CONTEXT &&
+      !env.DOCKER_HOST
+    ) {
+      env.DOCKER_HOST = "npipe:////./pipe/dockerDesktopLinuxEngine";
+    }
     const child = spawn(target.command, target.args, {
-      env: { ...process.env, ...(options.env ?? {}) },
+      env,
       stdio: options.stdio ?? "inherit",
     });
     let settled = false;
@@ -176,6 +185,22 @@ async function waitForPostgres() {
   throw new Error("Timed out waiting for the browser E2E Postgres container.");
 }
 
+async function ensureDockerAvailable() {
+  const result = await run("docker", ["info"], { allowFailure: true, stdio: "pipe" });
+  if (result.code === 0) return;
+
+  const output = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+  throw new Error(
+    [
+      "Docker is required for browser E2E because this script starts a disposable Postgres container.",
+      "Start Docker Desktop or make the Docker daemon reachable, then rerun `corepack pnpm run test:e2e:browser`.",
+      output,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
+}
+
 async function waitForHttp(url, label, processRef) {
   for (let attempt = 0; attempt < 60; attempt += 1) {
     if (processRef.child.exitCode !== null) {
@@ -214,6 +239,8 @@ async function stopManagedProcesses() {
 }
 
 try {
+  await ensureDockerAvailable();
+
   await run("docker", [
     "run",
     "--name",

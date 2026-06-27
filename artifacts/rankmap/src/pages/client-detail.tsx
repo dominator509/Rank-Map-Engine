@@ -37,24 +37,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
+import { parsePositiveRouteInt } from "@/lib/route-params";
 
 export default function ClientDetail() {
   const { clientId } = useParams();
-  const id = parseInt(clientId || "0", 10);
+  const id = parsePositiveRouteInt(clientId);
+  const clientQueryId = id ?? 0;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const { data: client, isLoading: isLoadingClient } = useGetClient(id, {
-    query: { enabled: !!id, queryKey: getGetClientQueryKey(id) },
+  const { data: client, isLoading: isLoadingClient } = useGetClient(clientQueryId, {
+    query: { enabled: id != null, queryKey: getGetClientQueryKey(clientQueryId) },
   });
 
   const { data: projects, isLoading: isLoadingProjects } = useListProjects(
     {
-      clientId: id,
+      clientId: clientQueryId,
     },
     {
-      query: { enabled: !!id, queryKey: getListProjectsQueryKey({ clientId: id }) },
+      query: {
+        enabled: id != null,
+        queryKey: getListProjectsQueryKey({ clientId: clientQueryId }),
+      },
     },
   );
 
@@ -67,7 +72,7 @@ export default function ClientDetail() {
     createProject.mutate(
       {
         data: {
-          clientId: id,
+          clientId: clientQueryId,
           name: formData.get("name") as string,
           targetDomain: formData.get("targetDomain") as string,
           locale: formData.get("locale") as string,
@@ -75,7 +80,9 @@ export default function ClientDetail() {
       },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey({ clientId: id }) });
+          queryClient.invalidateQueries({
+            queryKey: getListProjectsQueryKey({ clientId: clientQueryId }),
+          });
           setIsCreateOpen(false);
           toast({ title: "Project created" });
         },
@@ -89,7 +96,9 @@ export default function ClientDetail() {
       { id: projectId },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey({ clientId: id }) });
+          queryClient.invalidateQueries({
+            queryKey: getListProjectsQueryKey({ clientId: clientQueryId }),
+          });
           toast({ title: "Project deleted" });
         },
       },
@@ -104,7 +113,7 @@ export default function ClientDetail() {
     );
   }
 
-  if (!client) {
+  if (id == null || !client) {
     return <div className="p-8 text-destructive">Client not found</div>;
   }
 

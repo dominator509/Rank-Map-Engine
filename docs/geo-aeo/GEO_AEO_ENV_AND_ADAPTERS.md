@@ -86,7 +86,7 @@ export interface AnswerEngineAdapter {
   supportsCsvImport: boolean;
   supportsCitationExtraction: boolean;
   requiresApiKey: boolean;
-  termsRiskLevel: 'low' | 'medium' | 'high';
+  termsRiskLevel: "low" | "medium" | "high";
   secretFields: string[];
   configSchema: unknown;
   healthCheck(config: unknown): Promise<AdapterHealth>;
@@ -99,9 +99,9 @@ export interface AnswerEngineAdapter {
 ```ts
 export interface NormalizedAnswerSnapshot {
   promptText: string;
-  engine: 'CHATGPT' | 'GEMINI' | 'PERPLEXITY' | 'GOOGLE_AI_OVERVIEWS' | 'OTHER';
-  engineMode: 'CONSUMER_MANUAL' | 'API_SIMULATION' | 'OFFICIAL_API' | 'MOCK' | 'UNKNOWN';
-  captureMethod: 'MANUAL_PASTE' | 'CSV_IMPORT' | 'MOCK_ADAPTER' | 'API_ADAPTER';
+  engine: "CHATGPT" | "GEMINI" | "PERPLEXITY" | "GOOGLE_AI_OVERVIEWS" | "OTHER";
+  engineMode: "CONSUMER_MANUAL" | "API_SIMULATION" | "OFFICIAL_API" | "MOCK" | "UNKNOWN";
+  captureMethod: "MANUAL_PASTE" | "CSV_IMPORT" | "MOCK_ADAPTER" | "API_ADAPTER";
   answerText: string;
   capturedAt?: string;
   locationContext?: string;

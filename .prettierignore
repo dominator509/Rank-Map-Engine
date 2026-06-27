@@ -1,12 +1,15 @@
 node_modules
 dist
 build
+coverage
 test-results
 playwright-report
 artifacts/playwright-report
+artifacts/staging-launch/
 .replit-artifact
 .config
+.obsidian/
+.serena/memories/
 **/generated/**
 **/.generated/**
 pnpm-lock.yaml
-*.md

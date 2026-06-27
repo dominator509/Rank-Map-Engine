@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Sparkles, CheckCircle, Trash2, FileText } from "lucide-react";
+import { parseOptionalPositiveInteger } from "@/lib/form-numbers";
 
 const STATUS_STYLES: Record<string, string> = {
   draft: "bg-slate-500/10 text-slate-600 border-slate-200",
@@ -74,8 +75,8 @@ export function BriefsTab({ projectId }: Props) {
         projectId,
         data: {
           title: fd.get("title") as string,
-          clusterId: clusterId ? Number(clusterId) : undefined,
-          targetWordCount: fd.get("wordCount") ? Number(fd.get("wordCount")) : undefined,
+          clusterId: parseOptionalPositiveInteger(clusterId),
+          targetWordCount: parseOptionalPositiveInteger(fd.get("wordCount") as string | null),
         },
       },
       {

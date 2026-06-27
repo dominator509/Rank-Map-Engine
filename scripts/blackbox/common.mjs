@@ -10,9 +10,18 @@ export const OUT_DIR = resolve(ROOT, "artifacts/blackbox");
 
 function run(command, args, options = {}) {
   return new Promise((resolvePromise, reject) => {
+    const env = { ...process.env, ...(options.env ?? {}) };
+    if (
+      process.platform === "win32" &&
+      command === "docker" &&
+      !env.DOCKER_CONTEXT &&
+      !env.DOCKER_HOST
+    ) {
+      env.DOCKER_HOST = "npipe:////./pipe/dockerDesktopLinuxEngine";
+    }
     const child = spawn(command, args, {
       cwd: ROOT,
-      env: { ...process.env, ...(options.env ?? {}) },
+      env,
       stdio: options.stdio ?? "pipe",
     });
 
@@ -49,11 +58,31 @@ export async function getFreePort() {
 
 async function waitForPostgres(containerName) {
   for (let i = 0; i < 30; i += 1) {
-    const res = await run("docker", ["exec", containerName, "pg_isready", "-U", "rankmap", "-d", "rankmap_test"], { allowFailure: true });
+    const res = await run(
+      "docker",
+      ["exec", containerName, "pg_isready", "-U", "rankmap", "-d", "rankmap_test"],
+      { allowFailure: true },
+    );
     if (res.code === 0) return;
     await delay(1000);
   }
   throw new Error("postgres readiness timeout");
+}
+
+async function ensureDockerAvailable() {
+  const result = await run("docker", ["info"], { allowFailure: true });
+  if (result.code === 0) return;
+
+  const output = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+  throw new Error(
+    [
+      "Docker is required for blackbox phases 2-5 because they start a disposable Postgres container.",
+      "Start Docker Desktop or make the Docker daemon reachable, then rerun `node scripts/blackbox/run-phase.mjs <2|3|4|5>`.",
+      output,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
 }
 
 async function waitForHttp(url, getLogs) {
@@ -70,18 +99,27 @@ async function waitForHttp(url, getLogs) {
 }
 
 export async function startSystem() {
+  await ensureDockerAvailable();
+
   const dbPort = String(await getFreePort());
   const apiPort = String(await getFreePort());
   const containerName = `rankmap-blackbox-${Date.now()}`;
   const DATABASE_URL = `postgresql://rankmap:rankmap@127.0.0.1:${dbPort}/rankmap_test`;
 
   await run("docker", [
-    "run", "--name", containerName,
-    "-e", "POSTGRES_USER=rankmap",
-    "-e", "POSTGRES_PASSWORD=rankmap",
-    "-e", "POSTGRES_DB=rankmap_test",
-    "-p", `127.0.0.1:${dbPort}:5432`,
-    "-d", "postgres:16-alpine",
+    "run",
+    "--name",
+    containerName,
+    "-e",
+    "POSTGRES_USER=rankmap",
+    "-e",
+    "POSTGRES_PASSWORD=rankmap",
+    "-e",
+    "POSTGRES_DB=rankmap_test",
+    "-p",
+    `127.0.0.1:${dbPort}:5432`,
+    "-d",
+    "postgres:16-alpine",
   ]);
   await waitForPostgres(containerName);
 
@@ -145,7 +183,12 @@ export function summarizePaths(openapiText) {
     if (m && currentPath) {
       currentMethod = m[1].toUpperCase();
       operationId = "";
-      auth = currentPath.startsWith("/auth/register") || currentPath.startsWith("/auth/login") || currentPath.startsWith("/healthz") ? "none" : "session-cookie (inferred)";
+      auth =
+        currentPath.startsWith("/auth/register") ||
+        currentPath.startsWith("/auth/login") ||
+        currentPath.startsWith("/healthz")
+          ? "none"
+          : "session-cookie (inferred)";
       items.push({ path: currentPath, method: currentMethod, operationId, auth });
       continue;
     }
@@ -161,7 +204,9 @@ export function createClient(baseUrl) {
   return {
     async request(path, options = {}) {
       const headers = { ...(options.headers ?? {}) };
-      const cookie = Array.from(cookies.entries()).map(([k, v]) => `${k}=${v}`).join("; ");
+      const cookie = Array.from(cookies.entries())
+        .map(([k, v]) => `${k}=${v}`)
+        .join("; ");
       if (cookie) headers.Cookie = cookie;
 
       const res = await fetch(`${baseUrl}${path}`, { ...options, headers });
@@ -177,7 +222,11 @@ export function createClient(baseUrl) {
 
       let body = null;
       const text = await res.text();
-      try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+      try {
+        body = text ? JSON.parse(text) : null;
+      } catch {
+        body = text;
+      }
       return { status: res.status, body, headers: Object.fromEntries(res.headers.entries()) };
     },
   };

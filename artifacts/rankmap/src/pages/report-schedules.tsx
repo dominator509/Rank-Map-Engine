@@ -24,6 +24,7 @@ import {
 import { Plus, Trash2, Clock, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { parsePositiveRouteInt } from "@/lib/route-params";
 
 interface ReportSchedule {
   id: number;
@@ -80,7 +81,7 @@ export default function ReportSchedules() {
       customFetch("/api/report-schedules", {
         method: "POST",
         body: JSON.stringify({
-          projectId: parseInt(projectId, 10),
+          projectId: parsePositiveRouteInt(projectId),
           reportType,
           frequency,
           recipientEmails: emails

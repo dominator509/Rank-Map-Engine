@@ -1,12 +1,12 @@
 {
   "validRegister": {
-    "email": "bb1779711323004@example.com",
+    "email": "bb1782555828881@example.com",
     "password": "P@ssword12345",
     "fullName": "Black Box",
     "tenantName": "QA Tenant"
   },
   "invalidRegister": {
-    "email": "miss1779711323004@example.com"
+    "email": "miss1782555828881@example.com"
   },
   "clientValid": {
     "name": "Client Boundary",

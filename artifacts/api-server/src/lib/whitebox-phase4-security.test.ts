@@ -7,8 +7,11 @@ import {
   normalizeIntegrationCredentials,
 } from "./integration-credentials";
 
-function stripeSignature(payload: string, secret: string): string {
-  const timestamp = Math.floor(Date.now() / 1000);
+function stripeSignature(
+  payload: string,
+  secret: string,
+  timestamp: string | number = Math.floor(Date.now() / 1000),
+): string {
   const signature = createHmac("sha256", secret)
     .update(`${timestamp}.`)
     .update(payload)
@@ -89,6 +92,24 @@ describe.sequential("whitebox phase 4 - security and exception boundaries", () =
       method: "POST",
       headers: { "content-type": "application/json", "stripe-signature": signature },
       body: malformedPayload,
+    });
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Invalid Stripe webhook." });
+  });
+
+  it("returns generic 400 webhook error for non-canonical signature timestamps", async () => {
+    const payload = JSON.stringify({
+      id: "evt_bad_timestamp",
+      type: "customer.created",
+      data: { object: {} },
+    });
+    const signature = stripeSignature(payload, process.env.STRIPE_WEBHOOK_SECRET!, "1e3");
+
+    const response = await fetch(`${baseUrl}/api/billing/webhook`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "stripe-signature": signature },
+      body: payload,
     });
 
     expect(response.status).toBe(400);

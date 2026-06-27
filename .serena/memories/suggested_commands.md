@@ -1,0 +1,21 @@
+# Suggested Commands
+
+- On this Windows workspace, shell commands should normally be prefixed with `rtk` per AGENTS/RTK guidance; PowerShell builtins are acceptable for direct file reads.
+- Prefer `rg`/`rg --files` for search; use `rtk rg ...` from PowerShell.
+- Install: `rtk corepack pnpm install`.
+- Typecheck all: `rtk corepack pnpm run typecheck`.
+- Typecheck libs only: `rtk corepack pnpm run typecheck:libs`.
+- Lint: `rtk corepack pnpm run lint`; auto-fix only when intended with `rtk corepack pnpm run lint:fix`.
+- Format check: `rtk corepack pnpm run format:check`; write formatting with `rtk corepack pnpm run format`.
+- Unit/integration tests: `rtk corepack pnpm run test`; coverage: `rtk corepack pnpm run test:coverage`.
+- API e2e: `rtk corepack pnpm run test:e2e:api`.
+- Browser e2e: `rtk corepack pnpm run test:e2e:browser`.
+- Smoke: `rtk corepack pnpm run smoke`.
+- Build: `rtk corepack pnpm run build`.
+- Security gate: `rtk corepack pnpm run security:check`; this chains secret scanning and `pnpm audit --audit-level high`.
+- API contract drift: `rtk corepack pnpm run api:route-drift:check`; non-failing report generation: `rtk corepack pnpm run api:route-drift`.
+- Regenerate API clients/contracts after OpenAPI changes: `rtk corepack pnpm --filter @workspace/api-spec run codegen`.
+- DB generate/migrate/seed: `rtk corepack pnpm run db:generate`, `rtk corepack pnpm run db:migrate`, `rtk corepack pnpm run db:seed`.
+- App-specific dev: API `rtk corepack pnpm --filter @workspace/api-server run dev`; frontend `rtk corepack pnpm --filter @workspace/rankmap run dev`.
+- Git may warn about `C:\Users\domin/.config/git/ignore` permission denied; verify real status output after warnings.
+- Serena memory sanity check after onboarding/update: run `serena memories check` from repo root.

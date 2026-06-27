@@ -41,6 +41,21 @@ describe("keyword-adapters", () => {
     ]);
   });
 
+  it("drops partial numeric coercions in semrush csv rows", async () => {
+    process.env.FEATURE_SEMRUSH_IMPORT = "true";
+    process.env.ALLOW_SEMRUSH_QUERY_AUTH = "true";
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => "Ph;Nq;Cp;Kd\nkeyword one;1e2;1e2;1.23abc",
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    const result = await fetchKeywordsFromProvider("semrush", "seed", { apiKey: "sem_key" });
+    expect(result).toEqual([
+      { phrase: "keyword one", searchVolume: undefined, cpc: undefined, kd: undefined },
+    ]);
+  });
+
   it("falls back when semrush query-string auth is disabled", async () => {
     process.env.FEATURE_SEMRUSH_IMPORT = "true";
     process.env.ALLOW_SEMRUSH_QUERY_AUTH = "false";

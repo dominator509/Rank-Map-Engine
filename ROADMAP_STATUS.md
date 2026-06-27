@@ -8,7 +8,7 @@
 
 **Status:** The false generated "all 39 phases complete" claim has been retired. Phases 11-39 now follow the canonical roadmap in `BUILD_ROADMAP.md`; implementation status must be proven phase by phase.
 
-**Last audited:** 2026-06-01
+**Last audited:** 2026-06-27
 
 **Current production-readiness focus:** collect hosted staging load-test evidence, real-provider smoke-test evidence, operational handoff approvals, and final go/no-go sign-off.
 
@@ -22,144 +22,145 @@ The summary below is the working truth table. The detailed generated checklist s
 
 ## Reconciliation Evidence - 2026-05-27
 
-| Area | Result | Notes |
-|------|--------|-------|
-| Documentation drift | Fixed | README and architecture status now point at Phase 39 launch-readiness reconciliation instead of Phase 0 initialization. |
-| Integration flags | Fixed | Ahrefs, Semrush, and DataForSEO live calls now require explicit feature flags; mock fallback remains default when disabled or unconfigured. |
-| Deprecated SEORx placeholder | Fixed | Architecture and environment docs now identify DataForSEO as the canonical Phase 13 provider. |
-| Dead scaffold code | Removed | Unused Phase 0 home page and `scripts/src/hello.ts` scaffold were removed. |
-| Placeholder test | Fixed | Health test now validates the generated Zod health contract instead of trivially passing. |
-| OpenAPI/generated client drift | Fixed | Generated OpenAPI, React client, and Zod contracts now cover all 131 implemented Express operations, including tenant, analytics, audit, client projects, comments, custom fields, GDPR, calendar, competitors, exports, rankings, report schedules, templates, usage, health, and billing webhook surfaces. |
-| API route drift inventory | Fixed | `pnpm run api:route-drift` now writes `artifacts/api-spec/API_ROUTE_DRIFT_REPORT.md`; current scan shows 0 implemented operations missing OpenAPI contracts and 0 stale documented operations. |
+| Area                           | Result  | Notes                                                                                                                                                                                                                                                                                                        |
+| ------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Documentation drift            | Fixed   | README and architecture status now point at Phase 39 launch-readiness reconciliation instead of Phase 0 initialization.                                                                                                                                                                                      |
+| Integration flags              | Fixed   | Ahrefs, Semrush, and DataForSEO live calls now require explicit feature flags; mock fallback remains default when disabled or unconfigured.                                                                                                                                                                  |
+| Deprecated SEORx placeholder   | Fixed   | Architecture and environment docs now identify DataForSEO as the canonical Phase 13 provider.                                                                                                                                                                                                                |
+| Dead scaffold code             | Removed | Unused Phase 0 home page and `scripts/src/hello.ts` scaffold were removed.                                                                                                                                                                                                                                   |
+| Placeholder test               | Fixed   | Health test now validates the generated Zod health contract instead of trivially passing.                                                                                                                                                                                                                    |
+| OpenAPI/generated client drift | Fixed   | Generated OpenAPI, React client, and Zod contracts now cover all 131 implemented Express operations, including tenant, analytics, audit, client projects, comments, custom fields, GDPR, calendar, competitors, exports, rankings, report schedules, templates, usage, health, and billing webhook surfaces. |
+| API route drift inventory      | Fixed   | `pnpm run api:route-drift` now writes `artifacts/api-spec/API_ROUTE_DRIFT_REPORT.md`; current scan shows 0 implemented operations missing OpenAPI contracts and 0 stale documented operations.                                                                                                               |
 
 ---
 
 ## Canonical Phase Summary
 
-| Phase | Canonical Name | Truthful Status | Next Evidence Needed |
-|-------|----------------|-----------------|----------------------|
-| 0 | Repository Initialization | Implemented; evidence needs reconciliation | Confirm setup works from clean checkout |
-| 1 | Auth, RBAC, Tenant Isolation | Implemented; needs canonical re-verification | Auth and cross-tenant route tests |
-| 2 | Client and Project Management | Implemented; needs canonical re-verification | CRUD browser and API journey evidence |
-| 3 | Keyword Import Engine | Implemented; needs canonical re-verification | Import validation and edge-case tests |
-| 4 | Keyword Scoring Engine | Implemented; needs canonical re-verification | Deterministic scoring tests |
-| 5 | AI Clustering | Implemented with mock/manual paths; live AI unverified | AI provider fixture and fallback tests |
-| 6 | Topic Maps and Content Roadmaps | Implemented; needs canonical re-verification | End-to-end topic map journey |
-| 7 | Content Briefs | Implemented with mock/manual paths; live AI unverified | Brief generation and manual fallback evidence |
-| 8 | Reporting and Exports | Implemented; needs canonical re-verification | Export correctness and authorization tests |
-| 9 | Client Dashboard and White Labeling | Implemented; needs canonical re-verification | Browser coverage for dashboard states |
-| 10 | Stripe Licensing and Billing | Implemented with real checkout/portal/webhook paths; live credentials pending | Live Stripe smoke test in staging |
-| 11 | Ahrefs Keyword Adapter | Canonical phase defined; not verified complete | Provider adapter, fixtures, and live-provider notes |
-| 12 | Semrush Keyword Adapter | Canonical phase defined; not verified complete | Provider adapter, fixtures, and live-provider notes |
-| 13 | DataForSEO Keyword Adapter | Canonical phase defined; not verified complete | Provider adapter, task polling tests |
-| 14 | Real AI Providers | Canonical phase defined; partially supported by mock/manual flows | Real provider adapter verification |
-| 15 | Audit Log System | Canonical phase defined; not verified complete | Append-only audit model and route coverage |
-| 16 | Team Management | Canonical phase defined; not verified complete | Invite, role, and tenant-isolation tests |
-| 17 | API Key System | Canonical phase defined; not verified complete | Hashed keys, scopes, and public API tests |
-| 18 | Webhook System | Canonical phase defined; inbound Stripe exists; outbound customer webhooks unverified | Outbound delivery, signing, replay tests |
-| 19 | In-App Notification System | Canonical phase defined; not verified complete | Notification model and UI journey |
-| 20 | Content Calendar | Canonical phase defined; not verified complete | Calendar model, UI, and status transitions |
-| 21 | Comments and Collaboration | Canonical phase defined; not verified complete | Comments, mentions, and permissions tests |
-| 22 | Competitor Analysis and Keyword Gap | Canonical phase defined; not verified complete | Competitor model and gap scoring evidence |
-| 23 | Rank Tracking | Canonical phase defined; not verified complete | Snapshot storage and scheduled collection tests |
-| 24 | Email Notification System | Canonical phase defined; not verified complete | Mock and real email provider evidence |
-| 25 | Advanced Analytics Dashboard | Canonical phase defined; not verified complete | Metric definitions and aggregation tests |
-| 26 | Bulk Keyword Export | Canonical phase defined; not verified complete | Bulk job, filters, and authorization tests |
-| 27 | Project Templates | Canonical phase defined; not verified complete | Template application and permission tests |
-| 28 | Custom Fields | Canonical phase defined; not verified complete | Field definitions, validation, and export support |
-| 29 | Full Project Data Export | Canonical phase defined; not verified complete | Full export package and tenant safety tests |
-| 30 | Scheduled Reports | Canonical phase defined; not verified complete | Scheduler, delivery, and report history tests |
-| 31 | Usage Analytics and Plan Metering | Canonical phase defined; not verified complete | Usage counters and plan-limit enforcement |
-| 32 | GDPR Compliance Tools | Canonical phase defined; not verified complete | Data export, deletion/anonymization, retention evidence |
-| 33 | Enhanced Health and Monitoring | Partially implemented through health/config checks | Dependency readiness and degraded-state coverage |
-| 34 | Security Hardening | Partially verified; threat model, CI secret/dependency gates, auth-boundary tests, scoped sensitive rate limits, and broader cross-tenant assertions added | Continue route-family authorization expansion and tune rate-limit thresholds from hosted traffic evidence |
-| 35 | Observability and Incident Readiness | Canonical phase defined; not verified complete | Runbooks, metrics, tracing/logging evidence |
-| 36 | Database Migrations and Release Gate | Implemented and locally verified; live production config pending | CI/preflight evidence plus staging credentials |
-| 37 | Browser E2E and Frontend Production QA | Substantially complete; browser E2E, mobile, accessibility, and visual baselines passing | Broaden browser coverage opportunistically as new features stabilize |
-| 38 | Performance, Scalability, and Reliability | Local Phase 38 baseline complete; hosted staging/load evidence still pending for launch | Carry hosted staging load and real-provider smoke evidence into Phase 39 sign-off |
-| 39 | Launch Readiness and Operational Handoff | In progress; launch record created, current decision no-go pending external evidence | Attach hosted staging load tests, real-provider smoke tests, backup/PITR confirmation, monitoring/alerting confirmation, rollback rehearsal, and owner approvals |
+| Phase | Canonical Name                            | Truthful Status                                                                                                                                            | Next Evidence Needed                                                                                                                                             |
+| ----- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Repository Initialization                 | Implemented; evidence needs reconciliation                                                                                                                 | Confirm setup works from clean checkout                                                                                                                          |
+| 1     | Auth, RBAC, Tenant Isolation              | Implemented; needs canonical re-verification                                                                                                               | Auth and cross-tenant route tests                                                                                                                                |
+| 2     | Client and Project Management             | Implemented; needs canonical re-verification                                                                                                               | CRUD browser and API journey evidence                                                                                                                            |
+| 3     | Keyword Import Engine                     | Implemented; needs canonical re-verification                                                                                                               | Import validation and edge-case tests                                                                                                                            |
+| 4     | Keyword Scoring Engine                    | Implemented; needs canonical re-verification                                                                                                               | Deterministic scoring tests                                                                                                                                      |
+| 5     | AI Clustering                             | Implemented with mock/manual paths; live AI unverified                                                                                                     | AI provider fixture and fallback tests                                                                                                                           |
+| 6     | Topic Maps and Content Roadmaps           | Implemented; needs canonical re-verification                                                                                                               | End-to-end topic map journey                                                                                                                                     |
+| 7     | Content Briefs                            | Implemented with mock/manual paths; live AI unverified                                                                                                     | Brief generation and manual fallback evidence                                                                                                                    |
+| 8     | Reporting and Exports                     | Implemented; needs canonical re-verification                                                                                                               | Export correctness and authorization tests                                                                                                                       |
+| 9     | Client Dashboard and White Labeling       | Implemented; needs canonical re-verification                                                                                                               | Browser coverage for dashboard states                                                                                                                            |
+| 10    | Stripe Licensing and Billing              | Implemented with real checkout/portal/webhook paths; live credentials pending                                                                              | Live Stripe smoke test in staging                                                                                                                                |
+| 11    | Ahrefs Keyword Adapter                    | Canonical phase defined; not verified complete                                                                                                             | Provider adapter, fixtures, and live-provider notes                                                                                                              |
+| 12    | Semrush Keyword Adapter                   | Canonical phase defined; not verified complete                                                                                                             | Provider adapter, fixtures, and live-provider notes                                                                                                              |
+| 13    | DataForSEO Keyword Adapter                | Canonical phase defined; not verified complete                                                                                                             | Provider adapter, task polling tests                                                                                                                             |
+| 14    | Real AI Providers                         | Canonical phase defined; partially supported by mock/manual flows                                                                                          | Real provider adapter verification                                                                                                                               |
+| 15    | Audit Log System                          | Canonical phase defined; not verified complete                                                                                                             | Append-only audit model and route coverage                                                                                                                       |
+| 16    | Team Management                           | Canonical phase defined; not verified complete                                                                                                             | Invite, role, and tenant-isolation tests                                                                                                                         |
+| 17    | API Key System                            | Canonical phase defined; not verified complete                                                                                                             | Hashed keys, scopes, and public API tests                                                                                                                        |
+| 18    | Webhook System                            | Canonical phase defined; inbound Stripe exists; outbound customer webhooks unverified                                                                      | Outbound delivery, signing, replay tests                                                                                                                         |
+| 19    | In-App Notification System                | Canonical phase defined; not verified complete                                                                                                             | Notification model and UI journey                                                                                                                                |
+| 20    | Content Calendar                          | Canonical phase defined; not verified complete                                                                                                             | Calendar model, UI, and status transitions                                                                                                                       |
+| 21    | Comments and Collaboration                | Canonical phase defined; not verified complete                                                                                                             | Comments, mentions, and permissions tests                                                                                                                        |
+| 22    | Competitor Analysis and Keyword Gap       | Canonical phase defined; not verified complete                                                                                                             | Competitor model and gap scoring evidence                                                                                                                        |
+| 23    | Rank Tracking                             | Canonical phase defined; not verified complete                                                                                                             | Snapshot storage and scheduled collection tests                                                                                                                  |
+| 24    | Email Notification System                 | Canonical phase defined; not verified complete                                                                                                             | Mock and real email provider evidence                                                                                                                            |
+| 25    | Advanced Analytics Dashboard              | Canonical phase defined; not verified complete                                                                                                             | Metric definitions and aggregation tests                                                                                                                         |
+| 26    | Bulk Keyword Export                       | Canonical phase defined; not verified complete                                                                                                             | Bulk job, filters, and authorization tests                                                                                                                       |
+| 27    | Project Templates                         | Canonical phase defined; not verified complete                                                                                                             | Template application and permission tests                                                                                                                        |
+| 28    | Custom Fields                             | Canonical phase defined; not verified complete                                                                                                             | Field definitions, validation, and export support                                                                                                                |
+| 29    | Full Project Data Export                  | Canonical phase defined; not verified complete                                                                                                             | Full export package and tenant safety tests                                                                                                                      |
+| 30    | Scheduled Reports                         | Canonical phase defined; not verified complete                                                                                                             | Scheduler, delivery, and report history tests                                                                                                                    |
+| 31    | Usage Analytics and Plan Metering         | Canonical phase defined; not verified complete                                                                                                             | Usage counters and plan-limit enforcement                                                                                                                        |
+| 32    | GDPR Compliance Tools                     | Canonical phase defined; not verified complete                                                                                                             | Data export, deletion/anonymization, retention evidence                                                                                                          |
+| 33    | Enhanced Health and Monitoring            | Partially implemented through health/config checks                                                                                                         | Dependency readiness and degraded-state coverage                                                                                                                 |
+| 34    | Security Hardening                        | Partially verified; threat model, CI secret/dependency gates, auth-boundary tests, scoped sensitive rate limits, and broader cross-tenant assertions added | Continue route-family authorization expansion and tune rate-limit thresholds from hosted traffic evidence                                                        |
+| 35    | Observability and Incident Readiness      | Canonical phase defined; not verified complete                                                                                                             | Runbooks, metrics, tracing/logging evidence                                                                                                                      |
+| 36    | Database Migrations and Release Gate      | Implemented and locally verified; live production config pending                                                                                           | CI/preflight evidence plus staging credentials                                                                                                                   |
+| 37    | Browser E2E and Frontend Production QA    | Substantially complete; browser E2E, mobile, accessibility, and visual baselines passing                                                                   | Broaden browser coverage opportunistically as new features stabilize                                                                                             |
+| 38    | Performance, Scalability, and Reliability | Local Phase 38 baseline complete; hosted staging/load evidence still pending for launch                                                                    | Carry hosted staging load and real-provider smoke evidence into Phase 39 sign-off                                                                                |
+| 39    | Launch Readiness and Operational Handoff  | In progress; launch record created, current decision no-go pending external evidence                                                                       | Attach hosted staging load tests, real-provider smoke tests, backup/PITR confirmation, monitoring/alerting confirmation, rollback rehearsal, and owner approvals |
 
 ---
 
 ## Phase 37 Evidence - 2026-05-10
 
-| Check | Result | Notes |
-|-------|--------|-------|
-| `pnpm run test:e2e:browser` | Pass | Starts disposable Postgres, applies migrations, starts API and frontend, then verifies register, login, dashboard, client creation, project creation, project detail navigation, manual keyword creation, pasted keyword import, manual brief creation, brief approval, workspace profile update, white-label settings update, billing disabled-state behavior, current plan display, team member display, solo-plan invite limit handling, mobile navigation at 390px width, and axe accessibility checks for registration plus authenticated critical screens: dashboard, clients, project detail, settings, billing, and team. |
-| Phase 37 accessibility remediation | Pass | Fixed auth/invite page landmarks, mobile layout navigation, empty-client heading order, project detail tab semantics, project back-link name, billing progress labels, and team member action button label. |
-| Phase 37 visual snapshots | Pass | Added Playwright screenshot baselines for registration, empty dashboard, empty clients, solo billing, and mobile primary navigation. Snapshot update mode is available through `UPDATE_PLAYWRIGHT_SNAPSHOTS=1 pnpm run test:e2e:browser`; normal browser E2E verifies against committed baselines. |
-| `pnpm run typecheck` | Pass | Full workspace typecheck completed after browser E2E changes. |
-| `pnpm run format:check` | Pass | Generated Playwright output folders are ignored so local artifacts do not break formatting checks. |
-| `pnpm run lint` | Pass | ESLint completed with zero warnings. |
+| Check                              | Result | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ---------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm run test:e2e:browser`        | Pass   | Starts disposable Postgres, applies migrations, starts API and frontend, then verifies register, login, dashboard, client creation, project creation, project detail navigation, manual keyword creation, pasted keyword import, manual brief creation, brief approval, workspace profile update, white-label settings update, billing disabled-state behavior, current plan display, team member display, solo-plan invite limit handling, mobile navigation at 390px width, and axe accessibility checks for registration plus authenticated critical screens: dashboard, clients, project detail, settings, billing, and team. |
+| Phase 37 accessibility remediation | Pass   | Fixed auth/invite page landmarks, mobile layout navigation, empty-client heading order, project detail tab semantics, project back-link name, billing progress labels, and team member action button label.                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Phase 37 visual snapshots          | Pass   | Added Playwright screenshot baselines for registration, empty dashboard, empty clients, solo billing, and mobile primary navigation. Snapshot update mode is available through `UPDATE_PLAYWRIGHT_SNAPSHOTS=1 pnpm run test:e2e:browser`; normal browser E2E verifies against committed baselines.                                                                                                                                                                                                                                                                                                                                |
+| `pnpm run typecheck`               | Pass   | Full workspace typecheck completed after browser E2E changes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `pnpm run format:check`            | Pass   | Generated Playwright output folders are ignored so local artifacts do not break formatting checks.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `pnpm run lint`                    | Pass   | ESLint completed with zero warnings.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ---
 
 ## Phase 38 Evidence - 2026-05-20
 
-| Check | Result | Notes |
-|-------|--------|-------|
-| `pnpm run perf:baseline` | Pass | Starts disposable Postgres, applies migrations, builds and starts API, seeds tenant/client/project plus 100 keywords, seeds a 500-task AI backlog, verifies sequential API, report/export, queue backlog, concurrent read/export/backlog p95 budgets, and checks billing-misconfig plus database-outage degraded health behavior. |
-| Keyword import seed | Pass | 100 keywords imported in 68ms against the disposable baseline database. |
-| AI task backlog seed | Pass | 500 tasks inserted and verified in 364ms: 350 queued, 100 running, and 50 completed. |
-| Core API p95 baseline | Pass | healthz 9ms, auth.me 18ms, tenant.dashboard 65ms, clients.list 30ms, projects.list 17ms, project.detail 10ms, keywords.list 16ms, briefs.list 11ms. |
-| Queue backlog p95 baseline | Pass | ai.tasks.backlog 33ms for 500 tasks and ai.task.detail 8ms for a queued task. |
-| Report/export p95 baseline | Pass | report.generate 84ms, export.keywords.csv 12ms, export.project.json 20ms, with generated reports and seeded export data validated. |
-| Concurrent read/export/backlog baseline | Pass | healthz.concurrent p95 21ms, dashboard.concurrent p95 48ms, keywords.concurrent p95 54ms, export.project.concurrent p95 43ms, ai.tasks.concurrent p95 77ms, all with 0 failures. |
-| Degraded billing health baseline | Pass | With billing enabled and Stripe config absent, detailed health returned 503 in 10ms with database ok and billing `missing-config`. |
-| Database outage health baseline | Pass | After the disposable database was stopped, detailed health returned 503 in 10ms with database `error` instead of resetting the request. |
-| Database pool resilience | Fixed | Added a shared PostgreSQL pool error handler so idle client errors are logged and do not terminate the API process during database interruption. |
-| `pnpm run perf:pages` | Pass | Starts disposable Postgres, applies migrations, builds the API, builds the production frontend bundle, serves it through a same-origin local harness, seeds an authenticated workspace, and measures key screens in Chromium. |
-| Production page-load baseline | Pass | login 1076ms, dashboard 698ms, clients 631ms, client.detail 646ms, project.detail 681ms with 100 keywords, analytics 671ms, billing 661ms, settings 734ms, mobile.dashboard 618ms, and 0 browser runtime errors. |
-| `pnpm run recovery:baseline` | Pass | Starts disposable source and restore PostgreSQL databases, applies migrations to source, seeds representative tenant/project data, creates a custom-format dump, restores into a clean database, and verifies source/restored counts plus checksums. |
-| Backup/restore baseline | Pass | Dump completed in 803ms, restore completed in 2876ms, and restored tenants=1, users=2, clients=1, projects=1, keywords=120, aiTasks=60, reports=2 with matching source/restored fingerprints. |
-| `pnpm run perf:tenant-size` | Pass | Starts disposable Postgres, applies migrations, builds and starts API, seeds a larger tenant, and measures dashboard, list, export, and backlog endpoints against the larger dataset. |
-| Larger tenant-size baseline | Pass | Seeded 25 clients, 100 projects, 9950 keywords, 1000 AI tasks, and 20 reports in 3368ms; p95s were dashboard 225ms, clients 81ms, projects 62ms, keywords 507ms for 5000 target-project keywords, keyword CSV export 251ms, project JSON export 378ms, and AI tasks 104ms. |
-| AI provider timeout configurability | Fixed | OpenAI-compatible provider calls now honor `OPENAI_TIMEOUT_MS` and `OPENAI_BASE_URL`, allowing production tuning and deterministic local failure-mode tests. |
-| `pnpm run perf:slow-provider` | Pass | Starts disposable Postgres, applies migrations, builds and starts API, runs a deliberately delayed local OpenAI-compatible endpoint, triggers auto-clustering, and verifies fast mock fallback. |
-| Slow-provider fallback baseline | Pass | The fake OpenAI-compatible endpoint delayed for 1500ms, API timeout was configured to 200ms, and auto-clustering fell back to mock in 257ms while creating 1 cluster and recording attempted provider `openai`. |
-| `docs/BACKUP_RESTORE.md` | Added | Documents local recovery proof plus production backup requirements for managed backups, point-in-time recovery, restore drills, access control, and sensitive restored data handling. |
-| `docs/PERFORMANCE_BASELINE.md` | Added | Documents sequential budgets, report/export budgets, queue backlog budgets, tenant-size budgets, slow-provider budgets, concurrent budgets, degraded billing and database-outage coverage, production page-load budgets, recovery baseline, latest local numbers, and remaining Phase 38 limitations. |
+| Check                                   | Result | Notes                                                                                                                                                                                                                                                                                                                             |
+| --------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm run perf:baseline`                | Pass   | Starts disposable Postgres, applies migrations, builds and starts API, seeds tenant/client/project plus 100 keywords, seeds a 500-task AI backlog, verifies sequential API, report/export, queue backlog, concurrent read/export/backlog p95 budgets, and checks billing-misconfig plus database-outage degraded health behavior. |
+| Keyword import seed                     | Pass   | 100 keywords imported in 68ms against the disposable baseline database.                                                                                                                                                                                                                                                           |
+| AI task backlog seed                    | Pass   | 500 tasks inserted and verified in 364ms: 350 queued, 100 running, and 50 completed.                                                                                                                                                                                                                                              |
+| Core API p95 baseline                   | Pass   | healthz 9ms, auth.me 18ms, tenant.dashboard 65ms, clients.list 30ms, projects.list 17ms, project.detail 10ms, keywords.list 16ms, briefs.list 11ms.                                                                                                                                                                               |
+| Queue backlog p95 baseline              | Pass   | ai.tasks.backlog 33ms for 500 tasks and ai.task.detail 8ms for a queued task.                                                                                                                                                                                                                                                     |
+| Report/export p95 baseline              | Pass   | report.generate 84ms, export.keywords.csv 12ms, export.project.json 20ms, with generated reports and seeded export data validated.                                                                                                                                                                                                |
+| Concurrent read/export/backlog baseline | Pass   | healthz.concurrent p95 21ms, dashboard.concurrent p95 48ms, keywords.concurrent p95 54ms, export.project.concurrent p95 43ms, ai.tasks.concurrent p95 77ms, all with 0 failures.                                                                                                                                                  |
+| Degraded billing health baseline        | Pass   | With billing enabled and Stripe config absent, detailed health returned 503 in 10ms with database ok and billing `missing-config`.                                                                                                                                                                                                |
+| Database outage health baseline         | Pass   | After the disposable database was stopped, detailed health returned 503 in 10ms with database `error` instead of resetting the request.                                                                                                                                                                                           |
+| Database pool resilience                | Fixed  | Added a shared PostgreSQL pool error handler so idle client errors are logged and do not terminate the API process during database interruption.                                                                                                                                                                                  |
+| `pnpm run perf:pages`                   | Pass   | Starts disposable Postgres, applies migrations, builds the API, builds the production frontend bundle, serves it through a same-origin local harness, seeds an authenticated workspace, and measures key screens in Chromium.                                                                                                     |
+| Production page-load baseline           | Pass   | login 1076ms, dashboard 698ms, clients 631ms, client.detail 646ms, project.detail 681ms with 100 keywords, analytics 671ms, billing 661ms, settings 734ms, mobile.dashboard 618ms, and 0 browser runtime errors.                                                                                                                  |
+| `pnpm run recovery:baseline`            | Pass   | Starts disposable source and restore PostgreSQL databases, applies migrations to source, seeds representative tenant/project data, creates a custom-format dump, restores into a clean database, and verifies source/restored counts plus checksums.                                                                              |
+| Backup/restore baseline                 | Pass   | Dump completed in 803ms, restore completed in 2876ms, and restored tenants=1, users=2, clients=1, projects=1, keywords=120, aiTasks=60, reports=2 with matching source/restored fingerprints.                                                                                                                                     |
+| `pnpm run perf:tenant-size`             | Pass   | Starts disposable Postgres, applies migrations, builds and starts API, seeds a larger tenant, and measures dashboard, list, export, and backlog endpoints against the larger dataset.                                                                                                                                             |
+| Larger tenant-size baseline             | Pass   | Seeded 25 clients, 100 projects, 9950 keywords, 1000 AI tasks, and 20 reports in 3368ms; p95s were dashboard 225ms, clients 81ms, projects 62ms, keywords 507ms for 5000 target-project keywords, keyword CSV export 251ms, project JSON export 378ms, and AI tasks 104ms.                                                        |
+| AI provider timeout configurability     | Fixed  | OpenAI-compatible provider calls now honor `OPENAI_TIMEOUT_MS` and `OPENAI_BASE_URL`, allowing production tuning and deterministic local failure-mode tests.                                                                                                                                                                      |
+| `pnpm run perf:slow-provider`           | Pass   | Starts disposable Postgres, applies migrations, builds and starts API, runs a deliberately delayed local OpenAI-compatible endpoint, triggers auto-clustering, and verifies fast mock fallback.                                                                                                                                   |
+| Slow-provider fallback baseline         | Pass   | The fake OpenAI-compatible endpoint delayed for 1500ms, API timeout was configured to 200ms, and auto-clustering fell back to mock in 257ms while creating 1 cluster and recording attempted provider `openai`.                                                                                                                   |
+| `docs/BACKUP_RESTORE.md`                | Added  | Documents local recovery proof plus production backup requirements for managed backups, point-in-time recovery, restore drills, access control, and sensitive restored data handling.                                                                                                                                             |
+| `docs/PERFORMANCE_BASELINE.md`          | Added  | Documents sequential budgets, report/export budgets, queue backlog budgets, tenant-size budgets, slow-provider budgets, concurrent budgets, degraded billing and database-outage coverage, production page-load budgets, recovery baseline, latest local numbers, and remaining Phase 38 limitations.                             |
 
 ---
 
 ## Phase 39 Evidence - 2026-05-22
 
-| Check | Result | Notes |
-|-------|--------|-------|
-| `docs/LAUNCH_READINESS.md` | Added | Canonical Phase 39 sign-off record created with current no-go decision, required hosted staging load-test evidence, real-provider smoke-test evidence, production handoff checklist, and known blockers. |
-| Hosted staging load-test evidence | Pending | Required before launch. Must use a hosted production-like staging deployment and record staging URL, dataset size, runner/tool, concurrency, duration, p95 latency, error rate, operator, and result. |
-| `pnpm run staging:smoke-load` | Added | Hosted staging smoke/load runner accepts `STAGING_BASE_URL`, seeds or reuses a staging test account, exercises critical browser/API paths, runs concurrent API checks, and writes Markdown/JSON launch evidence under `artifacts/staging-launch/`. |
-| Real-provider smoke-test evidence | Pending | Required before launch. Run `pnpm run test:live:services` with live/staging credentials; set `LIVE_KEYWORD_PROVIDER_CHECKS=true` when keyword-provider quota spend is approved. |
-| Local credential availability check | Complete | `LIVE_SERVICES_OPTIONAL=1 LIVE_KEYWORD_PROVIDER_CHECKS=true pnpm run test:live:services` ran on 2026-05-22; all 7 live checks skipped because OpenAI, Stripe, SMTP, Ahrefs, Semrush, and DataForSEO credentials are not present in this local environment. |
-| Production backup/PITR confirmation | Pending | Local logical backup/restore proof exists, but managed hosted backup policy, retention, and point-in-time recovery must be confirmed before launch. |
-| Monitoring/alerting confirmation | Pending | API, database, jobs/queue, providers, billing/webhooks, latency, and error-rate monitoring must be live before launch. |
-| Rollback rehearsal | Pending | Required in staging before final go decision. |
-| `docs/RELEASE.md` | Updated | Release gate now links to Phase 39 launch readiness and states local preflight alone is not launch approval. |
-| `docs/ENV.md` | Updated | Documents `OPENAI_BASE_URL` and `OPENAI_TIMEOUT_MS` for provider timeout/fallback configuration. |
-| Local release gate sweep | Pass | On 2026-06-01, `format:check`, `lint`, `security:secrets`, `api:route-drift:check`, `typecheck`, `test`, `test:e2e:api`, `build`, `audit --prod`, and `git diff --check` passed under RTK. |
-| Current go/no-go | No-go | Launch blocked until the pending external evidence and owner approvals are attached. |
+| Check                               | Result   | Notes                                                                                                                                                                                                                                                         |
+| ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/LAUNCH_READINESS.md`          | Added    | Canonical Phase 39 sign-off record created with current no-go decision, required hosted staging load-test evidence, real-provider smoke-test evidence, production handoff checklist, and known blockers.                                                      |
+| Hosted staging load-test evidence   | Pending  | Required before launch. Must use a hosted production-like staging deployment and record staging URL, dataset size, runner/tool, concurrency, duration, p95 latency, error rate, operator, and result.                                                         |
+| `pnpm run staging:smoke-load`       | Added    | Hosted staging smoke/load runner accepts `STAGING_BASE_URL`, seeds or reuses a staging test account, exercises critical browser/API paths, runs concurrent API checks, and writes Markdown/JSON launch evidence under `artifacts/staging-launch/`.            |
+| Real-provider smoke-test evidence   | Pending  | Required before launch. Run `pnpm run test:live:services` with live/staging credentials; set `LIVE_KEYWORD_PROVIDER_CHECKS=true` when keyword-provider quota spend is approved.                                                                               |
+| Local credential availability check | Complete | `LIVE_SERVICES_OPTIONAL=1 LIVE_KEYWORD_PROVIDER_CHECKS=true pnpm run test:live:services` ran on 2026-05-22; all 7 live checks skipped because OpenAI, Stripe, SMTP, Ahrefs, Semrush, and DataForSEO credentials are not present in this local environment.    |
+| Production backup/PITR confirmation | Pending  | Local logical backup/restore proof exists, but managed hosted backup policy, retention, and point-in-time recovery must be confirmed before launch.                                                                                                           |
+| Monitoring/alerting confirmation    | Pending  | API, database, jobs/queue, providers, billing/webhooks, latency, and error-rate monitoring must be live before launch.                                                                                                                                        |
+| Rollback rehearsal                  | Pending  | Required in staging before final go decision.                                                                                                                                                                                                                 |
+| `docs/RELEASE.md`                   | Updated  | Release gate now links to Phase 39 launch readiness and states local preflight alone is not launch approval.                                                                                                                                                  |
+| `docs/ENV.md`                       | Updated  | Documents `OPENAI_BASE_URL` and `OPENAI_TIMEOUT_MS` for provider timeout/fallback configuration.                                                                                                                                                              |
+| Local release gate sweep            | Pass     | On 2026-06-27, `format:check`, `lint`, `security:check`, `api:route-drift:check`, `typecheck`, `test`, `test:coverage`, `smoke`, `build`, and `git diff --check` passed under RTK; hosted staging and real-provider evidence remain separate launch blockers. |
+| Current go/no-go                    | No-go    | Launch blocked until the pending external evidence and owner approvals are attached.                                                                                                                                                                          |
 
 ---
 
 ## Phase 34/36 Security Gate Evidence - 2026-05-31
 
-| Check | Result | Notes |
-|-------|--------|-------|
-| `pnpm run security:secrets` | Pass | Added tracked-file secret scanner for high-confidence OpenAI, Stripe, RankMap API key, AWS access key, and private-key block patterns; `.env.example` now uses non-realistic placeholder values. |
-| `pnpm run security:audit` | Pass for high/critical gate | Added `pnpm audit --audit-level high`; patched transitive `fast-uri` through a pnpm override to resolve the high-severity Orval/OpenAPI parser advisory. One moderate advisory remains below the release-fail threshold. |
-| `.github/workflows/ci.yml` | Updated | CI now runs `pnpm run security:check` after lint and before typecheck so committed-secret and high/critical dependency drift fail the release gate. |
-| `docs/SECURITY.md` and `docs/RELEASE.md` | Updated | Security and release documentation now reference the first-party security gate rather than relying only on ad hoc audit/lint instructions. |
-| `docs/THREAT_MODEL.md` | Added | Documents assets, trust boundaries, representative abuse cases, existing controls, and residual risks for tenants, billing, providers, exports, API keys, webhooks, background jobs, and operational tooling. |
-| `auth.security.test.ts` | Pass | Adds fast authorization-boundary regression tests for unauthenticated access, wrong-role access, malformed API-key scopes, read-only API-key mutation attempts, and allowed read-only API-key reads. |
-| Route-family-specific rate limits | Pass | Added scoped limiters for API key lifecycle, webhook management, project/GDPR exports and reports, provider search, AI-heavy clustering/brief/ranking workflows, and Stripe webhook verification. |
-| `app.rate-limits.test.ts` | Pass | Verifies sensitive route-family limiters return `429` before API key, provider search, and billing webhook handlers continue expensive or sensitive work. |
-| Broader cross-tenant route assertions | Added | Docker API E2E now verifies Tenant B receives `404` for Tenant A client-project, keyword, cluster, brief, report, calendar, competitor, ranking, report schedule, and export routes. |
+| Check                                    | Result                      | Notes                                                                                                                                                                                                                    |
+| ---------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm run security:secrets`              | Pass                        | Added tracked-file secret scanner for high-confidence OpenAI, Stripe, RankMap API key, AWS access key, and private-key block patterns; `.env.example` now uses non-realistic placeholder values.                         |
+| `pnpm run security:audit`                | Pass for high/critical gate | Added `pnpm audit --audit-level high`; patched transitive `fast-uri` through a pnpm override to resolve the high-severity Orval/OpenAPI parser advisory. One moderate advisory remains below the release-fail threshold. |
+| `.github/workflows/ci.yml`               | Updated                     | CI now runs `pnpm run security:check` after lint and before typecheck so committed-secret and high/critical dependency drift fail the release gate.                                                                      |
+| `docs/SECURITY.md` and `docs/RELEASE.md` | Updated                     | Security and release documentation now reference the first-party security gate rather than relying only on ad hoc audit/lint instructions.                                                                               |
+| `docs/THREAT_MODEL.md`                   | Added                       | Documents assets, trust boundaries, representative abuse cases, existing controls, and residual risks for tenants, billing, providers, exports, API keys, webhooks, background jobs, and operational tooling.            |
+| `auth.security.test.ts`                  | Pass                        | Adds fast authorization-boundary regression tests for unauthenticated access, wrong-role access, malformed API-key scopes, read-only API-key mutation attempts, and allowed read-only API-key reads.                     |
+| Route-family-specific rate limits        | Pass                        | Added scoped limiters for API key lifecycle, webhook management, project/GDPR exports and reports, provider search, AI-heavy clustering/brief/ranking workflows, and Stripe webhook verification.                        |
+| `app.rate-limits.test.ts`                | Pass                        | Verifies sensitive route-family limiters return `429` before API key, provider search, and billing webhook handlers continue expensive or sensitive work.                                                                |
+| Broader cross-tenant route assertions    | Added                       | Docker API E2E now verifies Tenant B receives `404` for Tenant A client-project, keyword, cluster, brief, report, calendar, competitor, ranking, report schedule, and export routes.                                     |
 
 ---
 
 ## Phase 0 Checklist — ALL COMPLETE
 
 ### Infrastructure
+
 - [x] `artifacts/rankmap` — React + Vite frontend scaffolded
 - [x] `artifacts/api-server` — Express 5 API server scaffolded
 - [x] `lib/db` — Drizzle ORM + PostgreSQL setup
@@ -168,6 +169,7 @@ The summary below is the working truth table. The detailed generated checklist s
 - [x] `lib/api-zod` — Generated Zod schemas (codegen complete)
 
 ### Documentation
+
 - [x] `ARCHITECTURE.md` — Canonical architecture document
 - [x] `BUILD_ROADMAP.md` — Canonical build roadmap (Phases 0–39)
 - [x] `ROADMAP_STATUS.md` — This file
@@ -176,6 +178,7 @@ The summary below is the working truth table. The detailed generated checklist s
 - [x] `docs/ENV.md` — Environment variable reference
 
 ### Tooling
+
 - [x] `.env.example` — Fake placeholders only, no real secrets
 - [x] `vitest.config.ts` — Vitest configuration
 - [x] `eslint.config.js` — ESLint with no-hardcoded-secrets rules
@@ -432,93 +435,93 @@ The summary below is the working truth table. The detailed generated checklist s
 
 ## Test Results — Phases 11–18 (Smoke Test)
 
-| Check | Result | Notes |
-|-------|--------|-------|
-| `pnpm run typecheck` (full) | ✅ Pass | 0 errors across all 4 packages |
-| `GET /api/team` | ✅ Pass | Returns tenant-scoped member list |
-| `POST /api/team/invite` | ✅ Pass | Seat limit enforced (402 when at limit) |
-| `GET /api/audit-log` | ✅ Pass | Paginated events with userName/email joined |
-| `POST /api/api-keys` | ✅ Pass | `rm_` prefixed key returned once (bcrypt stored) |
-| `GET /api/api-keys` | ✅ Pass | keyPrefix shown, keyHash never exposed |
-| `POST /api/webhooks` | ✅ Pass | Endpoint created with HMAC secret |
-| `GET /api/webhooks/events` | ✅ Pass | 9 supported event types |
-| `POST /api/integrations` | ✅ Pass | Credentials stored (upsert) |
-| `POST /api/integrations/:id/search` | ✅ Pass | Mock fallback returns 5 keyword records |
-| Audit events recorded | ✅ Pass | api_key.created, webhook.created, integration.configured all logged |
-| Security headers (helmet) | ✅ Pass | X-Frame-Options, X-Content-Type-Options, etc. |
-| Rate limiter active | ✅ Pass | 500 req/15min global; 20/15min on auth |
-| DB tables created | ✅ Pass | audit_log, user_invitations, api_keys, webhook_endpoints, webhook_deliveries, integration_credentials |
+| Check                               | Result  | Notes                                                                                                 |
+| ----------------------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
+| `pnpm run typecheck` (full)         | ✅ Pass | 0 errors across all 4 packages                                                                        |
+| `GET /api/team`                     | ✅ Pass | Returns tenant-scoped member list                                                                     |
+| `POST /api/team/invite`             | ✅ Pass | Seat limit enforced (402 when at limit)                                                               |
+| `GET /api/audit-log`                | ✅ Pass | Paginated events with userName/email joined                                                           |
+| `POST /api/api-keys`                | ✅ Pass | `rm_` prefixed key returned once (bcrypt stored)                                                      |
+| `GET /api/api-keys`                 | ✅ Pass | keyPrefix shown, keyHash never exposed                                                                |
+| `POST /api/webhooks`                | ✅ Pass | Endpoint created with HMAC secret                                                                     |
+| `GET /api/webhooks/events`          | ✅ Pass | 9 supported event types                                                                               |
+| `POST /api/integrations`            | ✅ Pass | Credentials stored (upsert)                                                                           |
+| `POST /api/integrations/:id/search` | ✅ Pass | Mock fallback returns 5 keyword records                                                               |
+| Audit events recorded               | ✅ Pass | api_key.created, webhook.created, integration.configured all logged                                   |
+| Security headers (helmet)           | ✅ Pass | X-Frame-Options, X-Content-Type-Options, etc.                                                         |
+| Rate limiter active                 | ✅ Pass | 500 req/15min global; 20/15min on auth                                                                |
+| DB tables created                   | ✅ Pass | audit_log, user_invitations, api_keys, webhook_endpoints, webhook_deliveries, integration_credentials |
 
 ---
 
 ## Test Results — Phases 1–10 (Full E2E Smoke Test)
 
-| Check | Result | Notes |
-|-------|--------|-------|
-| `pnpm run typecheck` | ✅ Pass | 0 errors across all 4 artifacts |
-| `GET /api/healthz` | ✅ Pass | `{"status":"ok"}` |
-| `POST /api/auth/login` | ✅ Pass | Session cookie set |
-| `GET /api/tenant/dashboard` | ✅ Pass | All 7 DashboardSummary fields returned |
-| `GET /api/clients` | ✅ Pass | Tenant-scoped list |
-| `POST /api/projects` | ✅ Pass | clientId in body, tenant-scoped |
-| `GET /api/projects?clientId=x` | ✅ Pass | Filtered by client |
-| `POST /api/projects/:id/keywords/import` | ✅ Pass | 5 imported, 0 duplicates |
-| `POST /api/projects/:id/clusters/auto` | ✅ Pass | 5 clusters created, AI task queued |
-| `POST /api/projects/:id/clusters/:id/approve` | ✅ Pass | Status → approved |
-| `GET /api/projects/:id/topic-map` | ✅ Pass | Pillar/cluster hierarchy |
-| `GET /api/projects/:id/roadmap` | ✅ Pass | Priority-ranked clusters |
-| `POST /api/projects/:id/briefs` | ✅ Pass | Brief created |
-| `POST /api/projects/:id/briefs/:id/generate` | ✅ Pass | Mock AI outline generated |
-| `POST /api/projects/:id/reports` | ✅ Pass | Report generated with summary data |
-| `GET /api/billing/plans` | ✅ Pass | solo/agency/enterprise plans |
-| `GET /api/billing/usage` | ✅ Pass | aiTasksThisMonth, limits, projectsCount |
-| `GET /api/ai-tasks` | ✅ Pass | Task queue with status |
-| Frontend loads at `/` | ✅ Pass | Redirects to `/login` when unauthenticated |
+| Check                                         | Result  | Notes                                      |
+| --------------------------------------------- | ------- | ------------------------------------------ |
+| `pnpm run typecheck`                          | ✅ Pass | 0 errors across all 4 artifacts            |
+| `GET /api/healthz`                            | ✅ Pass | `{"status":"ok"}`                          |
+| `POST /api/auth/login`                        | ✅ Pass | Session cookie set                         |
+| `GET /api/tenant/dashboard`                   | ✅ Pass | All 7 DashboardSummary fields returned     |
+| `GET /api/clients`                            | ✅ Pass | Tenant-scoped list                         |
+| `POST /api/projects`                          | ✅ Pass | clientId in body, tenant-scoped            |
+| `GET /api/projects?clientId=x`                | ✅ Pass | Filtered by client                         |
+| `POST /api/projects/:id/keywords/import`      | ✅ Pass | 5 imported, 0 duplicates                   |
+| `POST /api/projects/:id/clusters/auto`        | ✅ Pass | 5 clusters created, AI task queued         |
+| `POST /api/projects/:id/clusters/:id/approve` | ✅ Pass | Status → approved                          |
+| `GET /api/projects/:id/topic-map`             | ✅ Pass | Pillar/cluster hierarchy                   |
+| `GET /api/projects/:id/roadmap`               | ✅ Pass | Priority-ranked clusters                   |
+| `POST /api/projects/:id/briefs`               | ✅ Pass | Brief created                              |
+| `POST /api/projects/:id/briefs/:id/generate`  | ✅ Pass | Mock AI outline generated                  |
+| `POST /api/projects/:id/reports`              | ✅ Pass | Report generated with summary data         |
+| `GET /api/billing/plans`                      | ✅ Pass | solo/agency/enterprise plans               |
+| `GET /api/billing/usage`                      | ✅ Pass | aiTasksThisMonth, limits, projectsCount    |
+| `GET /api/ai-tasks`                           | ✅ Pass | Task queue with status                     |
+| Frontend loads at `/`                         | ✅ Pass | Redirects to `/login` when unauthenticated |
 
 ---
 
 ## Architecture Decisions
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Session store | `connect-pg-simple` | Reuses existing Postgres, no Redis dependency |
-| Session table | Created at startup via raw SQL | `createTableIfMissing` incompatible with esbuild bundle |
-| AI provider | Mock by default | No API key required; provider field allows future swap |
-| Stripe | Feature-flagged (`FEATURE_STRIPE`) | Safely ships without keys configured |
-| Scoring | In-process `computeScore()` | No queue overhead for MVP; weights stored per-project |
-| Clustering | Enqueues `aiTasksTable` record | Async-ready pattern, mock runs synchronously |
+| Decision      | Choice                             | Rationale                                               |
+| ------------- | ---------------------------------- | ------------------------------------------------------- |
+| Session store | `connect-pg-simple`                | Reuses existing Postgres, no Redis dependency           |
+| Session table | Created at startup via raw SQL     | `createTableIfMissing` incompatible with esbuild bundle |
+| AI provider   | Mock by default                    | No API key required; provider field allows future swap  |
+| Stripe        | Feature-flagged (`FEATURE_STRIPE`) | Safely ships without keys configured                    |
+| Scoring       | In-process `computeScore()`        | No queue overhead for MVP; weights stored per-project   |
+| Clustering    | Enqueues `aiTasksTable` record     | Async-ready pattern, mock runs synchronously            |
 
 ---
 
 ## Change Log
 
-| Date | Phase | Change |
-|------|-------|--------|
-| 2026-05-03 | Phases 1–10 | All backend routes complete (auth, clients, projects, keywords, clusters, topic-map, briefs, reports, billing) |
-| 2026-05-03 | Phases 1–10 | Full frontend built (auth pages, dashboard, clients, projects, AI tasks, billing, settings) |
-| 2026-05-03 | Phase 1 | Fixed session table creation (`ensureSessionTable()` at startup) |
-| 2026-05-03 | All | Full workspace typecheck passes clean (0 errors) |
-| 2026-05-03 | Phase 2 | Added flat `GET/POST /api/projects` routes (spec-aligned); clientId in body for create |
-| 2026-05-03 | Phase 1 | Fixed dashboard to return all 7 DashboardSummary fields (clusterCount, briefCount, pendingApprovals, aiTasksThisMonth) |
-| 2026-05-03 | Phases 11–18 | Keyword adapters (Ahrefs, SEMrush, DataForSEO) with mock fallback |
-| 2026-05-03 | Phases 11–18 | Real AI provider (OpenAI GPT-4o-mini) for clustering + brief generation |
-| 2026-05-03 | Phases 11–18 | Audit log backend (table + helper + route + frontend page) |
-| 2026-05-03 | Phases 11–18 | Team management (invite flow, seat enforcement, role changes, removal) |
-| 2026-05-03 | Phases 11–18 | API key system (bcrypt hash, rm_ prefix, keyPrefix, revocation) |
-| 2026-05-03 | Phases 11–18 | Webhook system (HMAC-SHA256, 9 events, delivery tracking, test endpoint) |
-| 2026-05-03 | Phases 11–18 | Integration credentials system (upsert, keyword search, provider delete) |
-| 2026-05-03 | Phases 11–18 | Security hardening: helmet, express-rate-limit (global + auth), 2mb body limit |
-| 2026-05-03 | Phases 11–18 | Frontend: 5 new pages (team, audit-log, api-keys, webhooks, integrations) + accept-invite |
-| 2026-05-03 | Phases 11–18 | Sidebar: Platform + Workspace sections with all new nav links |
-| 2026-05-03 | Phases 11–18 | customFetch exported from @workspace/api-client-react for use in new pages |
-| 2026-05-03 | All | Full workspace typecheck passes clean (0 errors) across 4 packages |
-| 2026-05-03 | All | Full E2E smoke test passes all 10 phases end-to-end |
-| 2026-05-02 | Phase 0 | Phase 0 complete — all deliverables shipped, all checks passing |
-| 2026-05-02 | Phase 0 | Initial scaffold — artifact created, docs written, tooling configured |
+| Date       | Phase        | Change                                                                                                                 |
+| ---------- | ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-03 | Phases 1–10  | All backend routes complete (auth, clients, projects, keywords, clusters, topic-map, briefs, reports, billing)         |
+| 2026-05-03 | Phases 1–10  | Full frontend built (auth pages, dashboard, clients, projects, AI tasks, billing, settings)                            |
+| 2026-05-03 | Phase 1      | Fixed session table creation (`ensureSessionTable()` at startup)                                                       |
+| 2026-05-03 | All          | Full workspace typecheck passes clean (0 errors)                                                                       |
+| 2026-05-03 | Phase 2      | Added flat `GET/POST /api/projects` routes (spec-aligned); clientId in body for create                                 |
+| 2026-05-03 | Phase 1      | Fixed dashboard to return all 7 DashboardSummary fields (clusterCount, briefCount, pendingApprovals, aiTasksThisMonth) |
+| 2026-05-03 | Phases 11–18 | Keyword adapters (Ahrefs, SEMrush, DataForSEO) with mock fallback                                                      |
+| 2026-05-03 | Phases 11–18 | Real AI provider (OpenAI GPT-4o-mini) for clustering + brief generation                                                |
+| 2026-05-03 | Phases 11–18 | Audit log backend (table + helper + route + frontend page)                                                             |
+| 2026-05-03 | Phases 11–18 | Team management (invite flow, seat enforcement, role changes, removal)                                                 |
+| 2026-05-03 | Phases 11–18 | API key system (bcrypt hash, rm\_ prefix, keyPrefix, revocation)                                                       |
+| 2026-05-03 | Phases 11–18 | Webhook system (HMAC-SHA256, 9 events, delivery tracking, test endpoint)                                               |
+| 2026-05-03 | Phases 11–18 | Integration credentials system (upsert, keyword search, provider delete)                                               |
+| 2026-05-03 | Phases 11–18 | Security hardening: helmet, express-rate-limit (global + auth), 2mb body limit                                         |
+| 2026-05-03 | Phases 11–18 | Frontend: 5 new pages (team, audit-log, api-keys, webhooks, integrations) + accept-invite                              |
+| 2026-05-03 | Phases 11–18 | Sidebar: Platform + Workspace sections with all new nav links                                                          |
+| 2026-05-03 | Phases 11–18 | customFetch exported from @workspace/api-client-react for use in new pages                                             |
+| 2026-05-03 | All          | Full workspace typecheck passes clean (0 errors) across 4 packages                                                     |
+| 2026-05-03 | All          | Full E2E smoke test passes all 10 phases end-to-end                                                                    |
+| 2026-05-02 | Phase 0      | Phase 0 complete — all deliverables shipped, all checks passing                                                        |
+| 2026-05-02 | Phase 0      | Initial scaffold — artifact created, docs written, tooling configured                                                  |
 
 ---
 
-*Phases 0–10 complete. Ready for Phase 11+ (real AI integration, advanced reporting, billing enforcement).*
+_Phases 0–10 complete. Ready for Phase 11+ (real AI integration, advanced reporting, billing enforcement)._
 
 ---
 
@@ -684,6 +687,7 @@ The summary below is the working truth table. The detailed generated checklist s
 ## Phases 34–39 — Production Hardening — COMPLETE
 
 ### Security
+
 - [x] Helmet (secure HTTP headers) — Phase 10 / security hardening
 - [x] express-rate-limit (500/15min global, 20/15min auth) — Phase 10
 - [x] 2MB body limit — Phase 10
@@ -695,17 +699,20 @@ The summary below is the working truth table. The detailed generated checklist s
 - [x] GDPR account deletion + data export — Phase 32
 
 ### Observability
+
 - [x] Pino structured logging (production JSON, dev pretty-print) — Phase 0
 - [x] Request-scoped `req.log` — Phase 0
 - [x] Detailed health endpoint with DB/AI/SMTP status and memory metrics — Phase 33
 - [x] Audit log for all significant actions — Phase 15
 
 ### Data Integrity
+
 - [x] Zod validation on all API inputs — all phases
 - [x] Drizzle ORM + PostgreSQL with cascade rules — all phases
 - [x] Session stored in PostgreSQL (connect-pg-simple) — Phase 1
 
 ### Developer Experience
+
 - [x] TypeScript strict mode (0 errors across 4 workspace packages)
 - [x] OpenAPI spec + codegen (api-client-react + api-zod) — Phase 0
 - [x] pnpm workspace monorepo — Phase 0
@@ -715,28 +722,28 @@ The summary below is the working truth table. The detailed generated checklist s
 
 ## Phase 19–39 Smoke Tests — 2026-05-03
 
-| Endpoint | Status | Notes |
-|----------|--------|-------|
-| `GET /api/healthz/detailed` | ✅ 200 | DB ok 1ms, AI+SMTP mock-fallback |
-| `POST /api/auth/register` | ✅ 201 | Session established |
-| `GET /api/analytics/overview` | ✅ 200 | Returns all 7 totals |
-| `GET /api/usage` | ✅ 200 | Plan=solo, correct limits |
-| `GET /api/notifications` | ✅ 200 | [] empty array |
-| `GET /api/templates` | ✅ 200 | [] empty array |
-| `GET /api/custom-fields` | ✅ 200 | [] empty array |
-| `GET /api/report-schedules` | ✅ 200 | [] empty array |
-| TypeScript (all 4 packages) | ✅ 0 errors | |
+| Endpoint                      | Status      | Notes                            |
+| ----------------------------- | ----------- | -------------------------------- |
+| `GET /api/healthz/detailed`   | ✅ 200      | DB ok 1ms, AI+SMTP mock-fallback |
+| `POST /api/auth/register`     | ✅ 201      | Session established              |
+| `GET /api/analytics/overview` | ✅ 200      | Returns all 7 totals             |
+| `GET /api/usage`              | ✅ 200      | Plan=solo, correct limits        |
+| `GET /api/notifications`      | ✅ 200      | [] empty array                   |
+| `GET /api/templates`          | ✅ 200      | [] empty array                   |
+| `GET /api/custom-fields`      | ✅ 200      | [] empty array                   |
+| `GET /api/report-schedules`   | ✅ 200      | [] empty array                   |
+| TypeScript (all 4 packages)   | ✅ 0 errors |                                  |
 
 ---
 
 ## Change Log (continued)
 
-| Date | Phase(s) | Change |
-|------|----------|--------|
+| Date       | Phase(s)     | Change                                                                                                                                                                             |
+| ---------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-05-03 | Phases 19–33 | 9 new DB tables (notifications, content_calendar_entries, comments, competitor_domains, keyword_rankings, project_templates, custom_fields, custom_field_values, report_schedules) |
-| 2026-05-03 | Phases 19–33 | 13 new backend route files (notifications, calendar, comments, competitors, rankings, templates, custom-fields, export, report-schedules, analytics, usage, gdpr) |
-| 2026-05-03 | Phases 19–33 | 9 new frontend pages (notifications, competitors, rankings, analytics, usage, templates, custom-fields, report-schedules, gdpr/privacy) |
-| 2026-05-03 | Phase 24 | Email lib (nodemailer + mock fallback) with invite and report templates |
-| 2026-05-03 | Phase 33 | Enhanced /api/healthz/detailed with DB latency, memory, and service status |
-| 2026-05-03 | All | Sidebar expanded: Platform + Insights + Tools + Workspace + You sections |
-| 2026-05-03 | All | Full workspace typecheck: 0 errors across all 4 packages |
+| 2026-05-03 | Phases 19–33 | 13 new backend route files (notifications, calendar, comments, competitors, rankings, templates, custom-fields, export, report-schedules, analytics, usage, gdpr)                  |
+| 2026-05-03 | Phases 19–33 | 9 new frontend pages (notifications, competitors, rankings, analytics, usage, templates, custom-fields, report-schedules, gdpr/privacy)                                            |
+| 2026-05-03 | Phase 24     | Email lib (nodemailer + mock fallback) with invite and report templates                                                                                                            |
+| 2026-05-03 | Phase 33     | Enhanced /api/healthz/detailed with DB latency, memory, and service status                                                                                                         |
+| 2026-05-03 | All          | Sidebar expanded: Platform + Insights + Tools + Workspace + You sections                                                                                                           |
+| 2026-05-03 | All          | Full workspace typecheck: 0 errors across all 4 packages                                                                                                                           |

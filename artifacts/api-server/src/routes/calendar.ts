@@ -1,10 +1,25 @@
 import { Router } from "express";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { z } from "zod";
-import { db, contentCalendarEntriesTable, projectsTable } from "@workspace/db";
+import {
+  db,
+  contentBriefsTable,
+  contentCalendarEntriesTable,
+  projectsTable,
+  usersTable,
+} from "@workspace/db";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
+
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
 
 async function assertProjectAccess(projectId: number, tenantId: number) {
   const [p] = await db
@@ -13,6 +28,66 @@ async function assertProjectAccess(projectId: number, tenantId: number) {
     .where(and(eq(projectsTable.id, projectId), eq(projectsTable.tenantId, tenantId)))
     .limit(1);
   return !!p;
+}
+
+async function assertBriefAccess(briefId: number, projectId: number, tenantId: number) {
+  const [brief] = await db
+    .select({ id: contentBriefsTable.id })
+    .from(contentBriefsTable)
+    .where(
+      and(
+        eq(contentBriefsTable.id, briefId),
+        eq(contentBriefsTable.projectId, projectId),
+        eq(contentBriefsTable.tenantId, tenantId),
+      ),
+    )
+    .limit(1);
+  return !!brief;
+}
+
+async function assertUserAccess(userId: number, tenantId: number) {
+  const [user] = await db
+    .select({ id: usersTable.id })
+    .from(usersTable)
+    .where(and(eq(usersTable.id, userId), eq(usersTable.tenantId, tenantId)))
+    .limit(1);
+  return !!user;
+}
+
+async function validateEntryRelations(
+  body: { briefId?: number | null; assignedTo?: number | null },
+  projectId: number,
+  tenantId: number,
+): Promise<string | null> {
+  if (body.briefId != null && !(await assertBriefAccess(body.briefId, projectId, tenantId))) {
+    return "Invalid briefId";
+  }
+
+  if (body.assignedTo != null && !(await assertUserAccess(body.assignedTo, tenantId))) {
+    return "Invalid assignedTo";
+  }
+
+  return null;
+}
+
+function parseCalendarMonthFilter(
+  month: unknown,
+  year: unknown,
+): { start: string; end: string } | null | undefined {
+  if (month == null && year == null) return undefined;
+  if (typeof month !== "string" || typeof year !== "string") return null;
+  if (!/^\d{1,2}$/.test(month) || !/^\d{4}$/.test(year)) return null;
+
+  const parsedMonth = Number(month);
+  const parsedYear = Number(year);
+  if (parsedMonth < 1 || parsedMonth > 12 || !Number.isSafeInteger(parsedYear)) return null;
+
+  const monthText = String(parsedMonth).padStart(2, "0");
+  const lastDay = new Date(parsedYear, parsedMonth, 0).getDate();
+  return {
+    start: `${parsedYear}-${monthText}-01`,
+    end: `${parsedYear}-${monthText}-${String(lastDay).padStart(2, "0")}`,
+  };
 }
 
 const EntryBody = z.object({
@@ -27,8 +102,8 @@ const EntryBody = z.object({
 
 router.get("/projects/:projectId/calendar", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const projectId = parseInt(req.params.projectId as string, 10);
-  if (isNaN(projectId)) {
+  const projectId = parsePositiveRouteInt(req.params.projectId);
+  if (projectId == null) {
     res.status(400).json({ error: "Invalid projectId" });
     return;
   }
@@ -43,15 +118,17 @@ router.get("/projects/:projectId/calendar", requireAuth, async (req, res): Promi
     eq(contentCalendarEntriesTable.tenantId, tenantId),
   );
 
-  if (month && year) {
-    const y = parseInt(year as string, 10);
-    const m = parseInt(month as string, 10);
-    const start = `${y}-${String(m).padStart(2, "0")}-01`;
-    const end = `${y}-${String(m).padStart(2, "0")}-31`;
+  const monthFilter = parseCalendarMonthFilter(month, year);
+  if (monthFilter === null) {
+    res.status(400).json({ error: "Invalid month/year filter" });
+    return;
+  }
+
+  if (monthFilter) {
     conditions = and(
       conditions,
-      gte(contentCalendarEntriesTable.dueDate, start),
-      lte(contentCalendarEntriesTable.dueDate, end),
+      gte(contentCalendarEntriesTable.dueDate, monthFilter.start),
+      lte(contentCalendarEntriesTable.dueDate, monthFilter.end),
     );
   }
 
@@ -69,8 +146,8 @@ router.post(
   requireRole(["agency_admin", "agency_user", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    if (isNaN(projectId)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    if (projectId == null) {
       res.status(400).json({ error: "Invalid projectId" });
       return;
     }
@@ -82,6 +159,12 @@ router.post(
     const parsed = EntryBody.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid input", details: parsed.error.issues });
+      return;
+    }
+
+    const relationError = await validateEntryRelations(parsed.data, projectId, tenantId);
+    if (relationError) {
+      res.status(400).json({ error: relationError });
       return;
     }
 
@@ -99,9 +182,9 @@ router.patch(
   requireRole(["agency_admin", "agency_user", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
-    if (isNaN(projectId) || isNaN(id)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    const id = parsePositiveRouteInt(req.params.id);
+    if (projectId == null || id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -109,6 +192,12 @@ router.patch(
     const parsed = EntryBody.partial().safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid input", details: parsed.error.issues });
+      return;
+    }
+
+    const relationError = await validateEntryRelations(parsed.data, projectId, tenantId);
+    if (relationError) {
+      res.status(400).json({ error: relationError });
       return;
     }
 
@@ -138,9 +227,9 @@ router.delete(
   requireRole(["agency_admin", "agency_user", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const projectId = parseInt(req.params.projectId as string, 10);
-    const id = parseInt(req.params.id as string, 10);
-    if (isNaN(projectId) || isNaN(id)) {
+    const projectId = parsePositiveRouteInt(req.params.projectId);
+    const id = parsePositiveRouteInt(req.params.id);
+    if (projectId == null || id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }

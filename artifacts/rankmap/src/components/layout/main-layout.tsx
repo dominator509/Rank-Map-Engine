@@ -1,6 +1,13 @@
 import { ReactNode } from "react";
 import { Link } from "wouter";
-import { BarChart2, CreditCard, FlaskConical, LayoutDashboard, Settings, Users } from "lucide-react";
+import {
+  BarChart2,
+  CreditCard,
+  FlaskConical,
+  LayoutDashboard,
+  Settings,
+  Users,
+} from "lucide-react";
 import { Sidebar } from "./sidebar";
 
 interface MainLayoutProps {

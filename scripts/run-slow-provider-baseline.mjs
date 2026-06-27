@@ -38,8 +38,17 @@ function spawnTarget(command, args) {
 function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const target = spawnTarget(command, args);
+    const env = { ...process.env, ...(options.env ?? {}) };
+    if (
+      process.platform === "win32" &&
+      command === "docker" &&
+      !env.DOCKER_CONTEXT &&
+      !env.DOCKER_HOST
+    ) {
+      env.DOCKER_HOST = "npipe:////./pipe/dockerDesktopLinuxEngine";
+    }
     const child = spawn(target.command, target.args, {
-      env: { ...process.env, ...(options.env ?? {}) },
+      env,
       stdio: options.stdio ?? "inherit",
     });
 
@@ -71,6 +80,22 @@ function run(command, args, options = {}) {
       );
     });
   });
+}
+
+async function ensureDockerAvailable() {
+  const result = await run("docker", ["info"], { allowFailure: true, stdio: "pipe" });
+  if (result.code === 0) return;
+
+  const output = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+  throw new Error(
+    [
+      "Docker is required for the slow-provider baseline because it starts a disposable Postgres container.",
+      "Start Docker Desktop or make the Docker daemon reachable, then rerun `corepack pnpm run perf:slow-provider`.",
+      output,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
 }
 
 function startManagedProcess(name, command, args, env) {
@@ -281,6 +306,7 @@ async function seedData() {
 }
 
 try {
+  await ensureDockerAvailable();
   await startSlowProvider();
 
   await run("docker", [

@@ -1,6 +1,6 @@
 {
   "phase": 3,
-  "baseUrl": "http://127.0.0.1:54628",
+  "baseUrl": "http://127.0.0.1:60376",
   "steps": {
     "register": {
       "status": 201,
@@ -8,13 +8,13 @@
         "user": {
           "id": 1,
           "tenantId": 1,
-          "email": "workflow1779711441983@example.com",
+          "email": "workflow1782555863241@example.com",
           "fullName": "Workflow User",
           "role": "agency_admin",
           "avatarUrl": null,
           "lastLoginAt": null,
-          "createdAt": "2026-05-25T12:17:22.981Z",
-          "updatedAt": "2026-05-25T12:17:22.981Z"
+          "createdAt": "2026-06-27T10:24:23.781Z",
+          "updatedAt": "2026-06-27T10:24:23.781Z"
         },
         "tenant": {
           "id": 1,
@@ -28,8 +28,8 @@
           "stripeSubscriptionStatus": null,
           "stripeCurrentPeriodEnd": null,
           "stripeCancelAtPeriodEnd": false,
-          "createdAt": "2026-05-25T12:17:22.973Z",
-          "updatedAt": "2026-05-25T12:17:22.973Z"
+          "createdAt": "2026-06-27T10:24:23.770Z",
+          "updatedAt": "2026-06-27T10:24:23.770Z"
         }
       },
       "headers": {
@@ -40,8 +40,8 @@
         "content-type": "application/json; charset=utf-8",
         "cross-origin-opener-policy": "same-origin",
         "cross-origin-resource-policy": "same-origin",
-        "date": "Mon, 25 May 2026 12:17:22 GMT",
-        "etag": "W/\"239-girnXyxBL+DvwAUk6LmVRGaEEuQ\"",
+        "date": "Sat, 27 Jun 2026 10:24:23 GMT",
+        "etag": "W/\"239-HeVitvSmAhq3oQjJWzOYs/uaY2c\"",
         "keep-alive": "timeout=5",
         "origin-agent-cluster": "?1",
         "ratelimit-limit": "20",
@@ -49,7 +49,7 @@
         "ratelimit-remaining": "19",
         "ratelimit-reset": "900",
         "referrer-policy": "no-referrer",
-        "set-cookie": "connect.sid=s%3AdPo4P0Ye4t2KE9U6TamrD0U1TKXoxx9f.o%2BMiAsPIcL1WTqX%2Bl3wLFhBTBxvkRfOK%2FS4KK2wlXo0; Path=/; Expires=Mon, 01 Jun 2026 12:17:22 GMT; HttpOnly; SameSite=Lax",
+        "set-cookie": "connect.sid=s%3AACSa4ZMvBrusai-ak7kMBJpBfTZbt2Wg.GsNzgQl5rqzynNlnAdm%2FPtqnykEd0QzfboKzotonvA8; Path=/; Expires=Sat, 04 Jul 2026 10:24:23 GMT; HttpOnly; SameSite=Lax",
         "strict-transport-security": "max-age=31536000; includeSubDomains",
         "vary": "Origin",
         "x-content-type-options": "nosniff",
@@ -66,13 +66,13 @@
         "user": {
           "id": 1,
           "tenantId": 1,
-          "email": "workflow1779711441983@example.com",
+          "email": "workflow1782555863241@example.com",
           "fullName": "Workflow User",
           "role": "agency_admin",
           "avatarUrl": null,
           "lastLoginAt": null,
-          "createdAt": "2026-05-25T12:17:22.981Z",
-          "updatedAt": "2026-05-25T12:17:22.981Z"
+          "createdAt": "2026-06-27T10:24:23.781Z",
+          "updatedAt": "2026-06-27T10:24:23.781Z"
         },
         "tenant": {
           "id": 1,
@@ -86,8 +86,8 @@
           "stripeSubscriptionStatus": null,
           "stripeCurrentPeriodEnd": null,
           "stripeCancelAtPeriodEnd": false,
-          "createdAt": "2026-05-25T12:17:22.973Z",
-          "updatedAt": "2026-05-25T12:17:22.973Z"
+          "createdAt": "2026-06-27T10:24:23.770Z",
+          "updatedAt": "2026-06-27T10:24:23.770Z"
         }
       },
       "headers": {
@@ -98,8 +98,8 @@
         "content-type": "application/json; charset=utf-8",
         "cross-origin-opener-policy": "same-origin",
         "cross-origin-resource-policy": "same-origin",
-        "date": "Mon, 25 May 2026 12:17:22 GMT",
-        "etag": "W/\"239-girnXyxBL+DvwAUk6LmVRGaEEuQ\"",
+        "date": "Sat, 27 Jun 2026 10:24:23 GMT",
+        "etag": "W/\"239-HeVitvSmAhq3oQjJWzOYs/uaY2c\"",
         "keep-alive": "timeout=5",
         "origin-agent-cluster": "?1",
         "ratelimit-limit": "500",
@@ -127,8 +127,8 @@
         "industry": null,
         "logoUrl": null,
         "isActive": true,
-        "createdAt": "2026-05-25T12:17:23.036Z",
-        "updatedAt": "2026-05-25T12:17:23.036Z"
+        "createdAt": "2026-06-27T10:24:23.898Z",
+        "updatedAt": "2026-06-27T10:24:23.898Z"
       },
       "headers": {
         "access-control-allow-credentials": "true",
@@ -138,8 +138,8 @@
         "content-type": "application/json; charset=utf-8",
         "cross-origin-opener-policy": "same-origin",
         "cross-origin-resource-policy": "same-origin",
-        "date": "Mon, 25 May 2026 12:17:22 GMT",
-        "etag": "W/\"b9-N7h0xMcMgC2PXowCUFIF2YHaKaY\"",
+        "date": "Sat, 27 Jun 2026 10:24:23 GMT",
+        "etag": "W/\"b9-Ka+LpuAP0uA+Dev79l0k2YNWD0E\"",
         "keep-alive": "timeout=5",
         "origin-agent-cluster": "?1",
         "ratelimit-limit": "500",
@@ -167,8 +167,8 @@
         "industry": null,
         "logoUrl": null,
         "isActive": true,
-        "createdAt": "2026-05-25T12:17:23.036Z",
-        "updatedAt": "2026-05-25T12:17:23.036Z"
+        "createdAt": "2026-06-27T10:24:23.898Z",
+        "updatedAt": "2026-06-27T10:24:23.898Z"
       },
       "headers": {
         "access-control-allow-credentials": "true",
@@ -178,8 +178,8 @@
         "content-type": "application/json; charset=utf-8",
         "cross-origin-opener-policy": "same-origin",
         "cross-origin-resource-policy": "same-origin",
-        "date": "Mon, 25 May 2026 12:17:22 GMT",
-        "etag": "W/\"b9-N7h0xMcMgC2PXowCUFIF2YHaKaY\"",
+        "date": "Sat, 27 Jun 2026 10:24:23 GMT",
+        "etag": "W/\"b9-Ka+LpuAP0uA+Dev79l0k2YNWD0E\"",
         "keep-alive": "timeout=5",
         "origin-agent-cluster": "?1",
         "ratelimit-limit": "500",

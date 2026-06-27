@@ -75,11 +75,26 @@ function compactBody(value) {
 
 let server;
 
+function ensureChaosPrerequisites() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error(
+      [
+        "DATABASE_URL is required for chaos phase 2 because it boots the API against a real test database.",
+        "Run with a disposable database and the TypeScript executor, for example:",
+        "  .\\node_modules\\.bin\\tsx.cmd scripts/chaos/phase2-mutation.mjs",
+      ].join("\n"),
+    );
+  }
+}
+
 try {
+  ensureChaosPrerequisites();
+
   process.env.NODE_ENV = "test";
   process.env.SESSION_SECRET = "test-session-secret-with-at-least-32-characters";
 
-  const { ensureSessionTable } = await import("../../artifacts/api-server/src/lib/session-table.ts");
+  const { ensureSessionTable } =
+    await import("../../artifacts/api-server/src/lib/session-table.ts");
   await ensureSessionTable();
   const { default: app } = await import("../../artifacts/api-server/src/app.ts");
 
@@ -172,7 +187,11 @@ try {
       const durationMs = Date.now() - started;
       const statusClass = Math.floor(response.status / 100);
       const outcome =
-        statusClass === 4 ? "graceful-reject" : statusClass === 5 ? "server-error" : "unexpected-success";
+        statusClass === 4
+          ? "graceful-reject"
+          : statusClass === 5
+            ? "server-error"
+            : "unexpected-success";
       results.cases.push({
         ...testCase,
         durationMs,
@@ -193,9 +212,13 @@ try {
   }
 
   results.summary.total = results.cases.length;
-  results.summary.gracefulRejects = results.cases.filter((c) => c.outcome === "graceful-reject").length;
+  results.summary.gracefulRejects = results.cases.filter(
+    (c) => c.outcome === "graceful-reject",
+  ).length;
   results.summary.serverErrors = results.cases.filter((c) => c.outcome === "server-error").length;
-  results.summary.unexpectedSuccesses = results.cases.filter((c) => c.outcome === "unexpected-success").length;
+  results.summary.unexpectedSuccesses = results.cases.filter(
+    (c) => c.outcome === "unexpected-success",
+  ).length;
 
   await mkdir("artifacts/chaos", { recursive: true });
   await writeFile(

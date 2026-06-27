@@ -22,6 +22,7 @@ import {
 import { BarChart2, RefreshCw, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { parsePositiveRouteInt } from "@/lib/route-params";
 
 interface Client {
   id: number;
@@ -64,7 +65,7 @@ export default function Rankings() {
     queryKey: ["/api/clients"],
     queryFn: () => customFetch("/api/clients"),
   });
-  const projectId = selectedProjectId ? parseInt(selectedProjectId, 10) : null;
+  const projectId = parsePositiveRouteInt(selectedProjectId);
 
   const { data: allProjects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],

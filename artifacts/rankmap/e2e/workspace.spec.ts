@@ -246,7 +246,9 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
         `"What is the best AI visibility platform for SaaS teams?","commercial","decision","AI visibility","US","90"`,
     );
   await page.getByTestId("geo-aeo-preview-prompts").click();
-  await expect(page.getByTestId("geo-aeo-import-preview-summary").getByText("1 valid")).toBeVisible();
+  await expect(
+    page.getByTestId("geo-aeo-import-preview-summary").getByText("1 valid"),
+  ).toBeVisible();
   await page.getByTestId("geo-aeo-import-prompts").click();
   await expect(page.getByText("Prompts imported", { exact: true }).first()).toBeVisible();
 
@@ -257,7 +259,9 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
         `1,chatgpt,manual_paste,"${clientName} is a strong AI visibility choice. See https://${clientDomain}/ai-visibility for proof.",US`,
     );
   await page.getByTestId("geo-aeo-preview-snapshots").click();
-  await expect(page.getByTestId("geo-aeo-import-preview-summary").getByText("1 valid")).toBeVisible();
+  await expect(
+    page.getByTestId("geo-aeo-import-preview-summary").getByText("1 valid"),
+  ).toBeVisible();
   await page.getByTestId("geo-aeo-import-snapshots").click();
   await expect(page.getByText("Snapshots imported", { exact: true }).first()).toBeVisible();
   await expect(page.getByTestId("geo-aeo-rollback-snapshot-import").first()).toBeVisible();
@@ -269,7 +273,9 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
   await expect(page.getByText("Snapshot markings updated", { exact: true }).first()).toBeVisible();
 
   await page.getByPlaceholder("Competitor name").fill(geoCompetitorName);
-  await page.getByPlaceholder("https://competitor.com").fill(`https://competitor-${unique}.example.com`);
+  await page
+    .getByPlaceholder("https://competitor.com")
+    .fill(`https://competitor-${unique}.example.com`);
   await page.getByTestId("geo-aeo-add-competitor").click();
   await expect(page.getByText("Competitor added", { exact: true }).first()).toBeVisible();
   await page.getByLabel("Competitor name").fill(`${geoCompetitorName} Updated`);
@@ -280,22 +286,34 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
   await expect(page.getByText("Competitor removed", { exact: true }).first()).toBeVisible();
 
   await page.getByPlaceholder("Source name").first().fill(geoSourceName);
-  await page.getByPlaceholder("https://source.com/page").fill(`https://${clientDomain}/ai-visibility`);
+  await page
+    .getByPlaceholder("https://source.com/page")
+    .fill(`https://${clientDomain}/ai-visibility`);
   await page.getByTestId("geo-aeo-add-citation").click();
   await expect(page.getByText("Citation added", { exact: true }).first()).toBeVisible();
 
   await page.getByPlaceholder("Source name").nth(1).fill("Browser Directory");
-  await page.getByPlaceholder("https://directory.com/profile").fill(`https://directory-${unique}.example.com/profile`);
+  await page
+    .getByPlaceholder("https://directory.com/profile")
+    .fill(`https://directory-${unique}.example.com/profile`);
   await page.getByTestId("geo-aeo-add-source-recommendation").click();
-  await expect(page.getByText("Source recommendation added", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByText("Source recommendation added", { exact: true }).first(),
+  ).toBeVisible();
   await page.getByLabel("Source target name").fill("Browser Directory Updated");
   await page.getByTestId("geo-aeo-save-source-recommendation").click();
-  await expect(page.getByText("Source recommendation updated", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByText("Source recommendation updated", { exact: true }).first(),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Remove source recommendation" }).click();
-  await expect(page.getByText("Source recommendation removed", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByText("Source recommendation removed", { exact: true }).first(),
+  ).toBeVisible();
 
   await page.getByPlaceholder("Missing FAQPage").fill("Missing FAQPage schema");
-  await page.getByPlaceholder("https://site.com/page").fill(`https://${clientDomain}/ai-visibility`);
+  await page
+    .getByPlaceholder("https://site.com/page")
+    .fill(`https://${clientDomain}/ai-visibility`);
   await page.getByTestId("geo-aeo-add-schema-finding").click();
   await expect(page.getByText("Schema finding added", { exact: true }).first()).toBeVisible();
   await page.getByLabel("Schema issue").fill("Missing FAQPage schema on service page");
@@ -307,16 +325,23 @@ test("operator can complete a GEO/AEO manual browser workflow", async ({ page })
   await page.getByTestId("geo-aeo-analyze").click();
   await expect(page.getByText("Analysis complete", { exact: true }).first()).toBeVisible();
   await page.getByTestId("geo-aeo-override-score").fill("82");
-  await page.getByTestId("geo-aeo-override-reason").fill("Operator reviewed the snapshot set and corrected score.");
+  await page
+    .getByTestId("geo-aeo-override-reason")
+    .fill("Operator reviewed the snapshot set and corrected score.");
   await page.getByTestId("geo-aeo-save-score-override").click();
   await expect(page.getByText("Score override saved", { exact: true }).first()).toBeVisible();
   await page.getByTestId("geo-aeo-action-plan").click();
   await expect(page.getByText("Action plan generated", { exact: true }).first()).toBeVisible();
   await page.getByTestId("geo-aeo-action-item-title").fill("Manual browser action item");
-  await page.getByPlaceholder("Optional implementation notes").fill("Add a manual task from operator review.");
+  await page
+    .getByPlaceholder("Optional implementation notes")
+    .fill("Add a manual task from operator review.");
   await page.getByTestId("geo-aeo-add-action-item").click();
   await expect(page.getByText("Action item added", { exact: true }).first()).toBeVisible();
-  await page.getByTestId("geo-aeo-existing-action-title").last().fill("Manual browser action item updated");
+  await page
+    .getByTestId("geo-aeo-existing-action-title")
+    .last()
+    .fill("Manual browser action item updated");
   await page.getByTestId("geo-aeo-save-action-item").last().click();
   await expect(page.getByText("Action item updated", { exact: true }).first()).toBeVisible();
   await page.getByRole("button", { name: "Remove action item" }).last().click();

@@ -1,13 +1,22 @@
 import { Router } from "express";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
-import { db, customFieldsTable, customFieldValuesTable } from "@workspace/db";
+import {
+  db,
+  customFieldsTable,
+  customFieldValuesTable,
+  projectsTable,
+  keywordsTable,
+  clientsTable,
+} from "@workspace/db";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 
 const router = Router();
 
+const EntityType = z.enum(["project", "keyword", "client"]);
+
 const FieldBody = z.object({
-  entityType: z.enum(["project", "keyword", "client"]),
+  entityType: EntityType,
   name: z.string().min(1).max(100),
   slug: z
     .string()
@@ -18,6 +27,71 @@ const FieldBody = z.object({
   options: z.array(z.string()).optional(),
   isRequired: z.boolean().optional(),
 });
+
+function parsePositiveQueryInt(value: unknown): number | null {
+  if (typeof value !== "string" || !/^[1-9]\d*$/.test(value)) {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+function parsePositiveRouteInt(value: string | string[] | undefined): number | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) return null;
+  return parsed;
+}
+
+async function assertEntityAccess(
+  entityType: z.infer<typeof EntityType>,
+  entityId: number,
+  tenantId: number,
+): Promise<boolean> {
+  if (entityType === "project") {
+    const [row] = await db
+      .select({ id: projectsTable.id })
+      .from(projectsTable)
+      .where(and(eq(projectsTable.id, entityId), eq(projectsTable.tenantId, tenantId)))
+      .limit(1);
+    return !!row;
+  }
+  if (entityType === "keyword") {
+    const [row] = await db
+      .select({ id: keywordsTable.id })
+      .from(keywordsTable)
+      .where(and(eq(keywordsTable.id, entityId), eq(keywordsTable.tenantId, tenantId)))
+      .limit(1);
+    return !!row;
+  }
+  const [row] = await db
+    .select({ id: clientsTable.id })
+    .from(clientsTable)
+    .where(and(eq(clientsTable.id, entityId), eq(clientsTable.tenantId, tenantId)))
+    .limit(1);
+  return !!row;
+}
+
+async function assertFieldAccess(
+  fieldId: number,
+  entityType: z.infer<typeof EntityType>,
+  tenantId: number,
+): Promise<boolean> {
+  const [field] = await db
+    .select({ id: customFieldsTable.id })
+    .from(customFieldsTable)
+    .where(
+      and(
+        eq(customFieldsTable.id, fieldId),
+        eq(customFieldsTable.entityType, entityType),
+        eq(customFieldsTable.tenantId, tenantId),
+      ),
+    )
+    .limit(1);
+  return !!field;
+}
 
 router.get("/custom-fields", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
@@ -59,8 +133,8 @@ router.delete(
   requireRole(["agency_admin", "super_admin"]),
   async (req, res): Promise<void> => {
     const { tenantId } = req.session.user!;
-    const id = parseInt(req.params.id as string, 10);
-    if (isNaN(id)) {
+    const id = parsePositiveRouteInt(req.params.id);
+    if (id == null) {
       res.status(400).json({ error: "Invalid id" });
       return;
     }
@@ -74,14 +148,24 @@ router.delete(
 // Field values
 router.get("/custom-field-values", requireAuth, async (req, res): Promise<void> => {
   const { tenantId } = req.session.user!;
-  const { entityType, entityId } = req.query;
-  if (!entityType || !entityId) {
+  const parsedEntityId = parsePositiveQueryInt(req.query.entityId);
+  if (!req.query.entityType || !req.query.entityId) {
     res.status(400).json({ error: "entityType and entityId required" });
     return;
   }
-  const eid = parseInt(entityId as string, 10);
-  if (isNaN(eid)) {
+  const parsedQuery = z
+    .object({ entityType: EntityType, entityId: z.number().int().positive() })
+    .safeParse({
+      entityType: req.query.entityType,
+      entityId: parsedEntityId,
+    });
+  if (!parsedQuery.success) {
     res.status(400).json({ error: "Invalid entityId" });
+    return;
+  }
+  const { entityType, entityId } = parsedQuery.data;
+  if (!(await assertEntityAccess(entityType, entityId, tenantId))) {
+    res.status(404).json({ error: "Entity not found" });
     return;
   }
 
@@ -91,8 +175,8 @@ router.get("/custom-field-values", requireAuth, async (req, res): Promise<void> 
     .where(
       and(
         eq(customFieldValuesTable.tenantId, tenantId),
-        eq(customFieldValuesTable.entityType, entityType as string),
-        eq(customFieldValuesTable.entityId, eid),
+        eq(customFieldValuesTable.entityType, entityType),
+        eq(customFieldValuesTable.entityId, entityId),
       ),
     );
   res.json(values);
@@ -103,8 +187,8 @@ router.put("/custom-field-values", requireAuth, async (req, res): Promise<void> 
   const parsed = z
     .object({
       fieldId: z.number().int(),
-      entityType: z.string(),
-      entityId: z.number().int(),
+      entityType: EntityType,
+      entityId: z.number().int().positive(),
       value: z.unknown(),
     })
     .safeParse(req.body);
@@ -114,6 +198,14 @@ router.put("/custom-field-values", requireAuth, async (req, res): Promise<void> 
   }
 
   const { fieldId, entityType, entityId, value } = parsed.data;
+  if (!(await assertFieldAccess(fieldId, entityType, tenantId))) {
+    res.status(400).json({ error: "Invalid fieldId" });
+    return;
+  }
+  if (!(await assertEntityAccess(entityType, entityId, tenantId))) {
+    res.status(404).json({ error: "Entity not found" });
+    return;
+  }
 
   const existing = await db
     .select({ id: customFieldValuesTable.id })
@@ -132,7 +224,12 @@ router.put("/custom-field-values", requireAuth, async (req, res): Promise<void> 
     const [updated] = await db
       .update(customFieldValuesTable)
       .set({ value: value as never })
-      .where(eq(customFieldValuesTable.id, existing[0].id))
+      .where(
+        and(
+          eq(customFieldValuesTable.id, existing[0].id),
+          eq(customFieldValuesTable.tenantId, tenantId),
+        ),
+      )
       .returning();
     res.json(updated);
   } else {

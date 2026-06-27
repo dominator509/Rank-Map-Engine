@@ -21,17 +21,17 @@ The recovery baseline:
 
 Latest local proof: 2026-05-18.
 
-| Check | Result |
-|-------|--------|
-| Dump | 803ms |
-| Restore | 2876ms |
-| Restored tenants | 1 |
-| Restored users | 2 |
-| Restored clients | 1 |
-| Restored projects | 1 |
-| Restored keywords | 120 |
-| Restored AI tasks | 60 |
-| Restored reports | 2 |
+| Check                  | Result                                       |
+| ---------------------- | -------------------------------------------- |
+| Dump                   | 803ms                                        |
+| Restore                | 2876ms                                       |
+| Restored tenants       | 1                                            |
+| Restored users         | 2                                            |
+| Restored clients       | 1                                            |
+| Restored projects      | 1                                            |
+| Restored keywords      | 120                                          |
+| Restored AI tasks      | 60                                           |
+| Restored reports       | 2                                            |
 | Fingerprint comparison | Source and restored counts/checksums matched |
 
 ## Production Notes

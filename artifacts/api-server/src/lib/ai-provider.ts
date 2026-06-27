@@ -7,12 +7,18 @@ function getProvider(): AiProvider {
   return "mock";
 }
 
-function getOpenAiTimeoutMs(): number {
-  const raw = process.env.OPENAI_TIMEOUT_MS;
-  if (!raw) return 30000;
+export function parseOpenAiTimeoutMs(value: string | undefined): number {
+  if (!value) return 30000;
+
+  const raw = value.trim();
+  if (!/^\d+$/.test(raw)) return 30000;
 
   const parsed = Number(raw);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 30000;
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : 30000;
+}
+
+function getOpenAiTimeoutMs(): number {
+  return parseOpenAiTimeoutMs(process.env.OPENAI_TIMEOUT_MS);
 }
 
 function getOpenAiUrl(pathname: string): string {

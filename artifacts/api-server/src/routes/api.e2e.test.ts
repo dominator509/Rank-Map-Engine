@@ -65,6 +65,10 @@ class ApiAgent {
     return this.request<T>(path, { method: "PATCH", body });
   }
 
+  put<T = unknown>(path: string, body?: unknown): Promise<ApiResponse<T>> {
+    return this.request<T>(path, { method: "PUT", body });
+  }
+
   delete<T = unknown>(path: string): Promise<ApiResponse<T>> {
     return this.request<T>(path, { method: "DELETE" });
   }
@@ -203,6 +207,7 @@ describeApiE2e("API end-to-end workflows", () => {
 
     const authMe = await tenantA.get("/api/auth/me");
     expect(authMe.status).toBe(200);
+    const tenantAUserId = idFrom(expectRecord(expectRecord(authMe.body).user));
 
     expect((await unauthenticated.get("/api/healthz")).status).toBe(200);
     expect((await unauthenticated.get("/api/healthz/detailed")).status).toBe(401);
@@ -224,6 +229,10 @@ describeApiE2e("API end-to-end workflows", () => {
       ).body,
     );
     const clientId = idFrom(client);
+
+    expect((await tenantA.get("/api/projects?clientId=bogus")).status).toBe(400);
+    expect((await tenantA.get("/api/projects?clientId=0")).status).toBe(400);
+    expect((await tenantA.get("/api/projects?clientId=1e2")).status).toBe(400);
 
     const integrationCredentials = { apiKey: `semrush-secret-${stamp}` };
     const integration = await tenantA.post("/api/integrations", {
@@ -304,6 +313,10 @@ describeApiE2e("API end-to-end workflows", () => {
     const flatProject = await tenantA.get(`/api/projects/${projectId}`);
     expect(flatProject.status).toBe(200);
     expect(expectRecord(flatProject.body).name).toBe("E2E Project");
+    expect((await tenantA.get("/api/projects/1e2")).status).toBe(400);
+    expect((await tenantA.patch("/api/projects/1e2", { name: "Bad Project" })).status).toBe(400);
+    expect((await tenantA.delete("/api/projects/1e2")).status).toBe(400);
+    expect((await tenantA.get("/api/projects/1e2/score-settings")).status).toBe(400);
 
     const imported = await tenantA.post(`/api/projects/${projectId}/keywords/import`, {
       source: "manual",
@@ -326,6 +339,71 @@ describeApiE2e("API end-to-end workflows", () => {
     });
     expect(imported.status).toBe(200);
 
+    const keywordsAfterImport = await tenantA.get(`/api/projects/${projectId}/keywords`);
+    expect(keywordsAfterImport.status).toBe(200);
+    const importedKeywords = expectArray(keywordsAfterImport.body);
+    expect(importedKeywords.length).toBeGreaterThanOrEqual(2);
+    const firstKeywordId = idFrom(expectRecord(importedKeywords[0]));
+    expect((await tenantA.get("/api/projects/not-a-number/keywords")).status).toBe(400);
+    expect((await tenantA.get(`/api/projects/${projectId}/keywords/not-a-number`)).status).toBe(
+      400,
+    );
+    expect(
+      (
+        await tenantA.patch(`/api/projects/${projectId}/keywords/not-a-number`, {
+          isActive: true,
+        })
+      ).status,
+    ).toBe(400);
+    expect((await tenantA.delete(`/api/projects/${projectId}/keywords/not-a-number`)).status).toBe(
+      400,
+    );
+    expect(
+      (await tenantA.get(`/api/projects/${projectId}/keywords/${firstKeywordId}`)).status,
+    ).toBe(200);
+
+    expect(
+      (
+        await tenantA.post(`/api/projects/${projectId}/competitors`, {
+          domain: "stable-rival.example",
+          label: "Stable Rival",
+        })
+      ).status,
+    ).toBe(201);
+    expect((await tenantA.get("/api/projects/not-a-number/competitors")).status).toBe(400);
+    expect((await tenantA.get("/api/projects/not-a-number/competitors/keyword-gap")).status).toBe(
+      400,
+    );
+    expect(
+      (await tenantA.delete("/api/projects/not-a-number/competitors/not-a-number")).status,
+    ).toBe(400);
+
+    const firstGap = await tenantA.get(`/api/projects/${projectId}/competitors/keyword-gap`);
+    const secondGap = await tenantA.get(`/api/projects/${projectId}/competitors/keyword-gap`);
+    expect(firstGap.status).toBe(200);
+    expect(secondGap.status).toBe(200);
+    expect(expectRecord(firstGap.body).keywords).toEqual(expectRecord(secondGap.body).keywords);
+
+    expect((await tenantA.post(`/api/projects/${projectId}/rankings/check-all`)).status).toBe(200);
+    expect((await tenantA.post(`/api/projects/${projectId}/rankings/check-all`)).status).toBe(200);
+    const rankingHistory = await tenantA.get(
+      `/api/projects/${projectId}/rankings/${firstKeywordId}/history`,
+    );
+    expect(rankingHistory.status).toBe(200);
+    const rankingRows = expectArray(rankingHistory.body);
+    expect(rankingRows.length).toBeGreaterThanOrEqual(2);
+    expect(expectRecord(rankingRows[0]).position).toEqual(expectRecord(rankingRows[1]).position);
+    expect((await tenantA.get("/api/projects/1e2/rankings")).status).toBe(400);
+    expect((await tenantA.get("/api/projects/1e2/rankings/1e2/history")).status).toBe(400);
+    expect(
+      (await tenantA.post("/api/projects/1e2/rankings/check", { keywordId: firstKeywordId }))
+        .status,
+    ).toBe(400);
+    expect((await tenantA.post("/api/projects/1e2/rankings/check-all")).status).toBe(400);
+    expect(
+      (await tenantA.get(`/api/projects/${projectId}/rankings/${firstKeywordId}/history`)).status,
+    ).toBe(200);
+
     const clusterAlias = await tenantA.post(`/api/projects/${projectId}/cluster-keywords`);
     expect(clusterAlias.status).toBe(201);
     expect(expectArray(expectRecord(clusterAlias.body).clusters).length).toBeGreaterThan(0);
@@ -340,7 +418,26 @@ describeApiE2e("API end-to-end workflows", () => {
     );
     const pillarId = idFrom(pillar);
 
+    expect((await tenantA.get("/api/projects/1e2/clusters")).status).toBe(400);
+    expect(
+      (await tenantA.post("/api/projects/1e2/clusters", { label: "Bad", clusterType: "pillar" }))
+        .status,
+    ).toBe(400);
+    expect((await tenantA.get(`/api/projects/${projectId}/clusters/1e2`)).status).toBe(400);
+    expect(
+      (
+        await tenantA.patch(`/api/projects/${projectId}/clusters/1e2`, {
+          label: "Bad",
+        })
+      ).status,
+    ).toBe(400);
+    expect((await tenantA.delete(`/api/projects/${projectId}/clusters/1e2`)).status).toBe(400);
+    expect((await tenantA.post(`/api/projects/${projectId}/clusters/1e2/approve`)).status).toBe(
+      400,
+    );
+    expect((await tenantA.post(`/api/projects/${projectId}/clusters/1e2/reject`)).status).toBe(400);
     await tenantA.post(`/api/projects/${projectId}/clusters/${pillarId}/approve`);
+    expect((await tenantA.get(`/api/projects/${projectId}/clusters/${pillarId}`)).status).toBe(200);
 
     const supporting = await tenantA.post(`/api/projects/${projectId}/clusters`, {
       label: "SEO Tools",
@@ -357,6 +454,10 @@ describeApiE2e("API end-to-end workflows", () => {
     const pillars = expectArray(topicMapBody.pillars);
     expect(pillars).toHaveLength(1);
     expect(expectArray(pillars[0].clusters)).toHaveLength(1);
+    expect((await tenantA.get("/api/projects/1e2/topic-map")).status).toBe(400);
+    expect((await tenantA.get("/api/projects/1e2/roadmap")).status).toBe(400);
+    expect((await tenantA.get(`/api/projects/${projectId}/topic-map`)).status).toBe(200);
+    expect((await tenantA.get(`/api/projects/${projectId}/roadmap`)).status).toBe(200);
 
     const brief = expectRecord(
       (
@@ -368,18 +469,190 @@ describeApiE2e("API end-to-end workflows", () => {
       ).body,
     );
     const briefId = idFrom(brief);
+    expect((await tenantA.get("/api/projects/1e2/briefs")).status).toBe(400);
+    expect((await tenantA.get(`/api/projects/${projectId}/briefs/1e2`)).status).toBe(400);
 
     const generatedBrief = await tenantA.post(
       `/api/projects/${projectId}/briefs/${briefId}/generate`,
     );
     expect(generatedBrief.status).toBe(200);
     expect(expectRecord(expectRecord(generatedBrief.body).brief).outline).toBeTruthy();
+    const aiTaskId = expectRecord(generatedBrief.body).taskId as number;
+    expect((await tenantA.get("/api/ai-tasks/not-a-number")).status).toBe(400);
+    expect((await tenantA.get(`/api/ai-tasks/${aiTaskId}`)).status).toBe(200);
 
     const report = await tenantA.post(`/api/projects/${projectId}/reports`, {
       type: "project_summary",
       format: "json",
     });
     expect(report.status).toBe(201);
+    const reportId = idFrom(expectRecord(report.body));
+    const template = expectRecord(
+      (
+        await tenantA.post(`/api/projects/${projectId}/save-as-template`, {
+          name: "E2E Project Template",
+          description: "Snapshot template for hardening coverage",
+        })
+      ).body,
+    );
+    const templateId = idFrom(template);
+    const templates = await tenantA.get("/api/templates");
+    expect(templates.status).toBe(200);
+    expect(
+      expectArray(templates.body).some((entry) => idFrom(expectRecord(entry)) === templateId),
+    ).toBe(true);
+    expect(
+      (await tenantA.post("/api/projects/not-a-number/save-as-template", { name: "Bad" })).status,
+    ).toBe(400);
+    expect(
+      (await tenantA.patch("/api/templates/not-a-number", { description: "Bad" })).status,
+    ).toBe(400);
+    expect((await tenantA.delete("/api/templates/not-a-number")).status).toBe(400);
+    expect(
+      (
+        await tenantA.patch(`/api/templates/${templateId}`, {
+          description: "Updated template description",
+        })
+      ).status,
+    ).toBe(200);
+    expect((await tenantA.delete(`/api/templates/${templateId}`)).status).toBe(204);
+    expect((await tenantA.get("/api/projects/1e2/reports")).status).toBe(400);
+    expect((await tenantA.get(`/api/projects/${projectId}/reports/1e2`)).status).toBe(400);
+    expect((await tenantA.delete("/api/projects/1e2/reports/1e2")).status).toBe(400);
+    expect((await tenantA.get(`/api/projects/${projectId}/reports/${reportId}`)).status).toBe(200);
+    expect((await tenantA.delete(`/api/projects/${projectId}/reports/${reportId}`)).status).toBe(
+      204,
+    );
+    expect((await tenantA.get("/api/projects/1e2/export/keywords.csv")).status).toBe(400);
+    expect((await tenantA.get("/api/projects/1e2/export/project.json")).status).toBe(400);
+    expect((await tenantA.get(`/api/projects/${projectId}/export/keywords.csv`)).status).toBe(200);
+    expect((await tenantA.get(`/api/projects/${projectId}/export/project.json`)).status).toBe(200);
+
+    expect(
+      (await tenantA.get(`/api/projects/${projectId}/calendar?year=2026&month=2`)).status,
+    ).toBe(200);
+    expect((await tenantA.get("/api/projects/1e2/calendar?year=2026&month=2")).status).toBe(400);
+    expect(
+      (await tenantA.get(`/api/projects/${projectId}/calendar?year=2026foo&month=2`)).status,
+    ).toBe(400);
+    expect(
+      (await tenantA.get(`/api/projects/${projectId}/calendar?year=2026&month=13`)).status,
+    ).toBe(400);
+    expect((await tenantA.get(`/api/projects/${projectId}/calendar?year=2026`)).status).toBe(400);
+    expect((await tenantA.patch("/api/projects/1e2/calendar/1e2", { title: "Bad" })).status).toBe(
+      400,
+    );
+    expect((await tenantA.delete("/api/projects/1e2/calendar/1e2")).status).toBe(400);
+
+    const customField = expectRecord(
+      (
+        await tenantA.post("/api/custom-fields", {
+          entityType: "project",
+          name: "Priority",
+          slug: "priority",
+          fieldType: "text",
+        })
+      ).body,
+    );
+    expect((await tenantA.delete("/api/custom-fields/1e2")).status).toBe(400);
+
+    expect((await tenantA.get("/api/comments?entityType=project&entityId=bogus")).status).toBe(400);
+    expect((await tenantA.get("/api/comments?entityType=project&entityId=0")).status).toBe(400);
+    expect((await tenantA.get("/api/comments?entityType=project&entityId=1e2")).status).toBe(400);
+    expect((await tenantA.patch("/api/comments/1e2/resolve")).status).toBe(400);
+    expect((await tenantA.delete("/api/comments/1e2")).status).toBe(400);
+    expect(
+      (await tenantA.get("/api/custom-field-values?entityType=project&entityId=bogus")).status,
+    ).toBe(400);
+    expect(
+      (await tenantA.get("/api/custom-field-values?entityType=project&entityId=0")).status,
+    ).toBe(400);
+    expect(
+      (await tenantA.get("/api/custom-field-values?entityType=project&entityId=1e2")).status,
+    ).toBe(400);
+
+    const reportSchedule = expectRecord(
+      (
+        await tenantA.post("/api/report-schedules", {
+          projectId,
+          reportType: "project_summary",
+          frequency: "weekly",
+          recipientEmails: ["reports@example.com"],
+        })
+      ).body,
+    );
+    const projectSchedules = await tenantA.get(`/api/projects/${projectId}/report-schedules`);
+    expect(projectSchedules.status).toBe(200);
+    expect(
+      expectArray(projectSchedules.body).some(
+        (entry) => idFrom(expectRecord(entry)) === idFrom(reportSchedule),
+      ),
+    ).toBe(true);
+    expect((await tenantA.get("/api/projects/1e2/report-schedules")).status).toBe(400);
+    expect(
+      (await tenantA.patch("/api/report-schedules/not-a-number", { frequency: "daily" })).status,
+    ).toBe(400);
+    expect((await tenantA.delete("/api/report-schedules/not-a-number")).status).toBe(400);
+
+    const webhookEndpoint = expectRecord(
+      (
+        await tenantA.post("/api/webhooks", {
+          url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
+          events: ["project.created"],
+          description: "E2E webhook",
+        })
+      ).body,
+    );
+    const webhookPatch = await tenantA.patch(`/api/webhooks/${idFrom(webhookEndpoint)}`, {
+      events: ["brief.created"],
+      isActive: false,
+    });
+    expect(webhookPatch.status).toBe(200);
+    expect(expectRecord(webhookPatch.body).secret).toBeUndefined();
+    expect(
+      (
+        await tenantA.patch(`/api/webhooks/${idFrom(webhookEndpoint)}`, {
+          events: ["not.real"],
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await tenantA.patch(`/api/webhooks/${idFrom(webhookEndpoint)}`, {
+          events: "project.created",
+        })
+      ).status,
+    ).toBe(400);
+    expect((await tenantA.patch("/api/webhooks/1e2", { isActive: true })).status).toBe(400);
+    expect((await tenantA.patch("/api/webhooks/not-a-number", { isActive: true })).status).toBe(
+      400,
+    );
+    expect((await tenantA.delete("/api/webhooks/1e2")).status).toBe(400);
+    expect((await tenantA.delete("/api/webhooks/not-a-number")).status).toBe(400);
+    expect((await tenantA.post("/api/webhooks/1e2/test")).status).toBe(400);
+    expect((await tenantA.post("/api/webhooks/not-a-number/test")).status).toBe(400);
+    expect((await tenantA.get("/api/webhooks/1e2/deliveries")).status).toBe(400);
+    expect((await tenantA.get("/api/webhooks/not-a-number/deliveries")).status).toBe(400);
+    expect(
+      (await tenantA.get(`/api/webhooks/${idFrom(webhookEndpoint)}/deliveries?limit=bogus`)).status,
+    ).toBe(400);
+    expect(
+      (await tenantA.get(`/api/webhooks/${idFrom(webhookEndpoint)}/deliveries?limit=0`)).status,
+    ).toBe(400);
+    expect(
+      (await tenantA.get(`/api/webhooks/${idFrom(webhookEndpoint)}/deliveries?limit=101`)).status,
+    ).toBe(400);
+
+    const auditLog = await tenantA.get("/api/audit-log?limit=10&offset=0");
+    expect(auditLog.status).toBe(200);
+    expect((await tenantA.get("/api/audit-log?limit=bogus")).status).toBe(400);
+    expect((await tenantA.get("/api/audit-log?limit=0")).status).toBe(400);
+    expect((await tenantA.get("/api/audit-log?limit=201")).status).toBe(400);
+    expect((await tenantA.get("/api/audit-log?offset=-1")).status).toBe(400);
+    expect((await tenantA.get("/api/audit-log?offset=10001")).status).toBe(400);
+    expect((await tenantA.get("/api/geo-aeo/client/audits/not-a-number")).status).toBe(400);
+    expect((await tenantA.get("/api/geo-aeo/audits?clientId=1e2")).status).toBe(400);
+    expect((await tenantA.get("/api/geo-aeo/audits?projectId=bogus")).status).toBe(400);
 
     const geoAudit = expectRecord(
       (
@@ -496,10 +769,13 @@ describeApiE2e("API end-to-end workflows", () => {
       ).toBe(200);
     }
 
-    const geoActionPlan = await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/action-plan/generate`, {
-      name: "E2E GEO AEO action plan",
-      timeHorizonDays: 30,
-    });
+    const geoActionPlan = await tenantA.post(
+      `/api/geo-aeo/audits/${geoAuditId}/action-plan/generate`,
+      {
+        name: "E2E GEO AEO action plan",
+        timeHorizonDays: 30,
+      },
+    );
     expect(geoActionPlan.status).toBe(201);
     const geoActionItems = expectArray(expectRecord(geoActionPlan.body).items);
     expect(geoActionItems.length).toBeGreaterThan(0);
@@ -525,7 +801,9 @@ describeApiE2e("API end-to-end workflows", () => {
     );
     const monitoringRunId = idFrom(monitoringRun);
     expect(monitoringRun.scoreDelta).toBe(8);
-    expect((await tenantA.post(`/api/geo-aeo/monitoring-runs/${monitoringRunId}/approve`)).status).toBe(200);
+    expect(
+      (await tenantA.post(`/api/geo-aeo/monitoring-runs/${monitoringRunId}/approve`)).status,
+    ).toBe(200);
 
     const geoPdfReport = expectRecord(
       (
@@ -547,7 +825,9 @@ describeApiE2e("API end-to-end workflows", () => {
     expect((await tenantA.post(`/api/geo-aeo/audits/${geoAuditId}/approve`)).status).toBe(200);
     const clientVisibleAudits = await tenantA.get("/api/geo-aeo/client/audits");
     expect(clientVisibleAudits.status).toBe(200);
-    expect(expectArray(clientVisibleAudits.body).some((audit) => audit.id === geoAuditId)).toBe(true);
+    expect(expectArray(clientVisibleAudits.body).some((audit) => audit.id === geoAuditId)).toBe(
+      true,
+    );
 
     const clientMonitoringRuns = await tenantA.get(
       `/api/geo-aeo/client/audits/${geoAuditId}/monitoring-runs`,
@@ -759,6 +1039,16 @@ describeApiE2e("API end-to-end workflows", () => {
       scopes: ["admin"],
     });
     expect(invalidScopeKey.status).toBe(400);
+    expect((await tenantA.delete("/api/api-keys/not-a-number")).status).toBe(400);
+    expect((await tenantA.delete("/api/api-keys/1e2")).status).toBe(400);
+    expect((await tenantA.patch("/api/team/1e2", { role: "agency_user" })).status).toBe(400);
+    expect((await tenantA.patch("/api/team/not-a-number", { role: "agency_user" })).status).toBe(
+      400,
+    );
+    expect((await tenantA.delete("/api/team/1e2")).status).toBe(400);
+    expect((await tenantA.delete("/api/team/not-a-number")).status).toBe(400);
+    expect((await tenantA.delete("/api/team/invitations/1e2")).status).toBe(400);
+    expect((await tenantA.delete("/api/team/invitations/not-a-number")).status).toBe(400);
 
     await db
       .update(apiKeysTable)
@@ -774,6 +1064,8 @@ describeApiE2e("API end-to-end workflows", () => {
     const readAllNotifications = await tenantA.patch("/api/notifications/read-all");
     expect(readAllNotifications.status).toBe(200);
     expect(expectRecord(readAllNotifications.body).ok).toBe(true);
+    expect((await tenantA.patch("/api/notifications/not-a-number/read")).status).toBe(400);
+    expect((await tenantA.delete("/api/notifications/not-a-number")).status).toBe(400);
 
     const tenantB = new ApiAgent(baseUrl);
     const registeredB = await tenantB.post("/api/auth/register", {
@@ -783,6 +1075,117 @@ describeApiE2e("API end-to-end workflows", () => {
       tenantName: `Tenant B ${stamp}`,
     });
     expect(registeredB.status).toBe(201);
+
+    const clientB = expectRecord(
+      (
+        await tenantB.post("/api/clients", {
+          name: "Tenant B Client",
+          domain: "tenant-b.example",
+          industry: "SaaS",
+        })
+      ).body,
+    );
+    const projectB = expectRecord(
+      (
+        await tenantB.post("/api/projects", {
+          clientId: idFrom(clientB),
+          name: "Tenant B Project",
+          targetDomain: "tenant-b.example",
+          locale: "en-US",
+        })
+      ).body,
+    );
+    const projectBId = idFrom(projectB);
+
+    const tenantBBrief = expectRecord(
+      (
+        await tenantB.post(`/api/projects/${projectBId}/briefs`, {
+          title: "Tenant B Brief",
+        })
+      ).body,
+    );
+    expect(
+      (
+        await tenantB.patch(`/api/projects/${projectBId}/briefs/${idFrom(tenantBBrief)}`, {
+          assignedTo: tenantAUserId,
+        })
+      ).status,
+    ).toBe(400);
+
+    expect(
+      (
+        await tenantB.post(`/api/projects/${projectBId}/calendar`, {
+          title: "Cross-tenant brief link",
+          briefId,
+        })
+      ).status,
+    ).toBe(400);
+
+    expect(
+      (
+        await tenantB.post("/api/comments", {
+          entityType: "project",
+          entityId: projectId,
+          body: "Cross-tenant project comment",
+        })
+      ).status,
+    ).toBe(404);
+    expect(
+      (await tenantB.get(`/api/comments?entityType=project&entityId=${projectId}`)).status,
+    ).toBe(404);
+
+    expect(
+      (
+        await tenantB.put("/api/custom-field-values", {
+          fieldId: idFrom(customField),
+          entityType: "project",
+          entityId: projectBId,
+          value: "high",
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await tenantB.put("/api/custom-field-values", {
+          fieldId: idFrom(customField),
+          entityType: "project",
+          entityId: projectId,
+          value: "high",
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (await tenantB.get(`/api/custom-field-values?entityType=project&entityId=${projectId}`))
+        .status,
+    ).toBe(404);
+
+    expect(
+      (
+        await tenantA.patch(`/api/report-schedules/${idFrom(reportSchedule)}`, {
+          projectId: projectBId,
+        })
+      ).status,
+    ).toBe(404);
+
+    expect((await tenantA.get("/api/clients/not-a-number")).status).toBe(400);
+    expect((await tenantA.patch("/api/clients/not-a-number", { name: "Bad" })).status).toBe(400);
+    expect((await tenantA.delete("/api/clients/not-a-number")).status).toBe(400);
+    expect((await tenantA.get("/api/clients/1e2/projects")).status).toBe(400);
+    expect(
+      (
+        await tenantA.post("/api/clients/1e2/projects", {
+          clientId,
+          name: "Bad",
+          targetDomain: "bad.example",
+          locale: "en-US",
+        })
+      ).status,
+    ).toBe(400);
+    expect((await tenantA.get("/api/clients/1e2/projects/1e2")).status).toBe(400);
+    expect(
+      (await tenantA.patch("/api/clients/1e2/projects/1e2", { name: "Bad Project" })).status,
+    ).toBe(400);
+    expect((await tenantA.delete("/api/clients/1e2/projects/1e2")).status).toBe(400);
     expect((await tenantB.get(`/api/clients/${clientId}`)).status).toBe(404);
     expect((await tenantB.get(`/api/projects/${projectId}`)).status).toBe(404);
     expect((await tenantB.get(`/api/clients/${clientId}/projects`)).status).toBe(404);

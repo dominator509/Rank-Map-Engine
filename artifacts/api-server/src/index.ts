@@ -9,11 +9,20 @@ if (!rawPort) {
   throw new Error("PORT environment variable is required but was not provided.");
 }
 
-const port = Number(rawPort);
+function parsePort(value: string): number {
+  if (!/^[1-9]\d*$/.test(value)) {
+    throw new Error(`Invalid PORT value: "${value}"`);
+  }
 
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed <= 0 || parsed > 65535) {
+    throw new Error(`Invalid PORT value: "${value}"`);
+  }
+
+  return parsed;
 }
+
+const port = parsePort(rawPort);
 
 ensureSessionTable()
   .then(async () => {

@@ -24,8 +24,17 @@ function spawnTarget(command, args) {
 function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const target = spawnTarget(command, args);
+    const env = { ...process.env, ...(options.env ?? {}) };
+    if (
+      process.platform === "win32" &&
+      command === "docker" &&
+      !env.DOCKER_CONTEXT &&
+      !env.DOCKER_HOST
+    ) {
+      env.DOCKER_HOST = "npipe:////./pipe/dockerDesktopLinuxEngine";
+    }
     const child = spawn(target.command, target.args, {
-      env: { ...process.env, ...(options.env ?? {}) },
+      env,
       stdio: options.stdio ?? "inherit",
     });
 
@@ -85,7 +94,25 @@ async function waitForPostgres() {
   throw new Error("Timed out waiting for the API E2E Postgres container.");
 }
 
+async function ensureDockerAvailable() {
+  const result = await run("docker", ["info"], { allowFailure: true, stdio: "pipe" });
+  if (result.code === 0) return;
+
+  const output = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+  throw new Error(
+    [
+      "Docker is required for API E2E because this script starts a disposable Postgres container.",
+      "Start Docker Desktop or make the Docker daemon reachable, then rerun `corepack pnpm run test:e2e:api`.",
+      output,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
+}
+
 try {
+  await ensureDockerAvailable();
+
   await run("docker", [
     "run",
     "--name",
@@ -108,18 +135,22 @@ try {
     env: { DATABASE_URL: databaseUrl },
   });
 
-  await run(
-    "corepack",
-    ["pnpm", "exec", "vitest", "run", "artifacts/api-server/src/routes/api.e2e.test.ts"],
-    {
+  const e2eFiles = [
+    "artifacts/api-server/src/routes/api.e2e.test.ts",
+    "artifacts/api-server/src/routes/api.boundary.e2e.test.ts",
+    "artifacts/api-server/src/routes/api.concurrency.e2e.test.ts",
+  ];
+
+  for (const e2eFile of e2eFiles) {
+    await run("corepack", ["pnpm", "exec", "vitest", "run", e2eFile], {
       env: {
         DATABASE_URL: databaseUrl,
         NODE_ENV: "test",
         RUN_API_E2E: "1",
         SESSION_SECRET: "test-session-secret-with-at-least-32-characters",
       },
-    },
-  );
+    });
+  }
 } finally {
   await run("docker", ["rm", "-f", containerName], { allowFailure: true });
 }
